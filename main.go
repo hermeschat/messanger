@@ -5,14 +5,9 @@ package main
 // gorilla/mux
 
 import (
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"git.raad.cloud/cloud/hermes/cmd"
 )
 
 func main() {
-	log.WithFields(log.Fields{
-		"service": "hermes",
-	}).Info("A walrus appears")
-
-	errors.Wrap(errors.New("ok"), "ok")
+	cmd.Launch("harchi")
 }
