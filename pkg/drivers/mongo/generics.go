@@ -3,16 +3,21 @@ package mongo
 import (
 	"context"
 
+	"git.raad.cloud/cloud/hermes/pkg"
 	"github.com/pkg/errors"
 )
 
 //InsertOne insert a new document in db
-func InsertOne(collName string, m map[string]interface{}) error {
+func InsertOne(collName string, m pkg.Model) error {
 	coll, err := GetCollection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
-	_, err = coll.InsertOne(context.Background(), m)
+	mp, err := m.ToMap()
+	if err != nil {
+		return errors.Wrap(err, "can't create map from given struct ")
+	}
+	_, err = coll.InsertOne(context.Background(), mp)
 	if err != nil {
 		return errors.Wrap(err, "could not insert a new document")
 	}
@@ -20,12 +25,13 @@ func InsertOne(collName string, m map[string]interface{}) error {
 }
 
 //InsertAll inserts given array of maps to mongoDB
-func InsertAll(collName string, m []interface{}) error {
+func InsertAll(collName string, ms []interface{}) error {
 	coll, err := GetCollection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
-	_, err = coll.InsertMany(context.Background(), m)
+
+	_, err = coll.InsertMany(context.Background(), ms)
 	if err != nil {
 		return errors.Wrap(err, "could not insert a new document")
 	}
@@ -91,6 +97,7 @@ func UpdateOne(collName string, id string, data map[string]interface{}) error {
 	return nil
 }
 
+//FindAll finds all documents whom matches to query
 func FindAll(collName string, query map[string]interface{}) ([]map[string]interface{}, error) {
 	coll, err := GetCollection(collName)
 	if err != nil {
@@ -109,6 +116,8 @@ func FindAll(collName string, query map[string]interface{}) ([]map[string]interf
 	}
 	return output, nil
 }
+
+//FindOneById finds matching ID in db
 func FindOneById(collName string, id string) (map[string]interface{}, error) {
 	coll, err := GetCollection(collName)
 	if err != nil {

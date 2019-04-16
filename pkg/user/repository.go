@@ -1,6 +1,8 @@
 package user
 
-import "time"
+import (
+	"time"
+)
 
 //User is User
 type User struct {
@@ -12,8 +14,4 @@ type User struct {
 	Active         bool
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
-}
-
-func ConstructFromMap(m map[string]interface{}) (*User, error) {
-
 }
