@@ -19,12 +19,12 @@ type Message struct {
 
 //ConstructFromMap ...
 func ConstructFromMap(m map[string]interface{}) (*Message, error) {
-	user := &Message{}
-	err := mapstructure.Decode(m, user)
+	message := &Message{}
+	err := mapstructure.Decode(m, message)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't construct user from given map")
+		return nil, errors.Wrap(err, "can't construct message from given map")
 	}
-	return user, nil
+	return message, nil
 }
 
 func Get(id string) (*Message, error) {

@@ -15,12 +15,12 @@ type Channel struct {
 
 //ConstructFromMap ...
 func ConstructFromMap(m map[string]interface{}) (*Channel, error) {
-	user := &Channel{}
-	err := mapstructure.Decode(m, user)
+	channel := &Channel{}
+	err := mapstructure.Decode(m, channel)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't construct user from given map")
+		return nil, errors.Wrap(err, "can't construct channel from given map")
 	}
-	return user, nil
+	return channel, nil
 }
 
 func Get(id string) (*Channel, error) {
