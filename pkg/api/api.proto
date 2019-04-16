@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+service Hermes {
+    rpc keepalive (singal) returns (Responce);
+    rpc sendMessage (instantMessage) returns (Responce);
+    rpc delivered (Signal) returns (Responce);
+
+}
+
+message Signal {
+    string signalType = 1;
+    string from = 2;
+    string payload =3;
+}
+
+message InstantMessage {
+    string messageType = 1;
+    string from = 2;
+    string channel = 3;
+    string to = 4;
+    string body = 5;
+}
+
+message Responce {
+    int code = 1;
+    string error = 2;
+}
