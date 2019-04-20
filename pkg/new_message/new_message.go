@@ -32,14 +32,27 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 				Error: errors.Wrap(err, "Cannot get channels").Error(),
 			}
 		}
-		targetChannel := (*channels)[0]
+		var targetChannel *channel.Channel
+		if len(*channels) < 1 {
+			targetChannel = &channel.Channel{
+				Members: []string{message.To, message.From},
+			}
+			err := saveChannelToMongo(targetChannel)
+			if err != nil {
+				return api.Response{
+					Error:"Internal Service problem",
+				}
+			}
+		} else {
+			targetChannel = (*channels)[0]
+		}
 		err = nats.Publish("test-cluster", "0.0.0.0", targetChannel.ChannelID, message )
 		if err != nil {
 			return api.Response{
 				Error: errors.Wrap(err, "Error while publishing to NATS").Error(),
 			}
 		}
-		err = saveToMongo(message)
+		err = saveMessageToMongo(message)
 		if err != nil {
 			return api.Response{
 				Error : errors.Wrap(err, "Error in saving to mongo").Error(),
@@ -54,9 +67,15 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 		Code: "Unknown",
 	}
 }
+func saveChannelToMongo(c *channel.Channel) error {
+	err := channel.Add(c)
+	if err != nil {
+		return errors.Wrap(err, "cannot save to mongo")
+	}
+	return nil
+}
 
-
-func saveToMongo(message *api.InstantMessage) error {
+func saveMessageToMongo(message *api.InstantMessage) error {
 	err := message2.Add(&message2.Message{
 		To : message.To,
 		From: message.From,
