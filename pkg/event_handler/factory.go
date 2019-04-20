@@ -1,4 +1,4 @@
-package factory
+package event_handler
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func UserDiscoveryEventHandler(userId string) func(msg *stan.Msg) {
 		}
 		if ude.UserID == userId {
 			ctx, _ := context.WithCancel(context.Background())
-			sub := nats.SubscriberFactory(ctx, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID))
+			sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID))
 			go sub()
 		}
 	}

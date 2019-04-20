@@ -31,7 +31,7 @@ func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error) {
 }
 type Subscriber func() error
 //t is type we need to pass to find our message type
-func SubscriberFactory(ctx context.Context,clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
 	return func () error {
 		durable := ""
 		id, err := uuid.NewV4()

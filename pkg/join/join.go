@@ -5,7 +5,7 @@ import (
 
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
-	"git.raad.cloud/cloud/hermes/pkg/factory"
+	"git.raad.cloud/cloud/hermes/pkg/event_handler"
 	"git.raad.cloud/cloud/hermes/pkg/repository/session"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -58,7 +58,7 @@ func Handle(sig *api.Signal) *api.Response {
 	userID := ""
 	ctx, _ := context.WithCancel(context.Background())
 
-	sub := nats.SubscriberFactory(ctx, "test-cluster", "0.0.0.0:4222", "user-discovery", factory.UserDiscoveryEventHandler(userID))
+	sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", "user-discovery", event_handler.UserDiscoveryEventHandler(userID))
 	go sub()
 	return &api.Response{}
 }
