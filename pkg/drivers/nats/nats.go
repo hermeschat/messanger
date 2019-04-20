@@ -15,9 +15,15 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+
+type Config struct {
+	NatsSrvAddr string
+	ClusterId string
+}
+
 //Publish is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
-func Publish(clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
+func Publish(clusterID string, natsSrvAddr string, ChannelId string,msg *api.InstantMessage) error {
 	// Connect to NATS-Streaming
 	id, err := uuid.NewV4()
 	if err != nil {
@@ -34,7 +40,7 @@ func Publish(clusterID string, natsSrvAddr string, msg *api.InstantMessage) erro
 		return errors.Wrap(err, "failed to marshal proto message")
 	}
 
-	if err := natsClient.Publish(msg.Channel, bs); err != nil {
+	if err := natsClient.Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
 	return nil
@@ -94,9 +100,9 @@ func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *a
 }
 
 func Run() {
-	timeout := 30 * time.Second
+	timeout := 10 * time.Second
 	timeOutContext, _ := context.WithTimeout(context.Background(), timeout)
-	Publish("test-cluster", "0.0.0.0:4222", &api.InstantMessage{
+	Publish("test-cluster", "0.0.0.0:4222", "ChannelMan",&api.InstantMessage{
 		MessageType: "1",
 		Channel:     "ChannelMan",
 	})
@@ -106,7 +112,7 @@ func Run() {
 	})
 
 	// Wait for the timeout to expire
-	//<-timeOutContext.Done()
+	<-timeOutContext.Done()
 
 }
 
