@@ -7,6 +7,7 @@ service Hermes {
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc DestroySession(DestroySessionRequest) returns (DestroySessionResponse);
     rpc Join(Signal) returns(Response);
+    rpc Read(Signal) returns(Response);
 }
 message DestroySessionRequest {
     string SessionId = 1;
