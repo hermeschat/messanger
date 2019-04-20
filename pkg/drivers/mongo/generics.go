@@ -3,12 +3,16 @@ package mongo
 import (
 	"context"
 
-	"git.raad.cloud/cloud/hermes/pkg"
 	"github.com/pkg/errors"
 )
 
+//Model ....
+type Model interface {
+	ToMap() (map[string]interface{}, error)
+}
+
 //InsertOne insert a new document in db
-func InsertOne(collName string, m pkg.Model) error {
+func InsertOne(collName string, m Model) error {
 	coll, err := GetCollection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
