@@ -1,12 +1,18 @@
 syntax = "proto3";
 
 service Hermes {
-    rpc keepalive (Signal) returns (Responce);
-    rpc sendMessage (InstantMessage) returns (Responce);
-    rpc delivered (Signal) returns (Responce);
-    rpc CreateSession ()
+    rpc KeepAlive (Signal) returns (Response);
+    rpc SendMessage (InstantMessage) returns (Response);
+    rpc Deliverd (Signal) returns (Response);
+    rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
+    rpc DestroySession(DestroySessionRequest) returns (DestroySessionResponse);
 }
-
+message DestroySessionRequest {
+    string SessionId = 1;
+}
+message DestroySessionResponse {
+    string StatusCode = 1;
+}
 message Signal {
     string signalType = 1;
     string from = 2;
@@ -19,6 +25,18 @@ message InstantMessage {
     string channel = 3;
     string to = 4;
     string body = 5;
+}
+
+message CreateSessionRequest {
+    string ClientType = 1;
+    string UserID = 2;
+	string UserIP = 3;
+	string UserAgent = 4;
+	string ClientVersion = 5;
+	string Node = 6;
+}
+message CreateSessionResponse {
+    string StatusCode = 1;
 }
 
 message Response {

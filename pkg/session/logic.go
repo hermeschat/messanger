@@ -1,5 +1,5 @@
 package session
 
-func ConnectToServer() {
-
-}
+func CreateSession()  {}
+func DestroySession() {}
+func GetSessions()    {}

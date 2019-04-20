@@ -15,6 +15,14 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func ConnectToNats(clusterID string, natsSrvAddr string) {
+	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	if err != nil {
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	defer natsClient.Close()
+}
+
 //Publish is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
 func Publish(clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
