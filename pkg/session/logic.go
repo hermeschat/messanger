@@ -1,1 +1,5 @@
 package session
+
+func ConnectToServer() {
+
+}

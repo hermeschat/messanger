@@ -1,19 +1,108 @@
 package nats
 
-import stan "github.com/nats-io/go-nats-streaming"
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
 
-sc, _ := stan.Connect(clusterID, clientID)
+	"github.com/sirupsen/logrus"
 
-// Simple Synchronous Publisher
-sc.Publish("foo", []byte("Hello World")) // does not return until an ack has been received from NATS Streaming
+	"git.raad.cloud/cloud/hermes/pkg/api"
+	"github.com/gogo/protobuf/proto"
+	stan "github.com/nats-io/go-nats-streaming"
+	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
+)
 
-// Simple Async Subscriber
-sub, _ := sc.Subscribe("foo", func(m *stan.Msg) {
-    fmt.Printf("Received a message: %s\n", string(m.Data))
-})
+//Publish is send function. Every message should be published to a channel to
+//be delivered to subscribers. In streaming, published Message is persistant.
+func Publish(clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
+	// Connect to NATS-Streaming
+	id, err := uuid.NewV4()
+	if err != nil {
+		return errors.Wrap(err, "Can't generate UUID?!")
+	}
+	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	if err != nil {
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	defer natsClient.Close()
 
-// Unsubscribe
-sub.Unsubscribe()
+	bs, err := proto.Marshal(msg)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal proto message")
+	}
 
-// Close connection
-sc.Close()
+	if err := natsClient.Publish(msg.Channel, bs); err != nil {
+		return errors.Wrap(err, "failed to publish message")
+	}
+	return nil
+}
+
+//Subscribe used when a reviever wants to get messages.
+func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
+	durable := ""
+	id, err := uuid.NewV4()
+	sc, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr),
+		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
+			log.Fatalf("Connection lost, reason: %v", reason)
+		}))
+	if err != nil {
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", natsSrvAddr, clusterID, id.String())
+	defer sc.Close()
+
+	i := 0
+	mcb := func(msg *stan.Msg) {
+		i++
+		printMsg(msg, i)
+	}
+
+	startOpt := stan.DeliverAllAvailable()
+
+	sub, err := sc.QueueSubscribe("subj", "qgroup", mcb, startOpt, stan.DurableName("durable"))
+	if err != nil {
+		sc.Close()
+		log.Fatal(err)
+	}
+
+	logrus.Infof("Listening on [%s], clientID=[%s], qgroup=[%s] durable=[%s]\n", "subj", id.String(), "qgroup", "durable")
+
+	// Wait for a SIGINT (perhaps triggered by user with CTRL-C)
+	// Run cleanup when signal is received
+	go func() {
+		select {
+		case <-ctx.Done():
+
+			err := ctx.Err()
+			if err != nil {
+				fmt.Println("in <-ctx.Done(): ", err)
+			}
+			logrus.Infof("\n unsubscribing and closing connection...\n\n")
+			// Do not unsubscribe a durable on exit, except if asked to.
+			if durable == "" {
+				sub.Unsubscribe()
+			}
+			sc.Close()
+			break
+		}
+
+	}()
+	return nil
+}
+
+func run() {
+	timeout := 30 * time.Second
+	timeOutContext, _ := context.WithTimeout(context.Background(), timeout)
+	go Subscribe(timeOutContext, "", "", nil)
+
+	// Wait for the timeout to expire
+	//<-timeOutContext.Done()
+
+}
+
+func printMsg(m *stan.Msg, i int) {
+	log.Printf("[#%d] Received on [%s]: '%s'\n", i, m.Subject, m)
+}
