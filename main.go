@@ -5,9 +5,13 @@ package main
 // gorilla/mux
 
 import (
-	"git.raad.cloud/cloud/hermes/cmd"
+	"time"
+
+	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 )
 
 func main() {
-	cmd.Launch("harchi")
+	nats.Run()
+	time.Sleep(time.Second * 20)
+	// cmd.Launch("harchi")
 }

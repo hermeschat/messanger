@@ -15,14 +15,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func ConnectToNats(clusterID string, natsSrvAddr string) {
-	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
-	if err != nil {
-		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
-	}
-	defer natsClient.Close()
-}
-
 //Publish is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
 func Publish(clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
@@ -70,13 +62,13 @@ func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *a
 
 	startOpt := stan.DeliverAllAvailable()
 
-	sub, err := sc.QueueSubscribe("subj", "qgroup", mcb, startOpt, stan.DurableName("durable"))
+	sub, err := sc.QueueSubscribe(msg.Channel, "qgroup", mcb, startOpt, stan.DurableName("durable"))
 	if err != nil {
 		sc.Close()
 		log.Fatal(err)
 	}
 
-	logrus.Infof("Listening on [%s], clientID=[%s], qgroup=[%s] durable=[%s]\n", "subj", id.String(), "qgroup", "durable")
+	logrus.Infof("Listening on [%s], clientID=[%s], qgroup=[%s] durable=[%s]\n", msg.Channel, id.String(), "qgroup", "durable")
 
 	// Wait for a SIGINT (perhaps triggered by user with CTRL-C)
 	// Run cleanup when signal is received
@@ -101,10 +93,17 @@ func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *a
 	return nil
 }
 
-func run() {
+func Run() {
 	timeout := 30 * time.Second
 	timeOutContext, _ := context.WithTimeout(context.Background(), timeout)
-	go Subscribe(timeOutContext, "", "", nil)
+	Publish("test-cluster", "0.0.0.0:4222", &api.InstantMessage{
+		MessageType: "1",
+		Channel:     "ChannelMan",
+	})
+	go Subscribe(timeOutContext, "test-cluster", "0.0.0.0:4222", &api.InstantMessage{
+		MessageType: "1",
+		Channel:     "ChannelMan",
+	})
 
 	// Wait for the timeout to expire
 	//<-timeOutContext.Done()
