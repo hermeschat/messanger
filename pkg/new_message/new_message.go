@@ -5,7 +5,9 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/channel"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	message2 "git.raad.cloud/cloud/hermes/pkg/message"
+	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
@@ -15,9 +17,28 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 		return api.Response{ Error: errors.New("Channel ID or To should be present in payload").Error()}
 	}
 	if message.Channel != "" {
-		err := nats.Publish("test-cluster", "0.0.0.0:4222",message.Channel, message)
+
+		err := nats.PublishNewMessage("test-cluster", "0.0.0.0:4222",message.Channel, message)
 		if err != nil {
 			return api.Response{Error:errors.Wrap(err, "Cannot publish message to nats").Error()}
+		}
+		targetChannel,err := channel.Get(message.Channel)
+		if err != nil {
+			msg := errors.Wrap(err, "cannot get channel from db").Error()
+			logrus.Error(msg)
+			return api.Response{
+				Error: msg,
+			}
+
+		}
+		for _, member := range targetChannel.Members {
+			err := user_discovery.PublishEvent(&api.UserDiscoveryEvent{
+				UserID:member,
+				ChannelID:targetChannel.ChannelID,
+			})
+			if err != nil {
+				logrus.Error(errors.Wrap(err, "cannot publish to user-discovery"))
+			}
 		}
 		return api.Response{
 			Code:"200",
@@ -46,7 +67,7 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 		} else {
 			targetChannel = (*channels)[0]
 		}
-		err = nats.Publish("test-cluster", "0.0.0.0", targetChannel.ChannelID, message )
+		err = nats.PublishNewMessage("test-cluster", "0.0.0.0", targetChannel.ChannelID, message )
 		if err != nil {
 			return api.Response{
 				Error: errors.Wrap(err, "Error while publishing to NATS").Error(),
@@ -56,6 +77,15 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 		if err != nil {
 			return api.Response{
 				Error : errors.Wrap(err, "Error in saving to mongo").Error(),
+			}
+		}
+		for _, member := range targetChannel.Members {
+			err := user_discovery.PublishEvent(&api.UserDiscoveryEvent{
+				UserID:member,
+				ChannelID:targetChannel.ChannelID,
+			})
+			if err != nil {
+				logrus.Error(errors.Wrap(err, "cannot publish to user-discovery"))
 			}
 		}
 		return api.Response{
@@ -74,6 +104,8 @@ func saveChannelToMongo(c *channel.Channel) error {
 	}
 	return nil
 }
+
+
 
 func saveMessageToMongo(message *api.InstantMessage) error {
 	err := message2.Add(&message2.Message{

@@ -44,3 +44,7 @@ message Response {
     string code = 1;
     string error = 2;
 }
+message UserDiscoveryEvent {
+    string UserID = 1;
+    string ChannelID = 2;
+}

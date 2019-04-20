@@ -21,9 +21,22 @@ type Config struct {
 	ClusterId string
 }
 
-//Publish is send function. Every message should be published to a channel to
+
+func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error){
+	id, err := uuid.NewV4()
+	if err != nil {
+		return nil, errors.Wrap(err, "Can't generate UUID?!")
+	}
+	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	if err != nil {
+		return nil, errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	return natsClient, nil
+}
+
+//PublishNewMessage is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
-func Publish(clusterID string, natsSrvAddr string, ChannelId string,msg *api.InstantMessage) error {
+func PublishNewMessage(clusterID string, natsSrvAddr string, ChannelId string,msg *api.InstantMessage) error {
 	// Connect to NATS-Streaming
 	id, err := uuid.NewV4()
 	if err != nil {
@@ -102,7 +115,7 @@ func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *a
 func Run() {
 	timeout := 10 * time.Second
 	timeOutContext, _ := context.WithTimeout(context.Background(), timeout)
-	Publish("test-cluster", "0.0.0.0:4222", "ChannelMan",&api.InstantMessage{
+	PublishNewMessage("test-cluster", "0.0.0.0:4222", "ChannelMan",&api.InstantMessage{
 		MessageType: "1",
 		Channel:     "ChannelMan",
 	})
