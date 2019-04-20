@@ -6,12 +6,10 @@ package main
 
 import (
 	"time"
-
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 )
 
 func main() {
-	nats.Run()
+	// nats.Run()
 	time.Sleep(time.Second * 20)
 	// cmd.Launch("harchi")
 }

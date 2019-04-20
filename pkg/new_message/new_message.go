@@ -1,32 +1,34 @@
 package new_message
 
 import (
+	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/channel"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	message2 "git.raad.cloud/cloud/hermes/pkg/message"
 	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
+	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"time"
 )
 
-func Handle(message *api.InstantMessage) (api.Response)  {
+func Handle(message *api.InstantMessage) (*api.Response)  {
 	if message.To == ""  && message.Channel == ""{
-		return api.Response{ Error: errors.New("Channel ID or To should be present in payload").Error()}
+		return &api.Response{ Error: errors.New("Channel ID or To should be present in payload").Error()}
 	}
 	if message.Channel != "" {
 
 		err := nats.PublishNewMessage("test-cluster", "0.0.0.0:4222",message.Channel, message)
 		if err != nil {
-			return api.Response{Error:errors.Wrap(err, "Cannot publish message to nats").Error()}
+			return &api.Response{Error:errors.Wrap(err, "Cannot publish message to nats").Error()}
 		}
 		targetChannel,err := channel.Get(message.Channel)
 		if err != nil {
 			msg := errors.Wrap(err, "cannot get channel from db").Error()
 			logrus.Error(msg)
-			return api.Response{
+			return &api.Response{
 				Error: msg,
 			}
 
@@ -40,7 +42,7 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 				logrus.Error(errors.Wrap(err, "cannot publish to user-discovery"))
 			}
 		}
-		return api.Response{
+		return &api.Response{
 			Code:"200",
 		}
 	}
@@ -49,7 +51,7 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 			"Members": bson.M{"$in" : []string{message.From,message.To}},
 		})
 		if err != nil {
-			return api.Response{
+			return &api.Response{
 				Error: errors.Wrap(err, "Cannot get channels").Error(),
 			}
 		}
@@ -60,7 +62,7 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 			}
 			err := saveChannelToMongo(targetChannel)
 			if err != nil {
-				return api.Response{
+				return &api.Response{
 					Error:"Internal Service problem",
 				}
 			}
@@ -69,13 +71,13 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 		}
 		err = nats.PublishNewMessage("test-cluster", "0.0.0.0", targetChannel.ChannelID, message )
 		if err != nil {
-			return api.Response{
+			return &api.Response{
 				Error: errors.Wrap(err, "Error while publishing to NATS").Error(),
 			}
 		}
 		err = saveMessageToMongo(message)
 		if err != nil {
-			return api.Response{
+			return &api.Response{
 				Error : errors.Wrap(err, "Error in saving to mongo").Error(),
 			}
 		}
@@ -88,13 +90,21 @@ func Handle(message *api.InstantMessage) (api.Response)  {
 				logrus.Error(errors.Wrap(err, "cannot publish to user-discovery"))
 			}
 		}
-		return api.Response{
+		return &api.Response{
 			Code:"200",
 		}
 
 	}
-	return api.Response{
+	return &api.Response{
 		Code: "Unknown",
+	}
+}
+
+
+
+func NewMessageHandlerFactory (channelId string) func(msg *stan.Msg) {
+	return func(msg *stan.Msg) {
+		fmt.Printf("New Message In %s", channelId)
 	}
 }
 func saveChannelToMongo(c *channel.Channel) error {
