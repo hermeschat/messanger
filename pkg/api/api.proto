@@ -5,16 +5,14 @@ service Hermes {
     rpc NewMessage (InstantMessage) returns (Response);
     rpc Deliverd (Signal) returns (Response);
     rpc CreateSession (CreateSessionRequest) returns (Response);
-    rpc DestroySession(DestroySessionRequest) returns (DestroySessionResponse);
+    rpc DestroySession(DestroySessionRequest) returns (Response);
     rpc Join(Signal) returns(Response);
     rpc Read(Signal) returns(Response);
 }
 message DestroySessionRequest {
     string SessionId = 1;
 }
-message DestroySessionResponse {
-    string StatusCode = 1;
-}
+
 message Signal {
     string signalType = 1;
     string from = 2;
@@ -37,9 +35,7 @@ message CreateSessionRequest {
 	string ClientVersion = 5;
 	string Node = 6;
 }
-message CreateSessionResponse {
-    string StatusCode = 1;
-}
+
 
 message Response {
     string code = 1;
