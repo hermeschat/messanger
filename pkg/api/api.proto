@@ -4,7 +4,7 @@ service Hermes {
     rpc KeepAlive (Signal) returns (Response);
     rpc NewMessage (InstantMessage) returns (Response);
     rpc Deliverd (Signal) returns (Response);
-    rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
+    rpc CreateSession (CreateSessionRequest) returns (Response);
     rpc DestroySession(DestroySessionRequest) returns (DestroySessionResponse);
     rpc Join(Signal) returns(Response);
     rpc Read(Signal) returns(Response);
