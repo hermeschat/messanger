@@ -26,3 +26,19 @@ func Create(req *api.CreateSessionRequest) *api.Response {
 		Error: "",
 	}
 }
+
+//it removes a session dump ass
+func Destroy(req *api.DestroySessionRequest) *api.Response {
+	err := session.Delete(req.SessionId)
+	if err != nil {
+		return &api.Response{
+			Code:  "500",
+			Error: errors.Wrap(err, "error while removing session").Error(),
+		}
+	}
+	return &api.Response{
+		Code:  "200",
+		Error: "",
+	}
+
+}
