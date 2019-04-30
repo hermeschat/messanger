@@ -1,8 +1,10 @@
 package new_message
 
 import (
+	"strings"
 	"time"
 
+	"git.raad.cloud/cloud/credit-service/db"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
@@ -119,4 +121,46 @@ func saveChannelToMongo(c *channel.Channel) error {
 		return errors.Wrap(err, "cannot save to mongo")
 	}
 	return nil
+}
+
+func getExistingChannel(from string, to string) {
+	channels, err := channel.GetAll(bson.M{
+		"Members": bson.M{"$in": []string{message.From, message.To}, {"$size": 2}},
+	})
+	if err != nil {
+		return &api.Response{
+			Error: errors.Wrap(err, "Cannot get channels").Error(),
+		}
+	}
+	var targetChannel *channel.Channel
+	if len(*channels) < 1 {
+		targetChannel = &channel.Channel{
+			Members: []string{message.To, message.From},
+		}
+		err := saveChannelToMongo(targetChannel)
+		if err != nil {
+			return &api.Response{
+				Error: "Internal Service problem",
+			}
+		}
+	} else {
+		targetChannel = (*channels)
+	}
+}
+
+func ensureChannel(sessionID string) {
+	channels, err := getSession(sessionID)
+
+}
+
+func getSession(sessionID string) ([]string, error) {
+	redisCon, err := db.ConnectRedis()
+	if err != nil {
+		return nil, errors.Wrap(err, "Fail to connect to redis")
+	}
+	channels, err := redisCon.Get("session-" + sessionID).Result()
+	if err != nil {
+		return nil, errors.Wrap(err, "Fail get from redis")
+	}
+	return strings.Split(channels, ","), nil
 }
