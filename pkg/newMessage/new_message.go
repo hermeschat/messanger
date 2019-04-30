@@ -18,7 +18,7 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/repository"
 )
 
-func Handle(message *api.InstantMessage, sessionID string) *api.Response {
+func Handle(message *api.Message, sessionID string) *api.Response {
 	var err error
 	if message.To == "" && message.Channel == "" {
 		return &api.Response{Error: errors.New("Channel ID or To should be present in payload").Error()}
@@ -50,7 +50,7 @@ func Handle(message *api.InstantMessage, sessionID string) *api.Response {
 		for _, member := range targetChannel.Members {
 			err := ensureChannel(sessionID,targetChannel.ChannelID, member)
 			if err != nil {
-				go  retryEnsure(sessionID,targetChannel.ChannelID, member)()
+				go  retryEnsure(sessionID,targetChannel.ChannelID, member, 0)()
 			}
 		}
 	}(targetChannel)
@@ -67,7 +67,7 @@ func Handle(message *api.InstantMessage, sessionID string) *api.Response {
 	}
 }
 
-func saveMessageToMongo(message *api.InstantMessage) error {
+func saveMessageToMongo(message *api.Message) error {
 	err := message2.Add(&message2.Message{
 		To:          message.To,
 		From:        message.From,

@@ -17,10 +17,10 @@ type DeliverdSignal struct {
 }
 
 //Handle ...
-func Handle(sig *api.Signal) *api.Response {
+func Handle(sig *api.Message) *api.Response {
 	ds := &DeliverdSignal{}
 	var j map[string]interface{}
-	err := json.Unmarshal([]byte(sig.Payload), &j)
+	err := json.Unmarshal([]byte(sig.Body), &j)
 	if err != nil {
 		msg := errors.Wrap(err, "error in unmarshalling payload")
 		return &api.Response{
@@ -34,7 +34,7 @@ func Handle(sig *api.Signal) *api.Response {
 			Error: msg.Error(),
 		}
 	}
-	nats.PublishNewMessage("test-cluster", "0.0.0.0:4222", ds.ChannelID, &api.InstantMessage{
+	nats.PublishNewMessage("test-cluster", "0.0.0.0:4222", ds.ChannelID, &api.Message{
 		MessageType: "2",
 		Body:        fmt.Sprintf(`{"message_id":%s}`, ds.MessageID),
 	})

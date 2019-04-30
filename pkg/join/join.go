@@ -16,9 +16,9 @@ type JoinPayload struct {
 	SessionId string
 }
 
-func Handle(sig *api.Signal) *api.Response {
+func Handle(sig *api.Message) *api.Response {
 	payload := &JoinPayload{}
-	err := json.Unmarshal([]byte(sig.Payload), payload)
+	err := json.Unmarshal([]byte(sig.Body), payload)
 	if err != nil {
 		msg := errors.Wrap(err, "cannot unmarshal payload").Error()
 		logrus.Error(msg)

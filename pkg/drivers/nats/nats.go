@@ -88,7 +88,7 @@ func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, Ch
 
 //PublishNewMessage is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
-func PublishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *api.InstantMessage) error {
+func PublishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *api.Message) error {
 	// Connect to NATS-Streaming
 	id, err := uuid.NewV4()
 	if err != nil {
