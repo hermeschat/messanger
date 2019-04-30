@@ -1,4 +1,4 @@
-package event_handler
+package eventHandler
 
 import (
 	"fmt"
@@ -12,7 +12,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-func UserDiscoveryEventHandler(userId string) func(msg *stan.Msg) {
+//UserDiscoveryEventHandler handles user discovery
+func UserDiscoveryEventHandler(userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 
 		ude := &api.UserDiscoveryEvent{}
@@ -21,16 +22,18 @@ func UserDiscoveryEventHandler(userId string) func(msg *stan.Msg) {
 			logrus.Error(errors.Wrap(err, "cannot unmarshal UserDiscoveryEvent"))
 			return
 		}
-		if ude.UserID == userId {
+		if ude.UserID == userID {
 			ctx, _ := context.WithCancel(context.Background())
-			sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID))
+			sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID, ude.UserID))
 			go sub()
 		}
 	}
 }
 
-func NewMessageHandler(channelId string) func(msg *stan.Msg) {
+//NewMessageHandler handles the message delivery from nats to user
+func NewMessageHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		fmt.Printf("New Message In %s", channelId)
+		// push kon be user
+		fmt.Printf("New Message In %s", channelID)
 	}
 }

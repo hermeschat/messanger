@@ -21,10 +21,10 @@
 
 ## ensure channel
 
-    get current session
-    if !session.is_subscribed_to(channel_id): //redis
-        subscribe_to_channel(channel_id)
-        user_discovery.PublishEvent(channel_id)
+    + get current session
+    + if !session.is_subscribed_to(channel_id): //redis
+        // subscribe_to_channel(channel_id)
+        + user_discovery.PublishEvent(channel_id)
 
 ## subscribe to channel
 
