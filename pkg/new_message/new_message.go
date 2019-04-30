@@ -148,9 +148,11 @@ func getExistingChannel(from string, to string) {
 	}
 }
 
-func ensureChannel(sessionID string) {
+func ensureChannel(sessionID string, channelID string) {
 	channels, err := getSession(sessionID)
+	for _, c := range channel {
 
+	}
 }
 
 func getSession(sessionID string) ([]string, error) {
