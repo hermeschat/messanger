@@ -45,15 +45,16 @@ func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, Ch
 		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", natsSrvAddr, clusterID, id.String())
 		defer sc.Close()
 
-		i := 0
-		mcb := func(msg *stan.Msg) {
-			i++
-			fmt.Println(msg, i)
-		}
+		// sample handler
+		//i := 0
+		//mcb := func(msg *stan.Msg) {
+		//	i++
+		//	fmt.Println(msg, i)
+		//}
 
 		startOpt := stan.DeliverAllAvailable()
 
-		sub, err := sc.QueueSubscribe(ChannelId, "qgroup", mcb, startOpt, stan.DurableName("durable"))
+		sub, err := sc.QueueSubscribe(ChannelId, "qgroup", handler, startOpt, stan.DurableName("durable"))
 		if err != nil {
 			sc.Close()
 			log.Fatal(err)
