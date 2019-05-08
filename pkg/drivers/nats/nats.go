@@ -3,12 +3,9 @@ package nats
 import (
 	"context"
 	"fmt"
-	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"github.com/sirupsen/logrus"
 	"log"
 
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"github.com/gogo/protobuf/proto"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -33,12 +30,13 @@ func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error) {
 
 type Subscriber func() error
 
+
 //t is type we need to pass to find our message type
-func MakeSubscriber(ctx context.Context, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+func MakeSubscriber(ctx context.Context,userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
 	return func() error {
 		durable := ""
 		id, err := uuid.NewV4()
-		sc, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr),
+		sc, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr),
 			stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
 				log.Fatalf("Connection lost, reason: %v", reason)
 			}))

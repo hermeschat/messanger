@@ -1,9 +1,6 @@
 package join
 
 import (
-	"encoding/json"
-
-	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/repository/session"
@@ -11,36 +8,19 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
-
+//JoinPayload ...
 type JoinPayload struct {
+	UserID string
 	SessionId string
 }
 
-func Handle(sig *api.Message) *api.Response {
-	payload := &JoinPayload{}
-	err := json.Unmarshal([]byte(sig.Body), payload)
-	if err != nil {
-		msg := errors.Wrap(err, "cannot unmarshal payload").Error()
-		logrus.Error(msg)
-		return &api.Response{
-			Code:  "500",
-			Error: msg,
-		}
-	}
-	if payload.SessionId == "" {
-		msg := "SessionId not exists"
-		logrus.Info(msg)
-		// create new session
-	}
+func Handle(sig *JoinPayload) error {
 
-	s, err := session.Get(payload.SessionId)
+	s, err := session.Get(sig.SessionId)
 	if err != nil {
 		msg := errors.Wrap(err, "cannot get session").Error()
 		logrus.Error(msg)
-		return &api.Response{
-			Code:  "500",
-			Error: msg,
-		}
+		return errors.Wrap(err, "error in joining")
 	}
 	//logic session validation
 	_ = s
@@ -49,16 +29,13 @@ func Handle(sig *api.Message) *api.Response {
 	if !check {
 		msg := errors.New("jwt is shit")
 		logrus.Error(msg.Error())
-		return &api.Response{
-			Code:  "500",
-			Error: msg.Error(),
-		}
+		return errors.Wrap(err, "error in authenticating")
 	}
 	//get user id from jwt
 	userID := ""
 	ctx, _ := context.WithCancel(context.Background())
 
-	sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID))
+	sub := nats.MakeSubscriber(ctx, sig.UserID,"test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID))
 	go sub()
-	return &api.Response{}
+	return nil
 }

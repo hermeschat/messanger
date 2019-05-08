@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"git.raad.cloud/cloud/hermes/pkg/api"
-
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
@@ -24,7 +23,7 @@ func UserDiscoveryEventHandler(userID string) func(msg *stan.Msg) {
 		}
 		if ude.UserID == userID {
 			ctx, _ := context.WithCancel(context.Background())
-			sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID, ude.UserID))
+			sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID, ude.UserID))
 			go sub()
 		}
 	}
@@ -40,6 +39,6 @@ func NewMessageHandler(channelID string, userID string) func(msg *stan.Msg) {
 
 func subscribeChannel(channelID string, userID string) {
 	ctx, _ := context.WithCancel(context.Background())
-	sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", channelID, eventHandler.NewMessageHandler(channelID, userID))
+	sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageHandler(channelID, userID))
 	go sub()
 }
