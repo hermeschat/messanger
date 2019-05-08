@@ -2,77 +2,57 @@ package session
 
 import (
 	"encoding/json"
-	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository/session"
 	"github.com/pkg/errors"
-	"time"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
+
 //wtf you think it would do ? it will create session dumbass
-func Create(s *session.Session) *api.Response {
+func Create(s *session.Session) (*session.Session,error) {
 	//create session in mongo
 	if err := session.Add(s); err != nil {
-		return &api.Response{
-			Code:  "500",
-			Error: errors.Wrap(err, "Some error while inserting to database").Error(),
-		}
+		return nil, errors.Wrap(err, "error in creating")
 	}
 
 	conn, err := redis.ConnectRedis()
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "error in connecting to redis")
 	}
 	//TODO: initialize sessionID with mongo objectid
 	jsonSession, err := json.Marshal(s)
 	if err != nil {
-		return &api.Response{
-			Code:  "500",
-			Error: errors.Wrap(err, "error in marshalling session to json").Error(),
-		}
+		return nil, errors.Wrap(err, "error in marshaling json")
 	}
 	status := conn.Set(s.SessionID, jsonSession, time.Hour*12)
 	if status.Err() != nil {
-		panic(status.Err())
+		logrus.Errorf("could not set redis key :%s", err.Error())
+		return s, nil
 	}
-
-	return &api.Response{
-		Code:  "200",
-		Error: "",
-	}
+	return s, nil
 }
 
-func GetOrCreate(req *session.Session) *api.GetOrCreateSessionResponse {
+func GetOrCreate(req *session.Session) (*session.Session, error) {
 	sess, err := GetSession(req.SessionID)
 	if err != nil {
-		return &api.GetOrCreateSessionResponse{
-			Code: "500",
-		}
+		return nil, errors.Wrap(err, "error in getting session")
 	}
 	if sess == nil {
 		return Create(req)
 	}
-	return &api.GetOrCreateSessionResponse{
-		Node:sess.Node,
-		UserID:sess.UserID,
-		ClientVersion:sess.ClientVersion,
-	}
+	return sess, nil
 }
 
 //it removes a session dump ass
-func Destroy(req *api.DestroySessionRequest) *api.Response {
-	err := session.Delete(req.SessionId)
+func Destroy(sessionID string) error {
+	err := session.Delete(sessionID)
 	if err != nil {
-		return &api.Response{
-			Code:  "500",
-			Error: errors.Wrap(err, "error while removing session").Error(),
-		}
+		return errors.Wrap(err, "error in destroying session")
 	}
-	return &api.Response{
-		Code:  "200",
-		Error: "",
-	}
+	return errors.Wrap(err, "error in deleting session")
 
 }
 

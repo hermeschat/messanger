@@ -1,11 +1,12 @@
 package newMessage
 
 import (
+	"encoding/json"
+	stan "github.com/nats-io/go-nats-streaming"
+	uuid "github.com/satori/go.uuid"
 	"strings"
 	"time"
 
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
@@ -16,19 +17,27 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func Handle(message *api.Message, sessionID string) *api.Response {
+type NewMessage struct {
+	Session string
+	From string
+	To string
+	Channel string
+	MessageType string
+	Body string
+}
+
+
+func Handle(message *NewMessage) error {
 	var err error
 	if message.To == "" && message.Channel == "" {
-		return &api.Response{Error: errors.New("Channel ID or To should be present in payload").Error()}
+		return errors.New("error in new message")
 	}
 	targetChannel := &channel.Channel{}
 	if message.To != "" {
 		targetChannel, err = getOrCreateExistingChannel(message.From, message.To)
 		if err != nil {
 			logrus.Error(errors.Wrap(err, "failed to get or create channel"))
-			return &api.Response{
-				Error: "Internal service error",
-			}
+			return errors.Wrap(err, "error in getting channel")
 		}
 	}
 	if message.Channel != "" {
@@ -46,9 +55,9 @@ func Handle(message *api.Message, sessionID string) *api.Response {
 		}
 
 		for _, member := range targetChannel.Members {
-			err := ensureChannel(sessionID, targetChannel.ChannelID, member)
+			err := ensureChannel(message.Session, targetChannel.ChannelID, member)
 			if err != nil {
-				go retryEnsure(sessionID, targetChannel.ChannelID, member, 0)()
+				go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
 			}
 		}
 	}(targetChannel)
@@ -56,16 +65,14 @@ func Handle(message *api.Message, sessionID string) *api.Response {
 	//save to db
 	go saveMessageToMongo(message)
 	//Publish to nats
-	err = nats.PublishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
+	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
 	if err != nil {
-		return &api.Response{Error: errors.Wrap(err, "Cannot publish message to nats").Error()}
+		return errors.Wrap(err, "error in publishing message")
 	}
-	return &api.Response{
-		Code: "200",
-	}
+	return errors.Wrap(err, "")
 }
 
-func saveMessageToMongo(message *api.Message) error {
+func saveMessageToMongo(message *NewMessage) error {
 	err := message2.Add(&message2.Message{
 		To:          message.To,
 		From:        message.From,
@@ -159,4 +166,27 @@ func getSession(sessionID string) ([]string, error) {
 		return nil, errors.Wrap(err, "Fail get from redis")
 	}
 	return strings.Split(channels, ","), nil
+}
+
+//publishNewMessage is send function. Every message should be published to a channel to
+//be delivered to subscribers. In streaming, published Message is persistant.
+func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
+	// Connect to NATS-Streaming
+	id, err := uuid.NewV4()
+	if err != nil {
+		return errors.Wrap(err, "Can't generate UUID?!")
+	}
+	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	if err != nil {
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	defer natsClient.Close()
+	bs, err := json.Marshal(msg)
+	if err != nil {
+		return errors.Wrap(err, "error in marshaling message")
+	}
+	if err := natsClient.Publish(ChannelId, bs); err != nil {
+		return errors.Wrap(err, "failed to publish message")
+	}
+	return nil
 }

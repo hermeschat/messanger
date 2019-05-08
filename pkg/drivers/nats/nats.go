@@ -3,6 +3,7 @@ package nats
 import (
 	"context"
 	"fmt"
+	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"github.com/sirupsen/logrus"
 	"log"
 
@@ -88,30 +89,7 @@ func MakeSubscriber(ctx context.Context, clusterID string, natsSrvAddr string, C
 	}
 }
 
-//PublishNewMessage is send function. Every message should be published to a channel to
-//be delivered to subscribers. In streaming, published Message is persistant.
-func PublishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *api.Message) error {
-	// Connect to NATS-Streaming
-	id, err := uuid.NewV4()
-	if err != nil {
-		return errors.Wrap(err, "Can't generate UUID?!")
-	}
-	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
-	if err != nil {
-		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
-	}
-	defer natsClient.Close()
 
-	bs, err := proto.Marshal(msg)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal proto message")
-	}
-
-	if err := natsClient.Publish(ChannelId, bs); err != nil {
-		return errors.Wrap(err, "failed to publish message")
-	}
-	return nil
-}
 
 ////Subscribe used when a reviever wants to get messages.
 //func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
