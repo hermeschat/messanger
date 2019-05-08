@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-
 )
 
 var (
@@ -102,10 +101,10 @@ func getAuthentication(token string, accountID string) (*Identity, error) {
 			return nil, UnauthorizedError{}
 		}
 	}
-	merchantRoles  := map[string][]string{}
+	merchantRoles := map[string][]string{}
 	if _merchantRoles, ok := claims["merchant_roles"]; ok {
-		if merchantRolesMapFace, ok := _merchantRoles.(map[string]interface{}); ok{
-			for merchantRolesKey, _mRoles := range merchantRolesMapFace{
+		if merchantRolesMapFace, ok := _merchantRoles.(map[string]interface{}); ok {
+			for merchantRolesKey, _mRoles := range merchantRolesMapFace {
 				if mRoles, ok := _mRoles.([]interface{}); ok {
 					merchantRoles[merchantRolesKey] = []string{}
 					for _, _role := range mRoles {

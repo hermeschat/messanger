@@ -1,11 +1,5 @@
 package auth
 
-
-//import (
-//	"github.com/labstack/echo"
-//	)
-
-
 //
 //// helpers function for checking card is blocked or not
 //func CheckIsBlock(h echo.HandlerFunc) echo.MiddlewareFunc {

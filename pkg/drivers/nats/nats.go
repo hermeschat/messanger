@@ -29,10 +29,12 @@ func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error) {
 	}
 	return natsClient, nil
 }
+
 type Subscriber func() error
+
 //t is type we need to pass to find our message type
-func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
-	return func () error {
+func MakeSubscriber(ctx context.Context, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+	return func() error {
 		durable := ""
 		id, err := uuid.NewV4()
 		sc, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr),
@@ -85,7 +87,6 @@ func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, Ch
 		return nil
 	}
 }
-
 
 //PublishNewMessage is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.

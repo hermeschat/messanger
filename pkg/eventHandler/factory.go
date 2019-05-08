@@ -37,3 +37,9 @@ func NewMessageHandler(channelID string, userID string) func(msg *stan.Msg) {
 		fmt.Printf("New Message In %s", channelID)
 	}
 }
+
+func subscribeChannel(channelID string, userID string) {
+	ctx, _ := context.WithCancel(context.Background())
+	sub := nats.MakeSubscriber(ctx, "test-cluster", "0.0.0.0:4222", channelID, eventHandler.NewMessageHandler(channelID, userID))
+	go sub()
+}
