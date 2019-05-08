@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/labstack/gommon/log"
-)
+	)
 
 type Service struct {
 	BitwiseAbilities int64 `json:"bitwise_abilities,omitempty" structs:"bitwise_abilities,omitempty"`
@@ -57,7 +56,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 	fmt.Println(url)
 	fmt.Println(resp)
 	if err != nil {
-		log.Errorf("error on client.Do to get application info. \n error is : %s\n ", err)
+		logrus.Errorf("error on client.Do to get application info. \n error is : %s\n ", err)
 		return nil, err
 	}
 
@@ -71,7 +70,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		applications[applicationID] = &application
 		return &application, nil
 	}
-	log.Errorf("app-service returned invalid status code %d\n", resp.StatusCode)
+	logrus.Errorf("app-service returned invalid status code %d\n", resp.StatusCode)
 	return nil, errors.New("app-service returned invalid status code")
 }
 
@@ -79,7 +78,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 func GetApplicationAuthKeys(applicationID string) (string, string, error) {
 	application, err := GetApplicationInfo(applicationID)
 	if err != nil {
-		log.Errorf("error on GetApplicationAuthKeys on get application info. \n error is : %s\n ", err)
+		logrus.Errorf("error on GetApplicationAuthKeys on get application info. \n error is : %s\n ", err)
 		return "", "", err
 	}
 	return application.ClientID, application.ClientSecret, nil
@@ -89,7 +88,7 @@ func GetApplicationAuthKeys(applicationID string) (string, string, error) {
 func GetApplicationPermissions(applicationID string) (bool, map[string]*Service, error) {
 	application, err := GetApplicationInfo(applicationID)
 	if err != nil {
-		log.Errorf("error on GetApplicationPermissions on get application info. \n error is : %s\n ", err)
+		logrus.Errorf("error on GetApplicationPermissions on get application info. \n error is : %s\n ", err)
 		return false, nil, err
 	}
 	return application.IsEnabled, application.Services, nil

@@ -146,21 +146,21 @@ func getAuthentication(token string, accountID string) (*Identity, error) {
 	return &identity, nil
 }
 
-// Authenticate current request if is valid, otherwise returns nil
-func Authenticate(c *echo.Context, accountID string, roles ...string) (*Identity, error) {
-	token := (*c).Request().Header.Get("Authorization")
-	identity, err := getAuthentication(token, accountID)
-	if err == nil && len(roles) > 0 {
-		exists := false
-		for _, role := range roles {
-			if _, ok := identity.Roles[role]; ok {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			return nil, ForbiddenError{}
-		}
-	}
-	return identity, err
-}
+//// Authenticate current request if is valid, otherwise returns nil
+//func Authenticate(c *echo.Context, accountID string, roles ...string) (*Identity, error) {
+//	token := (*c).Request().Header.Get("Authorization")
+//	identity, err := getAuthentication(token, accountID)
+//	if err == nil && len(roles) > 0 {
+//		exists := false
+//		for _, role := range roles {
+//			if _, ok := identity.Roles[role]; ok {
+//				exists = true
+//				break
+//			}
+//		}
+//		if !exists {
+//			return nil, ForbiddenError{}
+//		}
+//	}
+//	return identity, err
+//}

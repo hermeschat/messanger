@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// HasAccountAccess check if current account has access to given account_id
-func HasAccountAccess(accountID string, roles ...string) bool {
-	return false
-}
-
-// AccountHasRole Check if current account has role
-func AccountHasRole(roles ...string) bool {
-	return false
-}
+//// HasAccountAccess check if current account has access to given account_id
+//func HasAccountAccess(accountID string, roles ...string) bool {
+//	return false
+//}
+//
+//// AccountHasRole Check if current account has role
+//func AccountHasRole(roles ...string) bool {
+//	return false
+//}
 
 // base64Decode Decode specific base64url encoding with padding stripped
 func base64Decode(seg string) ([]byte, error) {
