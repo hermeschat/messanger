@@ -1,24 +1,24 @@
 package auth
 
 import (
-	"github.com/labstack/echo"
- 	"github.com/go-redis/redis"
-	"strconv"
 	"fmt"
- )
+	"github.com/go-redis/redis"
+	"github.com/labstack/echo"
+	"strconv"
+)
 
-func ConnectRedis()(*redis.Client, error){
-	dbName,err := strconv.Atoi(config.RedisDBName)
-	if err != nil{
+func ConnectRedis() (*redis.Client, error) {
+	dbName, err := strconv.Atoi(config.RedisDBName)
+	if err != nil {
 		return nil, err
 	}
-	Addr := fmt.Sprintf("%s:%s",config.RedisHost, config.RedisPort)
+	Addr := fmt.Sprintf("%s:%s", config.RedisHost, config.RedisPort)
 	client := redis.NewClient(&redis.Options{
 		Addr:     Addr,
 		Password: config.RedisPassword, // no password set
-		DB:       dbName,  // use default DB
+		DB:       dbName,               // use default DB
 	})
-	return client,nil
+	return client, nil
 
 }
 
@@ -31,13 +31,13 @@ func CheckIsBlock(h echo.HandlerFunc) echo.MiddlewareFunc {
 			if err != nil {
 				return utils.GetValidationError("تعداد رمز اشتباه بیش از حد مجاز می باشد")
 			}
-			key := "Block:"+sourceUserid
-			_,err = redisCon.Get(key).Result()
+			key := "Block:" + sourceUserid
+			_, err = redisCon.Get(key).Result()
 			if err == redis.Nil {
 				return h(c)
-			}else if err != nil {
+			} else if err != nil {
 				return err
-			}else {
+			} else {
 				return utils.GetValidationError("تعداد رمز اشتباه بیش از حد مجاز می باشد")
 			}
 			return h(c)

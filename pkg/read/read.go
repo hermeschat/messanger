@@ -14,7 +14,6 @@ type ReadSignal struct {
 	ChannelID string
 }
 
-
 func Handle(sig *api.Message) *api.Response {
 	ds := &ReadSignal{}
 	var j map[string]interface{}
@@ -22,7 +21,7 @@ func Handle(sig *api.Message) *api.Response {
 	if err != nil {
 		msg := errors.Wrap(err, "error in unmarshalling payload")
 		return &api.Response{
-			Error : msg.Error(),
+			Error: msg.Error(),
 		}
 	}
 	err = mapstructure.Decode(j, ds)

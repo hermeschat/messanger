@@ -3,7 +3,7 @@ package auth
 import "golang.org/x/crypto/bcrypt"
 
 // function for Compare passwords
-func CheckPassword(plainPwd,hashedPwd string) (bool) {
+func CheckPassword(plainPwd, hashedPwd string) bool {
 	byteHash := []byte(hashedPwd)
 	bytePlain := []byte(plainPwd)
 	err := bcrypt.CompareHashAndPassword(byteHash, bytePlain)
@@ -23,9 +23,9 @@ func HashNewPassword(planPwd string) (hashPwd string, err error) {
 	pwd := []byte(planPwd)
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	// GenerateFromPassword returns a byte slice so we need to
 	// convert the bytes to a string and return it
-	return string(hash),nil
+	return string(hash), nil
 }

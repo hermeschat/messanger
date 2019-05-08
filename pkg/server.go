@@ -8,6 +8,7 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/read"
 	"git.raad.cloud/cloud/hermes/pkg/session"
 	"golang.org/x/net/context"
+	"time"
 )
 
 type HermesServer struct {
@@ -20,7 +21,7 @@ func (h *HermesServer) KeepAlive(context.Context, *api.Message) (*api.Response, 
 }
 
 func (h *HermesServer) NewMessage(ctx context.Context, message *api.Message) (*api.Response, error) {
-	return newMessage.Handle(message,""), nil
+	return newMessage.Handle(message, ""), nil
 }
 
 func (h *HermesServer) Join(ctx context.Context, message *api.Message) (*api.Response, error) {
@@ -39,4 +40,14 @@ func (h *HermesServer) CreateSession(ctx context.Context, req *api.CreateSession
 
 func (h *HermesServer) DestroySession(context.Context, *api.DestroySessionRequest) (*api.Message, error) {
 	panic("implement me")
+}
+
+type HermesContext struct {
+	DeafultCtx context.Context
+	User       struct {
+		ID         string
+		AppID      string
+		ExpireDate time.Time
+		Roles      []string
+	}
 }

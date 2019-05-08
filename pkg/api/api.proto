@@ -20,7 +20,16 @@ message Message {
     string to = 4;
     string body = 5;
 }
-
+message GetOrCreateSessionResponse {
+    string SessionID =1;
+    string LastActivity=2;
+	string UserID = 3;
+	string UserIP =4;
+	string UserAgent=5;
+	string ClientVersion=6;
+    string Node = 7;
+    string Code = 8;
+}
 message CreateSessionRequest {
     string ClientType = 1;
     string UserID = 2;

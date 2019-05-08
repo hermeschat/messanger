@@ -2,7 +2,6 @@ package auth
 
 import (
 	"fmt"
-
 )
 
 // Allow to check authentication of routes
