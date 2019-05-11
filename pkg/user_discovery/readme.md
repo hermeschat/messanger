@@ -36,12 +36,12 @@
 # subscribe
 ## (when user connects to server):
 
-   subscribe to channel(user_discovery)
+   amir+ subscribe to channel(user_discovery)
 
 
 ## (when recieve a message from any channel)
     if (channel_id == U_D ):
-        recieve message from discovery()
+        recieve message from discovery() 
     else:
         recieve message handler()
 
@@ -60,3 +60,7 @@
 ## recieve message handler
 
     deliver to user with grpc
+
+
+//user discovery event handler check if not already subscribed to channel subscribe
+//new message event handler push kon be user ama che goone ??????

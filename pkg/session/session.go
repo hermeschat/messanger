@@ -48,13 +48,13 @@ func Create(cs *CreateSession) (*session.Session,error) {
 	return s, nil
 }
 
-func GetOrCreate(req *session.Session) (*session.Session, error) {
-	sess, err := GetSession(req.SessionID)
+func GetOrCreate(sessionID string,cs *CreateSession) (*session.Session, error) {
+	sess, err := GetSession(sessionID)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in getting session")
 	}
 	if sess == nil {
-		return Create(req)
+		return Create(cs)
 	}
 	return sess, nil
 }
