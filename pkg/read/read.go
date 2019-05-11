@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 )
 
 type ReadSignal struct {
+	UserID string
 	MessageID string
 	ChannelID string
 }
 
 func Handle(sig *ReadSignal) error {
-	err := publishNewMessage("test-cluster", "0.0.0.0:4222", sig.ChannelID, &ReadSignal{
+	err := publishNewMessage("test-cluster",sig.UserID, "0.0.0.0:4222", sig.ChannelID, &ReadSignal{
 		MessageID: sig.MessageID,
 		ChannelID:        sig.ChannelID,
 	})
@@ -25,13 +25,9 @@ func Handle(sig *ReadSignal) error {
 
 //publishNewMessage is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
-func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *ReadSignal) error {
+func publishNewMessage(clusterID string,userID, natsSrvAddr string, ChannelId string, msg *ReadSignal) error {
 	// Connect to NATS-Streaming
-	id, err := uuid.NewV4()
-	if err != nil {
-		return errors.Wrap(err, "Can't generate UUID?!")
-	}
-	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	natsClient, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr))
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}

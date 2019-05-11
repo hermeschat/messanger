@@ -3,7 +3,6 @@ package newMessage
 import (
 	"encoding/json"
 	stan "github.com/nats-io/go-nats-streaming"
-	uuid "github.com/satori/go.uuid"
 	"strings"
 	"time"
 
@@ -172,11 +171,7 @@ func getSession(sessionID string) ([]string, error) {
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
-	id, err := uuid.NewV4()
-	if err != nil {
-		return errors.Wrap(err, "Can't generate UUID?!")
-	}
-	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	natsClient, err := stan.Connect(clusterID,msg.From, stan.NatsURL(natsSrvAddr))
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}
