@@ -6,8 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"log"
 
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"github.com/gogo/protobuf/proto"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -29,13 +27,16 @@ func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error) {
 	}
 	return natsClient, nil
 }
+
 type Subscriber func() error
+
+
 //t is type we need to pass to find our message type
-func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
-	return func () error {
+func MakeSubscriber(ctx context.Context,userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+	return func() error {
 		durable := ""
 		id, err := uuid.NewV4()
-		sc, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr),
+		sc, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr),
 			stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
 				log.Fatalf("Connection lost, reason: %v", reason)
 			}))
@@ -45,15 +46,16 @@ func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, Ch
 		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", natsSrvAddr, clusterID, id.String())
 		defer sc.Close()
 
-		i := 0
-		mcb := func(msg *stan.Msg) {
-			i++
-			fmt.Println(msg, i)
-		}
+		// sample handler
+		//i := 0
+		//mcb := func(msg *stan.Msg) {
+		//	i++
+		//	fmt.Println(msg, i)
+		//}
 
 		startOpt := stan.DeliverAllAvailable()
 
-		sub, err := sc.QueueSubscribe(ChannelId, "qgroup", mcb, startOpt, stan.DurableName("durable"))
+		sub, err := sc.QueueSubscribe(ChannelId, "qgroup", handler, startOpt, stan.DurableName("durable"))
 		if err != nil {
 			sc.Close()
 			log.Fatal(err)
@@ -86,30 +88,6 @@ func MakeSubscriber(ctx context.Context,clusterID string, natsSrvAddr string, Ch
 }
 
 
-//PublishNewMessage is send function. Every message should be published to a channel to
-//be delivered to subscribers. In streaming, published Message is persistant.
-func PublishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *api.InstantMessage) error {
-	// Connect to NATS-Streaming
-	id, err := uuid.NewV4()
-	if err != nil {
-		return errors.Wrap(err, "Can't generate UUID?!")
-	}
-	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
-	if err != nil {
-		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
-	}
-	defer natsClient.Close()
-
-	bs, err := proto.Marshal(msg)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal proto message")
-	}
-
-	if err := natsClient.Publish(ChannelId, bs); err != nil {
-		return errors.Wrap(err, "failed to publish message")
-	}
-	return nil
-}
 
 ////Subscribe used when a reviever wants to get messages.
 //func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {

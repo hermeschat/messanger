@@ -1,32 +1,35 @@
 syntax = "proto3";
 
 service Hermes {
-    rpc KeepAlive (Signal) returns (Response);
-    rpc NewMessage (InstantMessage) returns (Response);
-    rpc Deliverd (Signal) returns (Response);
+    rpc KeepAlive (Message) returns (Response);
+    rpc NewMessage (Message) returns (Response);
+    rpc Deliverd (Message) returns (Response);
     rpc CreateSession (CreateSessionRequest) returns (Response);
     rpc DestroySession(DestroySessionRequest) returns (Response);
-    rpc Join(Signal) returns(Response);
-    rpc Read(Signal) returns(Response);
+    rpc Join(Message) returns(Response);
+    rpc Read(Message) returns(Response);
 }
 message DestroySessionRequest {
     string SessionId = 1;
 }
 
-message Signal {
-    string signalType = 1;
-    string from = 2;
-    string payload =3;
-}
-
-message InstantMessage {
+message Message {
     string messageType = 1;
     string from = 2;
     string channel = 3;
     string to = 4;
     string body = 5;
 }
-
+message GetOrCreateSessionResponse {
+    string SessionID =1;
+    string LastActivity=2;
+	string UserID = 3;
+	string UserIP =4;
+	string UserAgent=5;
+	string ClientVersion=6;
+    string Node = 7;
+    string Code = 8;
+}
 message CreateSessionRequest {
     string ClientType = 1;
     string UserID = 2;

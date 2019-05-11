@@ -26,16 +26,37 @@
         // subscribe_to_channel(channel_id)
         + user_discovery.PublishEvent(channel_id)
 
+## publish message to
+
+    go add_to_db
+    go publish_to_nats
+
+--------------------------------------
+
+# subscribe
+## (when user connects to server):
+
+   subscribe to channel(user_discovery)
+
+
+## (when recieve a message from any channel)
+    if (channel_id == U_D ):
+        recieve message from discovery()
+    else:
+        recieve message handler()
+
+
+## recieve message from discovery
+
+   if ( user.id = discovery.userid ):
+       subscribe to channel(discovery.channel_id)
+
+
 ## subscribe to channel
 
-    subscribe_to_channel()
+    subscribe_to_channel(channel_id)
     add_channel_to_user_session(channel_id)
 
 ## recieve message handler
 
     deliver to user with grpc
-
-## publish message to
-
-    go add_to_db
-    go publish_to_nats

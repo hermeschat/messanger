@@ -4,5 +4,5 @@ package repository
 //to subscribe to a certain channel in async way
 type UserDiscoveryEvent struct {
 	ChannelID string
-	UserID string
+	UserID    string
 }

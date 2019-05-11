@@ -11,7 +11,7 @@ import (
 type Message struct {
 	MessageID   string `bson:"_id" json:"_id"`
 	From        string
-	To string
+	To          string
 	Time        time.Time
 	ChannelID   string
 	MessageType string

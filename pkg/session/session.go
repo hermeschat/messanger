@@ -1,44 +1,88 @@
 package session
 
 import (
-	"git.raad.cloud/cloud/hermes/pkg/api"
+	"encoding/json"
+	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository/session"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
+
 //wtf you think it would do ? it will create session dumbass
-func Create(req *api.CreateSessionRequest) *api.Response {
+func Create(s *session.Session) (*session.Session,error) {
 	//create session in mongo
-	s := &session.Session{
-		Node:      req.Node,
-		UserAgent: req.UserAgent,
-		UserID:    req.UserID,
-		UserIP:    req.UserIP,
-	}
 	if err := session.Add(s); err != nil {
-		return &api.Response{
-			Code:  "500",
-			Error: errors.Wrap(err, "Some error while inserting to database").Error(),
-		}
+		return nil, errors.Wrap(err, "error in creating")
 	}
-	return &api.Response{
-		Code:  "200",
-		Error: "",
+
+	conn, err := redis.ConnectRedis()
+	if err != nil {
+		return nil, errors.Wrap(err, "error in connecting to redis")
 	}
+	//TODO: initialize sessionID with mongo objectid
+	jsonSession, err := json.Marshal(s)
+	if err != nil {
+		return nil, errors.Wrap(err, "error in marshaling json")
+	}
+	status := conn.Set(s.SessionID, jsonSession, time.Hour*12)
+	if status.Err() != nil {
+		logrus.Errorf("could not set redis key :%s", err.Error())
+		return s, nil
+	}
+	return s, nil
+}
+
+func GetOrCreate(req *session.Session) (*session.Session, error) {
+	sess, err := GetSession(req.SessionID)
+	if err != nil {
+		return nil, errors.Wrap(err, "error in getting session")
+	}
+	if sess == nil {
+		return Create(req)
+	}
+	return sess, nil
 }
 
 //it removes a session dump ass
-func Destroy(req *api.DestroySessionRequest) *api.Response {
-	err := session.Delete(req.SessionId)
+func Destroy(sessionID string) error {
+	err := session.Delete(sessionID)
 	if err != nil {
-		return &api.Response{
-			Code:  "500",
-			Error: errors.Wrap(err, "error while removing session").Error(),
-		}
+		return errors.Wrap(err, "error in destroying session")
 	}
-	return &api.Response{
-		Code:  "200",
-		Error: "",
-	}
+	return errors.Wrap(err, "error in deleting session")
 
+}
+
+func GetSession(sessionID string) (*session.Session, error) {
+	conn, err := redis.ConnectRedis()
+	if err != nil {
+		return nil, errors.Wrap(err, "error in redis connection")
+	}
+	res, err := conn.Get(sessionID).Result()
+	if err == redis.Nil {
+		return GetSessionFromDB(sessionID)
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "error in getting redis key")
+	}
+	s := &session.Session{}
+	err = json.Unmarshal([]byte(res), s)
+	if err != nil {
+		return nil, errors.Wrap(err, "cant unmarshall session")
+	}
+	return s, nil
+}
+
+func GetSessionFromDB(sessionID string) (*session.Session, error) {
+	s, err := session.Get(sessionID)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "Error in get session from mongo")
+	}
+	return s, nil
 }

@@ -2,12 +2,9 @@ package delivered
 
 import (
 	"encoding/json"
-	"fmt"
-
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
-	"github.com/mitchellh/mapstructure"
+	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 )
 
 //DeliveredSignal ...
@@ -17,26 +14,34 @@ type DeliverdSignal struct {
 }
 
 //Handle ...
-func Handle(sig *api.Signal) *api.Response {
-	ds := &DeliverdSignal{}
-	var j map[string]interface{}
-	err := json.Unmarshal([]byte(sig.Payload), &j)
+func Handle(sig *DeliverdSignal) error {
+
+
+	err := publishNewMessage("test-cluster", "0.0.0.0:4222", sig.ChannelID, sig)
 	if err != nil {
-		msg := errors.Wrap(err, "error in unmarshalling payload")
-		return &api.Response{
-			Error : msg.Error(),
-		}
+		return errors.Wrap(err, "error in publishing delivered signal")
 	}
-	err = mapstructure.Decode(j, ds)
+	return nil
+}
+//publishNewMessage is send function. Every message should be published to a channel to
+//be delivered to subscribers. In streaming, published Message is persistant.
+func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *DeliverdSignal) error {
+	// Connect to NATS-Streaming
+	id, err := uuid.NewV4()
 	if err != nil {
-		msg := errors.Wrap(err, "Error in unmarshaling signal pa")
-		return &api.Response{
-			Error: msg.Error(),
-		}
+		return errors.Wrap(err, "Can't generate UUID?!")
 	}
-	nats.PublishNewMessage("test-cluster", "0.0.0.0:4222", ds.ChannelID, &api.InstantMessage{
-		MessageType: "2",
-		Body:        fmt.Sprintf(`{"message_id":%s}`, ds.MessageID),
-	})
-	return &api.Response{}
+	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
+	if err != nil {
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	defer natsClient.Close()
+	bs, err := json.Marshal(msg)
+	if err != nil {
+		return errors.Wrap(err, "error in marshaling message")
+	}
+	if err := natsClient.Publish(ChannelId, bs); err != nil {
+		return errors.Wrap(err, "failed to publish message")
+	}
+	return nil
 }
