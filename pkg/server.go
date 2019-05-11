@@ -7,6 +7,7 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/read"
 	"git.raad.cloud/cloud/hermes/pkg/session"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"time"
 )
@@ -20,12 +21,34 @@ func (h *HermesServer) KeepAlive(context.Context, *api.Message) (*api.Response, 
 	panic("implement me")
 }
 
-func (h *HermesServer) NewMessage(ctx context.Context, message *api.Message) (*api.Response, error) {
-	return newMessage.Handle(message, ""), nil
+func (h *HermesServer) NewMessage(ctx context.Context, message *api.Message) (*api.Empty, error) {
+	nm := &newMessage.NewMessage{
+		Body:message.Body,
+		From:message.From,
+		To:message.To,
+		Channel:message.Channel,
+		MessageType:message.MessageType,
+		Session:"",
+	}
+	err := newMessage.Handle(nm)
+	if err != nil {
+		return &api.Empty{
+			Status:"500",
+		}, errors.Wrap(err, "error in new message")
+	}
+	return &api.Empty{Status:"200"}, nil
 }
 
-func (h *HermesServer) Join(ctx context.Context, message *api.Message) (*api.Response, error) {
-	return join.Handle(message), nil
+func (h *HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.Empty, error) {
+	jp := &join.JoinPayload{
+		UserID:"", //should get from jwt
+		SessionId: message.SessionId,
+	}
+	err := join.Handle(jp)
+	if err != nil {
+		return &api.Empty{Status:"500"}, errors.Wrap(err, "error in joining")
+	}
+	return &api.Empty{Status:"200"}, nil
 }
 
 func (h *HermesServer) Deliverd(ctx context.Context, message *api.Message) (*api.Response, error) {

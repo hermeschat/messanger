@@ -2,13 +2,21 @@ syntax = "proto3";
 
 service Hermes {
     rpc KeepAlive (Message) returns (Response);
-    rpc NewMessage (Message) returns (Response);
+    rpc NewMessage (Message) returns(Empty);
     rpc Deliverd (Message) returns (Response);
     rpc CreateSession (CreateSessionRequest) returns (Response);
     rpc DestroySession(DestroySessionRequest) returns (Response);
-    rpc Join(Message) returns(Response);
+    rpc Join(JoinSignal) returns(Empty);
     rpc Read(Message) returns(Response);
 }
+
+message Empty{
+    string status = 1;
+}
+message JoinSignal {
+    string sessionId = 1;
+}
+
 message DestroySessionRequest {
     string SessionId = 1;
 }

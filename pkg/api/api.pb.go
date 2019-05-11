@@ -3,13 +3,14 @@
 
 package api
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
-	context "golang.org/x/net/context"
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -21,7 +22,85 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+
+type Empty struct {
+	Status               string   `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Empty) Reset()         { *m = Empty{} }
+func (m *Empty) String() string { return proto.CompactTextString(m) }
+func (*Empty) ProtoMessage()    {}
+func (*Empty) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e50ccc58c7b575d, []int{0}
+}
+
+func (m *Empty) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Empty.Unmarshal(m, b)
+}
+func (m *Empty) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Empty.Marshal(b, m, deterministic)
+}
+func (m *Empty) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Empty.Merge(m, src)
+}
+func (m *Empty) XXX_Size() int {
+	return xxx_messageInfo_Empty.Size(m)
+}
+func (m *Empty) XXX_DiscardUnknown() {
+	xxx_messageInfo_Empty.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Empty proto.InternalMessageInfo
+
+func (m *Empty) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+type JoinSignal struct {
+	SessionId            string   `protobuf:"bytes,1,opt,name=sessionId,proto3" json:"sessionId,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *JoinSignal) Reset()         { *m = JoinSignal{} }
+func (m *JoinSignal) String() string { return proto.CompactTextString(m) }
+func (*JoinSignal) ProtoMessage()    {}
+func (*JoinSignal) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e50ccc58c7b575d, []int{1}
+}
+
+func (m *JoinSignal) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_JoinSignal.Unmarshal(m, b)
+}
+func (m *JoinSignal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_JoinSignal.Marshal(b, m, deterministic)
+}
+func (m *JoinSignal) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_JoinSignal.Merge(m, src)
+}
+func (m *JoinSignal) XXX_Size() int {
+	return xxx_messageInfo_JoinSignal.Size(m)
+}
+func (m *JoinSignal) XXX_DiscardUnknown() {
+	xxx_messageInfo_JoinSignal.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_JoinSignal proto.InternalMessageInfo
+
+func (m *JoinSignal) GetSessionId() string {
+	if m != nil {
+		return m.SessionId
+	}
+	return ""
+}
 
 type DestroySessionRequest struct {
 	SessionId            string   `protobuf:"bytes,1,opt,name=SessionId,proto3" json:"SessionId,omitempty"`
@@ -34,16 +113,17 @@ func (m *DestroySessionRequest) Reset()         { *m = DestroySessionRequest{} }
 func (m *DestroySessionRequest) String() string { return proto.CompactTextString(m) }
 func (*DestroySessionRequest) ProtoMessage()    {}
 func (*DestroySessionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_api_e5b8957737798d8c, []int{0}
+	return fileDescriptor_7e50ccc58c7b575d, []int{2}
 }
+
 func (m *DestroySessionRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DestroySessionRequest.Unmarshal(m, b)
 }
 func (m *DestroySessionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_DestroySessionRequest.Marshal(b, m, deterministic)
 }
-func (dst *DestroySessionRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DestroySessionRequest.Merge(dst, src)
+func (m *DestroySessionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DestroySessionRequest.Merge(m, src)
 }
 func (m *DestroySessionRequest) XXX_Size() int {
 	return xxx_messageInfo_DestroySessionRequest.Size(m)
@@ -76,16 +156,17 @@ func (m *Message) Reset()         { *m = Message{} }
 func (m *Message) String() string { return proto.CompactTextString(m) }
 func (*Message) ProtoMessage()    {}
 func (*Message) Descriptor() ([]byte, []int) {
-	return fileDescriptor_api_e5b8957737798d8c, []int{1}
+	return fileDescriptor_7e50ccc58c7b575d, []int{3}
 }
+
 func (m *Message) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Message.Unmarshal(m, b)
 }
 func (m *Message) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Message.Marshal(b, m, deterministic)
 }
-func (dst *Message) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Message.Merge(dst, src)
+func (m *Message) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Message.Merge(m, src)
 }
 func (m *Message) XXX_Size() int {
 	return xxx_messageInfo_Message.Size(m)
@@ -139,6 +220,7 @@ type GetOrCreateSessionResponse struct {
 	UserAgent            string   `protobuf:"bytes,5,opt,name=UserAgent,proto3" json:"UserAgent,omitempty"`
 	ClientVersion        string   `protobuf:"bytes,6,opt,name=ClientVersion,proto3" json:"ClientVersion,omitempty"`
 	Node                 string   `protobuf:"bytes,7,opt,name=Node,proto3" json:"Node,omitempty"`
+	Code                 string   `protobuf:"bytes,8,opt,name=Code,proto3" json:"Code,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -148,16 +230,17 @@ func (m *GetOrCreateSessionResponse) Reset()         { *m = GetOrCreateSessionRe
 func (m *GetOrCreateSessionResponse) String() string { return proto.CompactTextString(m) }
 func (*GetOrCreateSessionResponse) ProtoMessage()    {}
 func (*GetOrCreateSessionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_api_e5b8957737798d8c, []int{2}
+	return fileDescriptor_7e50ccc58c7b575d, []int{4}
 }
+
 func (m *GetOrCreateSessionResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetOrCreateSessionResponse.Unmarshal(m, b)
 }
 func (m *GetOrCreateSessionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GetOrCreateSessionResponse.Marshal(b, m, deterministic)
 }
-func (dst *GetOrCreateSessionResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetOrCreateSessionResponse.Merge(dst, src)
+func (m *GetOrCreateSessionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetOrCreateSessionResponse.Merge(m, src)
 }
 func (m *GetOrCreateSessionResponse) XXX_Size() int {
 	return xxx_messageInfo_GetOrCreateSessionResponse.Size(m)
@@ -217,6 +300,13 @@ func (m *GetOrCreateSessionResponse) GetNode() string {
 	return ""
 }
 
+func (m *GetOrCreateSessionResponse) GetCode() string {
+	if m != nil {
+		return m.Code
+	}
+	return ""
+}
+
 type CreateSessionRequest struct {
 	ClientType           string   `protobuf:"bytes,1,opt,name=ClientType,proto3" json:"ClientType,omitempty"`
 	UserID               string   `protobuf:"bytes,2,opt,name=UserID,proto3" json:"UserID,omitempty"`
@@ -233,16 +323,17 @@ func (m *CreateSessionRequest) Reset()         { *m = CreateSessionRequest{} }
 func (m *CreateSessionRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateSessionRequest) ProtoMessage()    {}
 func (*CreateSessionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_api_e5b8957737798d8c, []int{3}
+	return fileDescriptor_7e50ccc58c7b575d, []int{5}
 }
+
 func (m *CreateSessionRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateSessionRequest.Unmarshal(m, b)
 }
 func (m *CreateSessionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CreateSessionRequest.Marshal(b, m, deterministic)
 }
-func (dst *CreateSessionRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateSessionRequest.Merge(dst, src)
+func (m *CreateSessionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateSessionRequest.Merge(m, src)
 }
 func (m *CreateSessionRequest) XXX_Size() int {
 	return xxx_messageInfo_CreateSessionRequest.Size(m)
@@ -307,16 +398,17 @@ func (m *Response) Reset()         { *m = Response{} }
 func (m *Response) String() string { return proto.CompactTextString(m) }
 func (*Response) ProtoMessage()    {}
 func (*Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_api_e5b8957737798d8c, []int{4}
+	return fileDescriptor_7e50ccc58c7b575d, []int{6}
 }
+
 func (m *Response) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Response.Unmarshal(m, b)
 }
 func (m *Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Response.Marshal(b, m, deterministic)
 }
-func (dst *Response) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Response.Merge(dst, src)
+func (m *Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Response.Merge(m, src)
 }
 func (m *Response) XXX_Size() int {
 	return xxx_messageInfo_Response.Size(m)
@@ -353,16 +445,17 @@ func (m *UserDiscoveryEvent) Reset()         { *m = UserDiscoveryEvent{} }
 func (m *UserDiscoveryEvent) String() string { return proto.CompactTextString(m) }
 func (*UserDiscoveryEvent) ProtoMessage()    {}
 func (*UserDiscoveryEvent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_api_e5b8957737798d8c, []int{5}
+	return fileDescriptor_7e50ccc58c7b575d, []int{7}
 }
+
 func (m *UserDiscoveryEvent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UserDiscoveryEvent.Unmarshal(m, b)
 }
 func (m *UserDiscoveryEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_UserDiscoveryEvent.Marshal(b, m, deterministic)
 }
-func (dst *UserDiscoveryEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UserDiscoveryEvent.Merge(dst, src)
+func (m *UserDiscoveryEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserDiscoveryEvent.Merge(m, src)
 }
 func (m *UserDiscoveryEvent) XXX_Size() int {
 	return xxx_messageInfo_UserDiscoveryEvent.Size(m)
@@ -388,12 +481,52 @@ func (m *UserDiscoveryEvent) GetChannelID() string {
 }
 
 func init() {
+	proto.RegisterType((*Empty)(nil), "Empty")
+	proto.RegisterType((*JoinSignal)(nil), "JoinSignal")
 	proto.RegisterType((*DestroySessionRequest)(nil), "DestroySessionRequest")
 	proto.RegisterType((*Message)(nil), "Message")
 	proto.RegisterType((*GetOrCreateSessionResponse)(nil), "GetOrCreateSessionResponse")
 	proto.RegisterType((*CreateSessionRequest)(nil), "CreateSessionRequest")
 	proto.RegisterType((*Response)(nil), "Response")
 	proto.RegisterType((*UserDiscoveryEvent)(nil), "UserDiscoveryEvent")
+}
+
+func init() { proto.RegisterFile("pkg/api/api.proto", fileDescriptor_7e50ccc58c7b575d) }
+
+var fileDescriptor_7e50ccc58c7b575d = []byte{
+	// 507 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x94, 0xcf, 0x6e, 0xd3, 0x4e,
+	0x10, 0xc7, 0x65, 0xd7, 0x71, 0xe2, 0xe9, 0xaf, 0x95, 0x7e, 0xab, 0xb6, 0xb2, 0x4a, 0xd5, 0x46,
+	0x2b, 0x0e, 0x88, 0x83, 0x11, 0x14, 0x1e, 0x20, 0x8a, 0x2b, 0x68, 0x81, 0x82, 0x12, 0xe0, 0xee,
+	0x26, 0x43, 0x58, 0x91, 0x78, 0xcd, 0xee, 0x36, 0xc8, 0x07, 0xde, 0x81, 0x27, 0xe2, 0xc1, 0x38,
+	0xa1, 0xf1, 0x6e, 0xfd, 0x27, 0x4a, 0xe1, 0x10, 0x69, 0xe6, 0xb3, 0x33, 0xf6, 0xf7, 0x9b, 0xd9,
+	0x31, 0xfc, 0x5f, 0x7c, 0x5d, 0x3c, 0xc9, 0x0a, 0x41, 0xbf, 0xa4, 0x50, 0xd2, 0x48, 0x7e, 0x06,
+	0xbd, 0x8b, 0x55, 0x61, 0x4a, 0x76, 0x04, 0xa1, 0x36, 0x99, 0xb9, 0xd5, 0xb1, 0x37, 0xf4, 0x1e,
+	0x45, 0x13, 0x97, 0xf1, 0xc7, 0x00, 0x57, 0x52, 0xe4, 0x53, 0xb1, 0xc8, 0xb3, 0x25, 0x3b, 0x81,
+	0x48, 0xa3, 0xd6, 0x42, 0xe6, 0x97, 0x73, 0x57, 0xd8, 0x00, 0xfe, 0x02, 0x0e, 0x53, 0xd4, 0x46,
+	0xc9, 0x72, 0x6a, 0xd9, 0x04, 0xbf, 0xdd, 0xa2, 0x36, 0xd4, 0x36, 0xdd, 0x6c, 0xab, 0x01, 0xff,
+	0x01, 0xfd, 0xb7, 0xa8, 0x75, 0xb6, 0x40, 0x36, 0x84, 0xdd, 0x95, 0x0d, 0x3f, 0x94, 0x05, 0xba,
+	0xd2, 0x36, 0x62, 0x0c, 0x82, 0xcf, 0x4a, 0xae, 0x62, 0xbf, 0x3a, 0xaa, 0x62, 0x16, 0x43, 0x7f,
+	0xf6, 0x25, 0xcb, 0x73, 0x5c, 0xc6, 0x3b, 0x15, 0xbe, 0x4b, 0xd9, 0x3e, 0xf8, 0x46, 0xc6, 0x41,
+	0x05, 0x7d, 0x23, 0xa9, 0xfb, 0x46, 0xce, 0xcb, 0xb8, 0x67, 0xbb, 0x29, 0xe6, 0xbf, 0x3d, 0x38,
+	0x7e, 0x89, 0xe6, 0x9d, 0x1a, 0x2b, 0xcc, 0x0c, 0xd6, 0xd2, 0x75, 0x21, 0x73, 0x8d, 0x6d, 0xed,
+	0xe9, 0xa6, 0xf6, 0x94, 0x71, 0xf8, 0xef, 0x4d, 0xa6, 0xcd, 0x68, 0x66, 0xc4, 0x5a, 0x98, 0xd2,
+	0xc9, 0xea, 0x30, 0xfa, 0x6b, 0x3f, 0x6a, 0x54, 0x97, 0xa9, 0x53, 0xe7, 0xb2, 0x9a, 0xbf, 0x77,
+	0x02, 0x5d, 0x46, 0x6f, 0xa4, 0x68, 0xb4, 0xc0, 0xdc, 0x38, 0xa5, 0x0d, 0x60, 0x0f, 0x61, 0x6f,
+	0xbc, 0x14, 0x98, 0x9b, 0x4f, 0xa8, 0x48, 0x44, 0x1c, 0x56, 0x15, 0x5d, 0x48, 0x46, 0xaf, 0xe5,
+	0x1c, 0xe3, 0xbe, 0x35, 0x4a, 0x31, 0xb1, 0x31, 0xb1, 0x81, 0x65, 0x14, 0xf3, 0x5f, 0x1e, 0x1c,
+	0x6c, 0xf8, 0xb6, 0x23, 0x3b, 0x05, 0xb0, 0x4f, 0x6c, 0x0d, 0xa2, 0x45, 0x5a, 0xa6, 0xfc, 0x7b,
+	0x4c, 0xed, 0xdc, 0x6f, 0x2a, 0xf8, 0xa7, 0xa9, 0xde, 0xdf, 0x4c, 0x85, 0x8d, 0x29, 0xfe, 0x1c,
+	0x06, 0xf5, 0xa8, 0x18, 0x04, 0x33, 0x3a, 0xb7, 0x6a, 0xab, 0x98, 0x1d, 0x40, 0x0f, 0x95, 0x92,
+	0xca, 0xc9, 0xb4, 0x09, 0xbf, 0x02, 0x46, 0x2f, 0x4f, 0x85, 0x9e, 0xc9, 0x35, 0xaa, 0xf2, 0x62,
+	0x4d, 0x2a, 0x1a, 0x4f, 0x5e, 0xc7, 0xd3, 0x09, 0x44, 0x63, 0x7b, 0xa1, 0x6a, 0xbb, 0x0d, 0x78,
+	0xf6, 0xd3, 0x87, 0xf0, 0x15, 0xaa, 0x15, 0x6a, 0x36, 0x84, 0xe8, 0x35, 0x62, 0x31, 0x5a, 0x8a,
+	0x35, 0xb2, 0x41, 0xe2, 0x6e, 0xf5, 0x71, 0x94, 0xd4, 0x12, 0x4f, 0x01, 0xae, 0xf1, 0xfb, 0xdd,
+	0x75, 0x6f, 0x4a, 0xc2, 0xc4, 0xae, 0xe1, 0x19, 0x0c, 0x52, 0xa4, 0x76, 0x35, 0xdf, 0xfe, 0x80,
+	0xa7, 0xb0, 0xd7, 0x99, 0x17, 0x3b, 0x4c, 0xb6, 0xcd, 0xaf, 0xdd, 0x72, 0x0e, 0xfb, 0xdd, 0xb5,
+	0x64, 0x47, 0xc9, 0xd6, 0x3d, 0xed, 0x0a, 0x0d, 0x68, 0xef, 0xd9, 0x6e, 0xd2, 0xac, 0x7f, 0xfb,
+	0xfc, 0x01, 0x04, 0x13, 0xcc, 0xb6, 0x8b, 0xbc, 0x09, 0xab, 0x8f, 0xcb, 0xf9, 0x9f, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0x14, 0xc3, 0xb8, 0x3a, 0x71, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -409,11 +542,11 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type HermesClient interface {
 	KeepAlive(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
-	NewMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
+	NewMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error)
 	Deliverd(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
 	CreateSession(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Response, error)
 	DestroySession(ctx context.Context, in *DestroySessionRequest, opts ...grpc.CallOption) (*Response, error)
-	Join(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
+	Join(ctx context.Context, in *JoinSignal, opts ...grpc.CallOption) (*Response, error)
 	Read(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
 }
 
@@ -434,8 +567,8 @@ func (c *hermesClient) KeepAlive(ctx context.Context, in *Message, opts ...grpc.
 	return out, nil
 }
 
-func (c *hermesClient) NewMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
+func (c *hermesClient) NewMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/Hermes/NewMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -470,7 +603,7 @@ func (c *hermesClient) DestroySession(ctx context.Context, in *DestroySessionReq
 	return out, nil
 }
 
-func (c *hermesClient) Join(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error) {
+func (c *hermesClient) Join(ctx context.Context, in *JoinSignal, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := c.cc.Invoke(ctx, "/Hermes/Join", in, out, opts...)
 	if err != nil {
@@ -491,12 +624,38 @@ func (c *hermesClient) Read(ctx context.Context, in *Message, opts ...grpc.CallO
 // HermesServer is the server API for Hermes service.
 type HermesServer interface {
 	KeepAlive(context.Context, *Message) (*Response, error)
-	NewMessage(context.Context, *Message) (*Response, error)
+	NewMessage(context.Context, *Message) (*Empty, error)
 	Deliverd(context.Context, *Message) (*Response, error)
 	CreateSession(context.Context, *CreateSessionRequest) (*Response, error)
 	DestroySession(context.Context, *DestroySessionRequest) (*Response, error)
-	Join(context.Context, *Message) (*Response, error)
+	Join(context.Context, *JoinSignal) (*Response, error)
 	Read(context.Context, *Message) (*Response, error)
+}
+
+// UnimplementedHermesServer can be embedded to have forward compatible implementations.
+type UnimplementedHermesServer struct {
+}
+
+func (*UnimplementedHermesServer) KeepAlive(ctx context.Context, req *Message) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method KeepAlive not implemented")
+}
+func (*UnimplementedHermesServer) NewMessage(ctx context.Context, req *Message) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewMessage not implemented")
+}
+func (*UnimplementedHermesServer) Deliverd(ctx context.Context, req *Message) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Deliverd not implemented")
+}
+func (*UnimplementedHermesServer) CreateSession(ctx context.Context, req *CreateSessionRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSession not implemented")
+}
+func (*UnimplementedHermesServer) DestroySession(ctx context.Context, req *DestroySessionRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DestroySession not implemented")
+}
+func (*UnimplementedHermesServer) Join(ctx context.Context, req *JoinSignal) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
+}
+func (*UnimplementedHermesServer) Read(ctx context.Context, req *Message) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Read not implemented")
 }
 
 func RegisterHermesServer(s *grpc.Server, srv HermesServer) {
@@ -594,7 +753,7 @@ func _Hermes_DestroySession_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Hermes_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
+	in := new(JoinSignal)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -606,7 +765,7 @@ func _Hermes_Join_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/Hermes/Join",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermesServer).Join(ctx, req.(*Message))
+		return srv.(HermesServer).Join(ctx, req.(*JoinSignal))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -664,39 +823,4 @@ var _Hermes_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "pkg/api/api.proto",
-}
-
-func init() { proto.RegisterFile("pkg/api/api.proto", fileDescriptor_api_e5b8957737798d8c) }
-
-var fileDescriptor_api_e5b8957737798d8c = []byte{
-	// 457 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0x5f, 0x6e, 0xd3, 0x40,
-	0x10, 0xc6, 0x65, 0xd7, 0x71, 0xe2, 0x81, 0x56, 0x62, 0xd4, 0x56, 0xab, 0xb6, 0x82, 0x60, 0xf1,
-	0xc0, 0x93, 0x11, 0x14, 0x0e, 0x10, 0xc5, 0x08, 0x5a, 0xa0, 0xa0, 0xf0, 0xe7, 0xdd, 0x4d, 0x86,
-	0xb0, 0x22, 0xf1, 0x9a, 0xdd, 0x25, 0xc8, 0x0f, 0xdc, 0x81, 0x13, 0x71, 0x1c, 0xce, 0x81, 0xd6,
-	0xbb, 0x75, 0xd6, 0x95, 0x0b, 0x0f, 0x91, 0x66, 0xbe, 0x9d, 0xc9, 0xfe, 0x3e, 0xcf, 0x0e, 0xdc,
-	0xa9, 0xbe, 0x2e, 0x1f, 0x15, 0x15, 0x37, 0xbf, 0xac, 0x92, 0x42, 0x8b, 0xf4, 0x19, 0x1c, 0xe4,
-	0xa4, 0xb4, 0x14, 0xf5, 0x7b, 0x52, 0x8a, 0x8b, 0x72, 0x46, 0xdf, 0xbe, 0x93, 0xd2, 0x78, 0x02,
-	0x89, 0x53, 0xce, 0x16, 0x2c, 0x18, 0x07, 0x0f, 0x93, 0xd9, 0x56, 0x48, 0x7f, 0xc2, 0xf0, 0x0d,
-	0x29, 0x55, 0x2c, 0x09, 0xc7, 0x70, 0x6b, 0x6d, 0xc3, 0x0f, 0x75, 0x45, 0xae, 0xd4, 0x97, 0x10,
-	0x21, 0xfa, 0x2c, 0xc5, 0x9a, 0x85, 0xcd, 0x51, 0x13, 0x23, 0x83, 0xe1, 0xfc, 0x4b, 0x51, 0x96,
-	0xb4, 0x62, 0x3b, 0x8d, 0x7c, 0x95, 0xe2, 0x1e, 0x84, 0x5a, 0xb0, 0xa8, 0x11, 0x43, 0x2d, 0x4c,
-	0xf7, 0xa5, 0x58, 0xd4, 0x6c, 0x60, 0xbb, 0x4d, 0x9c, 0xfe, 0x09, 0xe0, 0xe8, 0x05, 0xe9, 0xb7,
-	0x72, 0x2a, 0xa9, 0xd0, 0xd4, 0xa2, 0xab, 0x4a, 0x94, 0x8a, 0x7c, 0xf6, 0xfc, 0x3a, 0x7b, 0x8e,
-	0x29, 0xdc, 0x7e, 0x5d, 0x28, 0x3d, 0x99, 0x6b, 0xbe, 0xe1, 0xba, 0x76, 0x58, 0x1d, 0x0d, 0x0f,
-	0x21, 0xfe, 0xa8, 0x48, 0x9e, 0xe5, 0x8e, 0xce, 0x65, 0xad, 0xfe, 0xce, 0x01, 0xba, 0xcc, 0xdc,
-	0x68, 0xa2, 0xc9, 0x92, 0x4a, 0xed, 0x48, 0xb7, 0x02, 0x3e, 0x80, 0xdd, 0xe9, 0x8a, 0x53, 0xa9,
-	0x3f, 0x91, 0x34, 0x10, 0x2c, 0x6e, 0x2a, 0xba, 0xa2, 0x31, 0x7a, 0x21, 0x16, 0xc4, 0x86, 0xd6,
-	0xa8, 0x89, 0xd3, 0xdf, 0x01, 0xec, 0x5f, 0xf3, 0x68, 0xc7, 0x73, 0x17, 0xc0, 0x76, 0x7b, 0x1f,
-	0xdd, 0x53, 0x3c, 0x03, 0xe1, 0x0d, 0x06, 0x76, 0x6e, 0x36, 0x10, 0xfd, 0xd7, 0xc0, 0xe0, 0x5f,
-	0x06, 0x62, 0xcf, 0xc0, 0x53, 0x18, 0xb5, 0x63, 0x41, 0x88, 0xe6, 0xe6, 0xdc, 0xd2, 0x36, 0x31,
-	0xee, 0xc3, 0x80, 0xa4, 0x14, 0xd2, 0x61, 0xda, 0x24, 0x3d, 0x07, 0x34, 0x97, 0xe7, 0x5c, 0xcd,
-	0xc5, 0x86, 0x64, 0xfd, 0x7c, 0x63, 0x28, 0xb6, 0x9e, 0x82, 0x8e, 0xa7, 0x13, 0x48, 0xa6, 0xf6,
-	0xf1, 0xb4, 0x76, 0xb7, 0xc2, 0x93, 0x5f, 0x21, 0xc4, 0x2f, 0x49, 0xae, 0x49, 0xe1, 0x18, 0x92,
-	0x57, 0x44, 0xd5, 0x64, 0xc5, 0x37, 0x84, 0xa3, 0xcc, 0xbd, 0xe0, 0xa3, 0x24, 0x6b, 0x11, 0xef,
-	0x03, 0x5c, 0xd0, 0x8f, 0xab, 0xa7, 0xdd, 0x5b, 0x72, 0x0f, 0x46, 0x39, 0x99, 0x7f, 0x90, 0x8b,
-	0xfe, 0x82, 0xc7, 0xb0, 0xdb, 0x19, 0x19, 0x1e, 0x64, 0x7d, 0x23, 0xf4, 0x5b, 0x4e, 0x61, 0xaf,
-	0xbb, 0x85, 0x78, 0x98, 0xf5, 0xae, 0xa5, 0xdf, 0x74, 0x0c, 0xd1, 0xb9, 0xe0, 0x65, 0x3f, 0xc4,
-	0x31, 0x44, 0x33, 0x2a, 0xfa, 0x09, 0x2f, 0xe3, 0x66, 0xf7, 0x4f, 0xff, 0x06, 0x00, 0x00, 0xff,
-	0xff, 0xf7, 0x97, 0x45, 0x17, 0x10, 0x04, 0x00, 0x00,
 }
