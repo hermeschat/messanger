@@ -23,14 +23,14 @@ func UserDiscoveryEventHandler(userID string) func(msg *stan.Msg) {
 		}
 		if ude.UserID == userID {
 			ctx, _ := context.WithCancel(context.Background())
-			sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageHandler(ude.ChannelID, ude.UserID))
+			sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
 			go sub()
 		}
 	}
 }
 
-//NewMessageHandler handles the message delivery from nats to user
-func NewMessageHandler(channelID string, userID string) func(msg *stan.Msg) {
+//NewMessageEventHandler handles the message delivery from nats to user
+func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		// push kon be user
 		fmt.Printf("New Message In %s", channelID)
@@ -39,6 +39,6 @@ func NewMessageHandler(channelID string, userID string) func(msg *stan.Msg) {
 
 func subscribeChannel(channelID string, userID string) {
 	ctx, _ := context.WithCancel(context.Background())
-	sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageHandler(channelID, userID))
+	sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
 	go sub()
 }
