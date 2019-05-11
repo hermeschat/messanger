@@ -51,14 +51,40 @@ func (h *HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.
 	return &api.Empty{Status:"200"}, nil
 }
 
-func (h *HermesServer) Deliverd(ctx context.Context, message *api.Message) (*api.Response, error) {
-	return delivered.Handle(message), nil
+func (h *HermesServer) Deliverd(ctx context.Context, message *api.DeliveredSignal) (*api.Empty, error) {
+	ds := &delivered.DeliverdSignal{
+		MessageID:message.MessageID,
+		ChannelID:message.ChannelID,
+	}
+	err := delivered.Handle(ds)
+	if err != nil {
+		return &api.Empty{Status:"500"}, errors.Wrap(err, "error in delivering message")
+	}
+	return &api.Empty{Status:"200"}, nil
 }
-func (h *HermesServer) Read(ctx context.Context, message *api.Message) (*api.Response, error) {
-	return read.Handle(message), nil
+func (h *HermesServer) Read(ctx context.Context, message *api.ReadSignal) (*api.Empty, error) {
+	rs := &read.ReadSignal{
+		MessageID: message.MessageID,
+		ChannelID:message.ChannelID,
+	}
+	err := read.Handle(rs)
+	if err != nil {
+		return &api.Empty{Status:"500"}, errors.Wrap(err, "error in reading")
+	}
+	return &api.Empty{Status:"200"}, nil
 }
-func (h *HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.Response, error) {
-	return session.Create(req), nil
+func (h *HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
+	cs := &session.CreateSession{
+		UserIP: "", // az ye jayi
+		UserID:"", //from jwt
+		ClientVersion:req.ClientVersion,
+		Node:req.Node,
+	}
+	s, err := session.Create(cs)
+	if err != nil {
+		return &api.CreateSessionResponse{}, errors.Wrap(err, "error in creating session")
+	}
+	return &api.CreateSessionResponse{SessionID:s.SessionID}, nil
 }
 
 func (h *HermesServer) DestroySession(context.Context, *api.DestroySessionRequest) (*api.Message, error) {

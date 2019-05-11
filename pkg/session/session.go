@@ -11,8 +11,21 @@ import (
 )
 
 
+type CreateSession struct {
+	UserID string
+	UserIP string
+	ClientVersion string
+	Node string
+}
+
 //wtf you think it would do ? it will create session dumbass
-func Create(s *session.Session) (*session.Session,error) {
+func Create(cs *CreateSession) (*session.Session,error) {
+	s := &session.Session{
+		UserID:cs.UserID,
+		UserIP:cs.UserIP,
+		ClientVersion:cs.ClientVersion,
+		Node:cs.Node,
+	}
 	//create session in mongo
 	if err := session.Add(s); err != nil {
 		return nil, errors.Wrap(err, "error in creating")
