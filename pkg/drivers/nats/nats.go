@@ -3,8 +3,9 @@ package nats
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"log"
+
+	"github.com/sirupsen/logrus"
 
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
@@ -30,9 +31,22 @@ func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error) {
 
 type Subscriber func() error
 
+func PublishNewMessage(clusterID string, userID, natsSrvAddr string, ChannelId string, bs []byte) error {
+	// Connect to NATS-Streaming
+	natsClient, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr))
+	if err != nil {
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	defer natsClient.Close()
+
+	if err := natsClient.Publish(ChannelId, bs); err != nil {
+		return errors.Wrap(err, "failed to publish message")
+	}
+	return nil
+}
 
 //t is type we need to pass to find our message type
-func MakeSubscriber(ctx context.Context,userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
 	return func() error {
 		durable := ""
 		sc, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr),
@@ -85,8 +99,6 @@ func MakeSubscriber(ctx context.Context,userID string, clusterID string, natsSrv
 		return nil
 	}
 }
-
-
 
 ////Subscribe used when a reviever wants to get messages.
 //func Subscribe(ctx context.Context, clusterID string, natsSrvAddr string, msg *api.InstantMessage) error {
