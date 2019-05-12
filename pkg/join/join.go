@@ -35,7 +35,8 @@ func Handle(sig *JoinPayload) error {
 	userID := ""
 	ctx, _ := context.WithCancel(context.Background())
 
-	sub := nats.MakeSubscriber(ctx, sig.UserID,"test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID))
+	//TODO : fixit
+	sub := nats.MakeSubscriber(ctx, sig.UserID,"test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID,"fixit"))
 	go sub()
 	return nil
 }
