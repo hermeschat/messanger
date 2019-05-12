@@ -62,5 +62,4 @@
     deliver to user with grpc
 
 
-//user discovery event handler check if not already subscribed to channel subscribe
 //new message event handler push kon be user ama che goone ??????

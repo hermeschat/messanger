@@ -1,13 +1,13 @@
 syntax = "proto3";
 
 service Hermes {
-    rpc KeepAlive (Message) returns (Response);
+    rpc KeepAlive (Message) returns (Empty);
     rpc NewMessage (Message) returns(Empty);
-    rpc Deliverd (Message) returns (Empty);
+    rpc Deliverd (DeliveredSignal) returns (Empty);
     rpc CreateSession (CreateSessionRequest) returns (Empty);
-    rpc DestroySession(DestroySessionRequest) returns (Response);
+    rpc DestroySession(DestroySessionRequest) returns (Empty);
     rpc Join(JoinSignal) returns(Empty);
-    rpc Read(Message) returns(Empty);
+    rpc Read(ReadSignal) returns(Empty);
 }
 message ReadSignal {
     string messageID = 1;

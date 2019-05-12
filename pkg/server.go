@@ -17,11 +17,11 @@ type HermesServer struct {
 	NatsSrvAddr string
 }
 
-func (h *HermesServer) KeepAlive(context.Context, *api.Message) (*api.Response, error) {
+func (h HermesServer) KeepAlive(context.Context, *api.Message) (*api.Empty, error) {
 	panic("implement me")
 }
 
-func (h *HermesServer) NewMessage(ctx context.Context, message *api.Message) (*api.Empty, error) {
+func (h HermesServer) NewMessage(ctx context.Context, message *api.Message) (*api.Empty, error) {
 	nm := &newMessage.NewMessage{
 		Body:message.Body,
 		From:message.From,
@@ -39,7 +39,7 @@ func (h *HermesServer) NewMessage(ctx context.Context, message *api.Message) (*a
 	return &api.Empty{Status:"200"}, nil
 }
 
-func (h *HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.Empty, error) {
+func (h HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.Empty, error) {
 	jp := &join.JoinPayload{
 		UserID:"", //should get from jwt
 		SessionId: message.SessionId,
@@ -51,7 +51,7 @@ func (h *HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.
 	return &api.Empty{Status:"200"}, nil
 }
 
-func (h *HermesServer) Deliverd(ctx context.Context, message *api.DeliveredSignal) (*api.Empty, error) {
+func (h HermesServer) Deliverd(ctx context.Context, message *api.DeliveredSignal) (*api.Empty, error) {
 	ds := &delivered.DeliverdSignal{
 		MessageID:message.MessageID,
 		ChannelID:message.ChannelID,
@@ -62,7 +62,7 @@ func (h *HermesServer) Deliverd(ctx context.Context, message *api.DeliveredSigna
 	}
 	return &api.Empty{Status:"200"}, nil
 }
-func (h *HermesServer) Read(ctx context.Context, message *api.ReadSignal) (*api.Empty, error) {
+func (h HermesServer) Read(ctx context.Context, message *api.ReadSignal) (*api.Empty, error) {
 	rs := &read.ReadSignal{
 		MessageID: message.MessageID,
 		ChannelID:message.ChannelID,
@@ -73,21 +73,21 @@ func (h *HermesServer) Read(ctx context.Context, message *api.ReadSignal) (*api.
 	}
 	return &api.Empty{Status:"200"}, nil
 }
-func (h *HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
+func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.Empty, error) {
 	cs := &session.CreateSession{
 		UserIP: "", // az ye jayi
 		UserID:"", //from jwt
 		ClientVersion:req.ClientVersion,
 		Node:req.Node,
 	}
-	s, err := session.Create(cs)
+	_, err := session.Create(cs)
 	if err != nil {
-		return &api.CreateSessionResponse{}, errors.Wrap(err, "error in creating session")
+		return &api.Empty{Status:"error"}, errors.Wrap(err, "error in creating session")
 	}
-	return &api.CreateSessionResponse{SessionID:s.SessionID}, nil
+	return &api.Empty{Status:"OK"}, nil
 }
 
-func (h *HermesServer) DestroySession(context.Context, *api.DestroySessionRequest) (*api.Message, error) {
+func (h HermesServer) DestroySession(context.Context, *api.DestroySessionRequest) (*api.Empty, error) {
 	panic("implement me")
 }
 
