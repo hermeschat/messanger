@@ -10,5 +10,5 @@ services:
     environment:
      - SQLHost=percona
     ports:
-     - "32661:9044"
+     - "32901:9044"
     command: ["/app"]
