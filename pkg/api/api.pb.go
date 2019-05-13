@@ -71,6 +71,116 @@ func (m *ReadSignal) GetChannelID() string {
 	return ""
 }
 
+type Event struct {
+	// Types that are valid to be assigned to Event:
+	//	*Event_Dlv
+	//	*Event_Read
+	//	*Event_Keep
+	//	*Event_DestorySess
+	Event                isEvent_Event `protobuf_oneof:"event"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
+}
+
+func (m *Event) Reset()         { *m = Event{} }
+func (m *Event) String() string { return proto.CompactTextString(m) }
+func (*Event) ProtoMessage()    {}
+func (*Event) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e50ccc58c7b575d, []int{1}
+}
+
+func (m *Event) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Event.Unmarshal(m, b)
+}
+func (m *Event) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Event.Marshal(b, m, deterministic)
+}
+func (m *Event) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Event.Merge(m, src)
+}
+func (m *Event) XXX_Size() int {
+	return xxx_messageInfo_Event.Size(m)
+}
+func (m *Event) XXX_DiscardUnknown() {
+	xxx_messageInfo_Event.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Event proto.InternalMessageInfo
+
+type isEvent_Event interface {
+	isEvent_Event()
+}
+
+type Event_Dlv struct {
+	Dlv *DeliveredSignal `protobuf:"bytes,1,opt,name=dlv,proto3,oneof"`
+}
+
+type Event_Read struct {
+	Read *ReadSignal `protobuf:"bytes,2,opt,name=read,proto3,oneof"`
+}
+
+type Event_Keep struct {
+	Keep *KeepAliveSignal `protobuf:"bytes,3,opt,name=keep,proto3,oneof"`
+}
+
+type Event_DestorySess struct {
+	DestorySess *DestroySessionRequest `protobuf:"bytes,4,opt,name=destorySess,proto3,oneof"`
+}
+
+func (*Event_Dlv) isEvent_Event() {}
+
+func (*Event_Read) isEvent_Event() {}
+
+func (*Event_Keep) isEvent_Event() {}
+
+func (*Event_DestorySess) isEvent_Event() {}
+
+func (m *Event) GetEvent() isEvent_Event {
+	if m != nil {
+		return m.Event
+	}
+	return nil
+}
+
+func (m *Event) GetDlv() *DeliveredSignal {
+	if x, ok := m.GetEvent().(*Event_Dlv); ok {
+		return x.Dlv
+	}
+	return nil
+}
+
+func (m *Event) GetRead() *ReadSignal {
+	if x, ok := m.GetEvent().(*Event_Read); ok {
+		return x.Read
+	}
+	return nil
+}
+
+func (m *Event) GetKeep() *KeepAliveSignal {
+	if x, ok := m.GetEvent().(*Event_Keep); ok {
+		return x.Keep
+	}
+	return nil
+}
+
+func (m *Event) GetDestorySess() *DestroySessionRequest {
+	if x, ok := m.GetEvent().(*Event_DestorySess); ok {
+		return x.DestorySess
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Event) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Event_Dlv)(nil),
+		(*Event_Read)(nil),
+		(*Event_Keep)(nil),
+		(*Event_DestorySess)(nil),
+	}
+}
+
 type Empty struct {
 	Status               string   `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -82,7 +192,7 @@ func (m *Empty) Reset()         { *m = Empty{} }
 func (m *Empty) String() string { return proto.CompactTextString(m) }
 func (*Empty) ProtoMessage()    {}
 func (*Empty) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{1}
+	return fileDescriptor_7e50ccc58c7b575d, []int{2}
 }
 
 func (m *Empty) XXX_Unmarshal(b []byte) error {
@@ -110,6 +220,37 @@ func (m *Empty) GetStatus() string {
 	return ""
 }
 
+type KeepAliveSignal struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *KeepAliveSignal) Reset()         { *m = KeepAliveSignal{} }
+func (m *KeepAliveSignal) String() string { return proto.CompactTextString(m) }
+func (*KeepAliveSignal) ProtoMessage()    {}
+func (*KeepAliveSignal) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7e50ccc58c7b575d, []int{3}
+}
+
+func (m *KeepAliveSignal) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_KeepAliveSignal.Unmarshal(m, b)
+}
+func (m *KeepAliveSignal) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_KeepAliveSignal.Marshal(b, m, deterministic)
+}
+func (m *KeepAliveSignal) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_KeepAliveSignal.Merge(m, src)
+}
+func (m *KeepAliveSignal) XXX_Size() int {
+	return xxx_messageInfo_KeepAliveSignal.Size(m)
+}
+func (m *KeepAliveSignal) XXX_DiscardUnknown() {
+	xxx_messageInfo_KeepAliveSignal.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_KeepAliveSignal proto.InternalMessageInfo
+
 type DeliveredSignal struct {
 	MessageID            string   `protobuf:"bytes,1,opt,name=messageID,proto3" json:"messageID,omitempty"`
 	ChannelID            string   `protobuf:"bytes,2,opt,name=channelID,proto3" json:"channelID,omitempty"`
@@ -122,7 +263,7 @@ func (m *DeliveredSignal) Reset()         { *m = DeliveredSignal{} }
 func (m *DeliveredSignal) String() string { return proto.CompactTextString(m) }
 func (*DeliveredSignal) ProtoMessage()    {}
 func (*DeliveredSignal) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{2}
+	return fileDescriptor_7e50ccc58c7b575d, []int{4}
 }
 
 func (m *DeliveredSignal) XXX_Unmarshal(b []byte) error {
@@ -168,7 +309,7 @@ func (m *JoinSignal) Reset()         { *m = JoinSignal{} }
 func (m *JoinSignal) String() string { return proto.CompactTextString(m) }
 func (*JoinSignal) ProtoMessage()    {}
 func (*JoinSignal) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{3}
+	return fileDescriptor_7e50ccc58c7b575d, []int{5}
 }
 
 func (m *JoinSignal) XXX_Unmarshal(b []byte) error {
@@ -207,7 +348,7 @@ func (m *DestroySessionRequest) Reset()         { *m = DestroySessionRequest{} }
 func (m *DestroySessionRequest) String() string { return proto.CompactTextString(m) }
 func (*DestroySessionRequest) ProtoMessage()    {}
 func (*DestroySessionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{4}
+	return fileDescriptor_7e50ccc58c7b575d, []int{6}
 }
 
 func (m *DestroySessionRequest) XXX_Unmarshal(b []byte) error {
@@ -250,7 +391,7 @@ func (m *Message) Reset()         { *m = Message{} }
 func (m *Message) String() string { return proto.CompactTextString(m) }
 func (*Message) ProtoMessage()    {}
 func (*Message) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{5}
+	return fileDescriptor_7e50ccc58c7b575d, []int{7}
 }
 
 func (m *Message) XXX_Unmarshal(b []byte) error {
@@ -324,7 +465,7 @@ func (m *GetOrCreateSessionResponse) Reset()         { *m = GetOrCreateSessionRe
 func (m *GetOrCreateSessionResponse) String() string { return proto.CompactTextString(m) }
 func (*GetOrCreateSessionResponse) ProtoMessage()    {}
 func (*GetOrCreateSessionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{6}
+	return fileDescriptor_7e50ccc58c7b575d, []int{8}
 }
 
 func (m *GetOrCreateSessionResponse) XXX_Unmarshal(b []byte) error {
@@ -417,7 +558,7 @@ func (m *CreateSessionRequest) Reset()         { *m = CreateSessionRequest{} }
 func (m *CreateSessionRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateSessionRequest) ProtoMessage()    {}
 func (*CreateSessionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{7}
+	return fileDescriptor_7e50ccc58c7b575d, []int{9}
 }
 
 func (m *CreateSessionRequest) XXX_Unmarshal(b []byte) error {
@@ -491,7 +632,7 @@ func (m *CreateSessionResponse) Reset()         { *m = CreateSessionResponse{} }
 func (m *CreateSessionResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateSessionResponse) ProtoMessage()    {}
 func (*CreateSessionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{8}
+	return fileDescriptor_7e50ccc58c7b575d, []int{10}
 }
 
 func (m *CreateSessionResponse) XXX_Unmarshal(b []byte) error {
@@ -531,7 +672,7 @@ func (m *Response) Reset()         { *m = Response{} }
 func (m *Response) String() string { return proto.CompactTextString(m) }
 func (*Response) ProtoMessage()    {}
 func (*Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{9}
+	return fileDescriptor_7e50ccc58c7b575d, []int{11}
 }
 
 func (m *Response) XXX_Unmarshal(b []byte) error {
@@ -578,7 +719,7 @@ func (m *UserDiscoveryEvent) Reset()         { *m = UserDiscoveryEvent{} }
 func (m *UserDiscoveryEvent) String() string { return proto.CompactTextString(m) }
 func (*UserDiscoveryEvent) ProtoMessage()    {}
 func (*UserDiscoveryEvent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7e50ccc58c7b575d, []int{10}
+	return fileDescriptor_7e50ccc58c7b575d, []int{12}
 }
 
 func (m *UserDiscoveryEvent) XXX_Unmarshal(b []byte) error {
@@ -615,7 +756,9 @@ func (m *UserDiscoveryEvent) GetChannelID() string {
 
 func init() {
 	proto.RegisterType((*ReadSignal)(nil), "ReadSignal")
+	proto.RegisterType((*Event)(nil), "Event")
 	proto.RegisterType((*Empty)(nil), "Empty")
+	proto.RegisterType((*KeepAliveSignal)(nil), "KeepAliveSignal")
 	proto.RegisterType((*DeliveredSignal)(nil), "DeliveredSignal")
 	proto.RegisterType((*JoinSignal)(nil), "JoinSignal")
 	proto.RegisterType((*DestroySessionRequest)(nil), "DestroySessionRequest")
@@ -630,42 +773,46 @@ func init() {
 func init() { proto.RegisterFile("pkg/api/api.proto", fileDescriptor_7e50ccc58c7b575d) }
 
 var fileDescriptor_7e50ccc58c7b575d = []byte{
-	// 550 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0x56, 0xd2, 0xc4, 0x49, 0x26, 0xb4, 0xc0, 0xaa, 0xad, 0xac, 0x52, 0x4a, 0xb5, 0xea, 0x01,
-	0x71, 0x30, 0x88, 0x9f, 0x07, 0x88, 0xe2, 0x8a, 0xa6, 0xd0, 0x82, 0x12, 0xe0, 0xee, 0x26, 0x43,
-	0xb0, 0x48, 0xbc, 0x66, 0x77, 0x1b, 0xe4, 0x03, 0x0f, 0xc0, 0x4b, 0xf1, 0x60, 0x9c, 0xd0, 0x78,
-	0x37, 0xeb, 0x1f, 0x1a, 0xb8, 0xf4, 0x10, 0x69, 0xe6, 0x9b, 0x1f, 0x7f, 0xdf, 0x4e, 0x66, 0xe0,
-	0x7e, 0xfa, 0x75, 0xfe, 0x34, 0x4a, 0x63, 0xfa, 0x05, 0xa9, 0x14, 0x5a, 0xf0, 0x33, 0x80, 0x31,
-	0x46, 0xb3, 0x49, 0x3c, 0x4f, 0xa2, 0x05, 0x3b, 0x84, 0xde, 0x12, 0x95, 0x8a, 0xe6, 0x38, 0x0a,
-	0xfd, 0xc6, 0x71, 0xe3, 0x71, 0x6f, 0x5c, 0x00, 0x14, 0x9d, 0x7e, 0x89, 0x92, 0x04, 0x17, 0xa3,
-	0xd0, 0x6f, 0x9a, 0xa8, 0x03, 0xf8, 0x23, 0x68, 0x9f, 0x2e, 0x53, 0x9d, 0xb1, 0x7d, 0xf0, 0x94,
-	0x8e, 0xf4, 0xb5, 0xb2, 0x1d, 0xac, 0xc7, 0x2f, 0xe0, 0x6e, 0x88, 0x8b, 0x78, 0x85, 0x12, 0x6f,
-	0xe3, 0x7b, 0x4f, 0x00, 0xce, 0x45, 0x9c, 0x14, 0x9d, 0x14, 0x2a, 0x15, 0x8b, 0x64, 0x34, 0x5b,
-	0x77, 0x72, 0x00, 0x7f, 0x05, 0x7b, 0x21, 0x2a, 0x2d, 0x45, 0x36, 0x31, 0xd8, 0x18, 0xbf, 0x5d,
-	0xa3, 0xd2, 0x54, 0x36, 0xa9, 0x97, 0x39, 0x80, 0xff, 0x80, 0xce, 0x85, 0x61, 0xc3, 0x8e, 0xa1,
-	0x6f, 0x89, 0x7d, 0xc8, 0x52, 0xb4, 0xa9, 0x65, 0x88, 0x31, 0x68, 0x7d, 0x96, 0x62, 0x69, 0x89,
-	0xe6, 0x36, 0xf3, 0xa1, 0x63, 0x09, 0xfb, 0x5b, 0x39, 0xbc, 0x76, 0xd9, 0x0e, 0x34, 0xb5, 0xf0,
-	0x5b, 0x39, 0xd8, 0xd4, 0x82, 0xaa, 0xaf, 0xc4, 0x2c, 0xf3, 0xdb, 0xa6, 0x9a, 0x6c, 0xfe, 0xbb,
-	0x01, 0x07, 0xaf, 0x51, 0xbf, 0x93, 0x43, 0x89, 0x91, 0x46, 0x47, 0x5d, 0xa5, 0x22, 0x51, 0x58,
-	0xe6, 0x1e, 0xd6, 0xb9, 0x87, 0x8c, 0xc3, 0x9d, 0xb7, 0x91, 0xd2, 0x83, 0xa9, 0x8e, 0x57, 0xb1,
-	0xce, 0x2c, 0xad, 0x0a, 0x46, 0x93, 0xfa, 0xa8, 0x50, 0x8e, 0x42, 0xcb, 0xce, 0x7a, 0x0e, 0x7f,
-	0x6f, 0x09, 0x5a, 0x8f, 0xbe, 0x48, 0xd6, 0x60, 0x8e, 0x89, 0xb6, 0x4c, 0x0b, 0x80, 0x9d, 0xc0,
-	0xf6, 0x70, 0x11, 0x63, 0xa2, 0x3f, 0xa1, 0x24, 0x12, 0xbe, 0x97, 0x67, 0x54, 0x41, 0x12, 0x7a,
-	0x29, 0x66, 0xe8, 0x77, 0x8c, 0x50, 0xb2, 0x09, 0x1b, 0x12, 0xd6, 0x35, 0x18, 0xd9, 0xfc, 0x57,
-	0x03, 0x76, 0x6b, 0xba, 0xcd, 0xc8, 0x8e, 0x00, 0x4c, 0xc7, 0xd2, 0x20, 0x4a, 0x48, 0x49, 0x54,
-	0x73, 0x83, 0xa8, 0xad, 0xcd, 0xa2, 0x5a, 0xff, 0x15, 0xd5, 0xfe, 0x97, 0x28, 0xaf, 0x10, 0x45,
-	0xff, 0xb9, 0x8d, 0x73, 0x53, 0xf5, 0xb9, 0x39, 0x80, 0xbf, 0x84, 0xae, 0xcb, 0x64, 0xd0, 0x9a,
-	0x52, 0x5b, 0x93, 0x94, 0xdb, 0x6c, 0x17, 0xda, 0x28, 0xa5, 0x90, 0x56, 0x9d, 0x71, 0xf8, 0x39,
-	0x30, 0xe2, 0x1c, 0xc6, 0x6a, 0x2a, 0x56, 0x28, 0xb3, 0xd3, 0x15, 0x91, 0x2f, 0x9e, 0xa2, 0x51,
-	0x79, 0x8a, 0x43, 0xe8, 0x0d, 0xeb, 0x8b, 0xe5, 0x80, 0xe7, 0x3f, 0x9b, 0xe0, 0x9d, 0xa1, 0x5c,
-	0xa2, 0x62, 0x0f, 0xa1, 0xf7, 0x06, 0x31, 0x1d, 0xd0, 0xd6, 0xb2, 0x6e, 0x60, 0x97, 0xe1, 0xc0,
-	0x0b, 0xcc, 0xa6, 0x1f, 0x01, 0x5c, 0xe2, 0xf7, 0xf5, 0x8a, 0xfc, 0x1d, 0x3f, 0x81, 0xae, 0xdd,
-	0xf8, 0x19, 0xbb, 0x17, 0xd4, 0x96, 0xdf, 0x65, 0x05, 0xb0, 0x5d, 0x79, 0x28, 0xb6, 0x17, 0xdc,
-	0x34, 0x78, 0x97, 0xff, 0x0c, 0x76, 0xaa, 0xcb, 0xcc, 0xf6, 0x83, 0x1b, 0xb7, 0xdb, 0x55, 0x3c,
-	0x80, 0x16, 0x9d, 0x0a, 0xd6, 0x0f, 0x8a, 0x8b, 0x51, 0x0e, 0xd2, 0x05, 0x64, 0xfd, 0xa0, 0x38,
-	0x84, 0xeb, 0xe0, 0x95, 0x97, 0x5f, 0xc9, 0x17, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xa9, 0x73,
-	0xf0, 0x77, 0x3a, 0x05, 0x00, 0x00,
+	// 622 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xae, 0x53, 0xc7, 0xa9, 0xc7, 0x94, 0xd2, 0x55, 0x5b, 0x59, 0xa5, 0x40, 0x59, 0x55, 0xa8,
+	0xe2, 0x60, 0xa4, 0x02, 0x17, 0x0e, 0x48, 0x6d, 0x5c, 0x91, 0x14, 0x5a, 0x90, 0x0b, 0xdc, 0xdd,
+	0x78, 0x1a, 0xac, 0x26, 0x5e, 0xb3, 0xbb, 0x0d, 0xf2, 0x81, 0xb7, 0xe1, 0x35, 0xe0, 0xc1, 0x38,
+	0xa1, 0x5d, 0x6f, 0x6c, 0xc7, 0x6a, 0xe1, 0xc0, 0x21, 0xd2, 0xcc, 0x37, 0x3f, 0xfe, 0xbe, 0x99,
+	0xcc, 0xc2, 0x7a, 0x7e, 0x35, 0x7e, 0x16, 0xe7, 0xa9, 0xfa, 0x05, 0x39, 0x67, 0x92, 0xd1, 0x01,
+	0x40, 0x84, 0x71, 0x72, 0x9e, 0x8e, 0xb3, 0x78, 0x42, 0x76, 0xc0, 0x9d, 0xa2, 0x10, 0xf1, 0x18,
+	0x87, 0xa1, 0x6f, 0xed, 0x5a, 0xfb, 0x6e, 0x54, 0x03, 0x2a, 0x3a, 0xfa, 0x12, 0x67, 0x19, 0x4e,
+	0x86, 0xa1, 0xdf, 0x29, 0xa3, 0x15, 0x40, 0x7f, 0x5a, 0xd0, 0x3d, 0x9e, 0x61, 0x26, 0xc9, 0x1e,
+	0x2c, 0x27, 0x93, 0x99, 0xae, 0xf7, 0x0e, 0xee, 0x05, 0x21, 0x4e, 0xd2, 0x19, 0x72, 0x34, 0x1f,
+	0x19, 0x2c, 0x45, 0x2a, 0x4c, 0x1e, 0x83, 0xcd, 0x31, 0x4e, 0x74, 0x23, 0xef, 0xc0, 0x0b, 0x6a,
+	0x1a, 0x83, 0xa5, 0x48, 0x87, 0xc8, 0x13, 0xb0, 0xaf, 0x10, 0x73, 0x7f, 0xd9, 0x74, 0x7a, 0x8b,
+	0x98, 0x1f, 0xaa, 0x66, 0x75, 0x9e, 0x8a, 0x93, 0x57, 0xe0, 0x25, 0x28, 0x24, 0xe3, 0xc5, 0x39,
+	0x0a, 0xe1, 0xdb, 0x3a, 0x7d, 0x2b, 0x08, 0x51, 0x48, 0xce, 0x34, 0x96, 0xb2, 0x2c, 0xc2, 0xaf,
+	0xd7, 0x28, 0xe4, 0x60, 0x29, 0x6a, 0x26, 0x1f, 0xf5, 0xa0, 0x8b, 0x8a, 0x35, 0x7d, 0x04, 0xdd,
+	0xe3, 0x69, 0x2e, 0x0b, 0xb2, 0x05, 0x8e, 0x90, 0xb1, 0xbc, 0x16, 0x66, 0x02, 0xc6, 0xa3, 0xeb,
+	0xb0, 0xd6, 0x22, 0x40, 0x4f, 0x61, 0xad, 0xa5, 0xee, 0xbf, 0x46, 0xf8, 0x14, 0xe0, 0x84, 0xa5,
+	0x59, 0xdd, 0x49, 0x94, 0xd4, 0x87, 0xc9, 0xbc, 0x53, 0x05, 0xd0, 0x97, 0xb0, 0x79, 0xa3, 0x3e,
+	0x55, 0x76, 0xde, 0x2e, 0xab, 0x00, 0xfa, 0x1d, 0x7a, 0xa7, 0x25, 0x1b, 0xb2, 0x0b, 0x9e, 0x21,
+	0xf6, 0xb1, 0xc8, 0xd1, 0xa4, 0x36, 0x21, 0x42, 0xc0, 0xbe, 0xe4, 0x6c, 0x6a, 0x88, 0x6a, 0x9b,
+	0xf8, 0xd0, 0x33, 0x84, 0xf5, 0x5a, 0xdc, 0x68, 0xee, 0x92, 0xbb, 0xd0, 0x91, 0x4c, 0x0f, 0xdf,
+	0x8d, 0x3a, 0x92, 0xa9, 0xea, 0x0b, 0x96, 0x14, 0x7e, 0xb7, 0xac, 0x56, 0x36, 0xfd, 0x6d, 0xc1,
+	0xf6, 0x1b, 0x94, 0xef, 0x79, 0x9f, 0x63, 0x2c, 0xb1, 0xa2, 0x2e, 0x72, 0x96, 0x09, 0x6c, 0x72,
+	0x0f, 0xdb, 0xdc, 0x43, 0x42, 0xe1, 0xce, 0xbb, 0x58, 0xc8, 0xc3, 0x91, 0x4c, 0x67, 0xa9, 0x2c,
+	0x0c, 0xad, 0x05, 0x4c, 0x2d, 0xef, 0x93, 0x40, 0x3e, 0x0c, 0x0d, 0x3b, 0xe3, 0x55, 0xf8, 0x07,
+	0x43, 0xd0, 0x78, 0xea, 0x8b, 0xca, 0x3a, 0x1c, 0x63, 0x26, 0x0d, 0xd3, 0x1a, 0x20, 0x7b, 0xb0,
+	0xda, 0x9f, 0xa4, 0x98, 0xc9, 0xcf, 0xc8, 0x15, 0x09, 0xdf, 0xd1, 0x19, 0x8b, 0xa0, 0x12, 0x7a,
+	0xc6, 0x12, 0xf4, 0x7b, 0xa5, 0x50, 0x65, 0x2b, 0xac, 0xaf, 0xb0, 0x95, 0x12, 0x53, 0x36, 0xfd,
+	0x65, 0xc1, 0x46, 0x4b, 0x77, 0xb9, 0xb2, 0x87, 0x00, 0x65, 0xc7, 0xc6, 0x22, 0x1a, 0x48, 0x43,
+	0x54, 0xe7, 0x16, 0x51, 0xcb, 0xb7, 0x8b, 0xb2, 0xff, 0x29, 0xaa, 0xfb, 0x37, 0x51, 0x4e, 0x2d,
+	0x4a, 0xfd, 0xe7, 0x6e, 0xdd, 0x9b, 0x68, 0xef, 0xad, 0x02, 0xe8, 0x0b, 0x58, 0xa9, 0x32, 0x09,
+	0xd8, 0x23, 0xd5, 0xb6, 0x4c, 0xd2, 0x36, 0xd9, 0x80, 0x2e, 0x72, 0xce, 0xb8, 0x51, 0x57, 0x3a,
+	0xf4, 0x04, 0x88, 0xe2, 0x1c, 0xa6, 0x62, 0xc4, 0x66, 0xc8, 0x8b, 0xf2, 0x6d, 0xa9, 0x47, 0x61,
+	0x2d, 0x8c, 0x62, 0x07, 0xdc, 0x7e, 0xfb, 0xb0, 0x2a, 0xe0, 0xe0, 0x87, 0x05, 0xce, 0x00, 0xf9,
+	0x14, 0x05, 0x79, 0x00, 0xae, 0xee, 0x74, 0x74, 0x7d, 0x79, 0x49, 0x9c, 0x40, 0xdb, 0xdb, 0x4e,
+	0xa0, 0x4f, 0x7f, 0xdf, 0x52, 0xab, 0x38, 0xc3, 0x6f, 0xf3, 0x13, 0x59, 0x09, 0x8c, 0x35, 0xcf,
+	0x20, 0xaf, 0x61, 0x75, 0x61, 0x04, 0x64, 0x33, 0xb8, 0x69, 0xa5, 0xdb, 0x5b, 0xc1, 0xcd, 0x93,
+	0xba, 0x0f, 0xb6, 0x3a, 0x71, 0xe2, 0x05, 0xf5, 0xa5, 0xcf, 0x9b, 0x5f, 0x38, 0xfa, 0x4d, 0x7e,
+	0xfe, 0x27, 0x00, 0x00, 0xff, 0xff, 0x90, 0x05, 0x4f, 0x42, 0xa8, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -680,13 +827,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type HermesClient interface {
-	KeepAlive(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error)
+	EventBuff(ctx context.Context, opts ...grpc.CallOption) (Hermes_EventBuffClient, error)
 	NewMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error)
-	Deliverd(ctx context.Context, in *DeliveredSignal, opts ...grpc.CallOption) (*Empty, error)
-	CreateSession(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Empty, error)
-	DestroySession(ctx context.Context, in *DestroySessionRequest, opts ...grpc.CallOption) (*Empty, error)
+	CreateSession(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*CreateSessionResponse, error)
 	Join(ctx context.Context, in *JoinSignal, opts ...grpc.CallOption) (*Empty, error)
-	Read(ctx context.Context, in *ReadSignal, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type hermesClient struct {
@@ -697,13 +841,38 @@ func NewHermesClient(cc *grpc.ClientConn) HermesClient {
 	return &hermesClient{cc}
 }
 
-func (c *hermesClient) KeepAlive(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Hermes/KeepAlive", in, out, opts...)
+func (c *hermesClient) EventBuff(ctx context.Context, opts ...grpc.CallOption) (Hermes_EventBuffClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Hermes_serviceDesc.Streams[0], "/Hermes/EventBuff", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &hermesEventBuffClient{stream}
+	return x, nil
+}
+
+type Hermes_EventBuffClient interface {
+	Send(*Event) error
+	CloseAndRecv() (*Empty, error)
+	grpc.ClientStream
+}
+
+type hermesEventBuffClient struct {
+	grpc.ClientStream
+}
+
+func (x *hermesEventBuffClient) Send(m *Event) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *hermesEventBuffClient) CloseAndRecv() (*Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *hermesClient) NewMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error) {
@@ -715,27 +884,9 @@ func (c *hermesClient) NewMessage(ctx context.Context, in *Message, opts ...grpc
 	return out, nil
 }
 
-func (c *hermesClient) Deliverd(ctx context.Context, in *DeliveredSignal, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Hermes/Deliverd", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hermesClient) CreateSession(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *hermesClient) CreateSession(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*CreateSessionResponse, error) {
+	out := new(CreateSessionResponse)
 	err := c.cc.Invoke(ctx, "/Hermes/CreateSession", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *hermesClient) DestroySession(ctx context.Context, in *DestroySessionRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Hermes/DestroySession", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -751,72 +902,59 @@ func (c *hermesClient) Join(ctx context.Context, in *JoinSignal, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *hermesClient) Read(ctx context.Context, in *ReadSignal, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/Hermes/Read", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // HermesServer is the server API for Hermes service.
 type HermesServer interface {
-	KeepAlive(context.Context, *Message) (*Empty, error)
+	EventBuff(Hermes_EventBuffServer) error
 	NewMessage(context.Context, *Message) (*Empty, error)
-	Deliverd(context.Context, *DeliveredSignal) (*Empty, error)
-	CreateSession(context.Context, *CreateSessionRequest) (*Empty, error)
-	DestroySession(context.Context, *DestroySessionRequest) (*Empty, error)
+	CreateSession(context.Context, *CreateSessionRequest) (*CreateSessionResponse, error)
 	Join(context.Context, *JoinSignal) (*Empty, error)
-	Read(context.Context, *ReadSignal) (*Empty, error)
 }
 
 // UnimplementedHermesServer can be embedded to have forward compatible implementations.
 type UnimplementedHermesServer struct {
 }
 
-func (*UnimplementedHermesServer) KeepAlive(ctx context.Context, req *Message) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method KeepAlive not implemented")
+func (*UnimplementedHermesServer) EventBuff(srv Hermes_EventBuffServer) error {
+	return status.Errorf(codes.Unimplemented, "method EventBuff not implemented")
 }
 func (*UnimplementedHermesServer) NewMessage(ctx context.Context, req *Message) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NewMessage not implemented")
 }
-func (*UnimplementedHermesServer) Deliverd(ctx context.Context, req *DeliveredSignal) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Deliverd not implemented")
-}
-func (*UnimplementedHermesServer) CreateSession(ctx context.Context, req *CreateSessionRequest) (*Empty, error) {
+func (*UnimplementedHermesServer) CreateSession(ctx context.Context, req *CreateSessionRequest) (*CreateSessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSession not implemented")
-}
-func (*UnimplementedHermesServer) DestroySession(ctx context.Context, req *DestroySessionRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DestroySession not implemented")
 }
 func (*UnimplementedHermesServer) Join(ctx context.Context, req *JoinSignal) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Join not implemented")
-}
-func (*UnimplementedHermesServer) Read(ctx context.Context, req *ReadSignal) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Read not implemented")
 }
 
 func RegisterHermesServer(s *grpc.Server, srv HermesServer) {
 	s.RegisterService(&_Hermes_serviceDesc, srv)
 }
 
-func _Hermes_KeepAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
-	if err := dec(in); err != nil {
+func _Hermes_EventBuff_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HermesServer).EventBuff(&hermesEventBuffServer{stream})
+}
+
+type Hermes_EventBuffServer interface {
+	SendAndClose(*Empty) error
+	Recv() (*Event, error)
+	grpc.ServerStream
+}
+
+type hermesEventBuffServer struct {
+	grpc.ServerStream
+}
+
+func (x *hermesEventBuffServer) SendAndClose(m *Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *hermesEventBuffServer) Recv() (*Event, error) {
+	m := new(Event)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(HermesServer).KeepAlive(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Hermes/KeepAlive",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermesServer).KeepAlive(ctx, req.(*Message))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 func _Hermes_NewMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -833,24 +971,6 @@ func _Hermes_NewMessage_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HermesServer).NewMessage(ctx, req.(*Message))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Hermes_Deliverd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeliveredSignal)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HermesServer).Deliverd(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Hermes/Deliverd",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermesServer).Deliverd(ctx, req.(*DeliveredSignal))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -873,24 +993,6 @@ func _Hermes_CreateSession_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Hermes_DestroySession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DestroySessionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HermesServer).DestroySession(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Hermes/DestroySession",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermesServer).DestroySession(ctx, req.(*DestroySessionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Hermes_Join_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(JoinSignal)
 	if err := dec(in); err != nil {
@@ -909,57 +1011,29 @@ func _Hermes_Join_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Hermes_Read_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReadSignal)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HermesServer).Read(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/Hermes/Read",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HermesServer).Read(ctx, req.(*ReadSignal))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Hermes_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "Hermes",
 	HandlerType: (*HermesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "KeepAlive",
-			Handler:    _Hermes_KeepAlive_Handler,
-		},
-		{
 			MethodName: "NewMessage",
 			Handler:    _Hermes_NewMessage_Handler,
-		},
-		{
-			MethodName: "Deliverd",
-			Handler:    _Hermes_Deliverd_Handler,
 		},
 		{
 			MethodName: "CreateSession",
 			Handler:    _Hermes_CreateSession_Handler,
 		},
 		{
-			MethodName: "DestroySession",
-			Handler:    _Hermes_DestroySession_Handler,
-		},
-		{
 			MethodName: "Join",
 			Handler:    _Hermes_Join_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "Read",
-			Handler:    _Hermes_Read_Handler,
+			StreamName:    "EventBuff",
+			Handler:       _Hermes_EventBuff_Handler,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "pkg/api/api.proto",
 }

@@ -1,21 +1,32 @@
 syntax = "proto3";
 
 service Hermes {
-    rpc KeepAlive (Message) returns (Empty);
-    rpc NewMessage (Message) returns(Empty);
-    rpc Deliverd (DeliveredSignal) returns (Empty);
-    rpc CreateSession (CreateSessionRequest) returns (Empty);
-    rpc DestroySession(DestroySessionRequest) returns (Empty);
+    rpc EventBuff(stream Event) returns(Empty);
+    rpc NewMessage (Message) returns (Empty);
+    rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc Join(JoinSignal) returns(Empty);
-    rpc Read(ReadSignal) returns(Empty);
+    // rpc Read(ReadSignal) returns(Empty);
+    // rpc KeepAlive (KeepAliveSignal) returns (Empty);
+    // rpc Deliverd (DeliveredSignal) returns (Empty);
+    // rpc DestroySession(DestroySessionRequest) returns (Empty);
 }
 message ReadSignal {
     string messageID = 1;
     string channelID = 2;
 }
-
+message Event {
+    oneof event {
+        DeliveredSignal dlv = 1;
+        ReadSignal read = 2;
+        KeepAliveSignal keep = 3;
+        DestroySessionRequest destorySess = 4;
+    }
+}
 message Empty{
     string status = 1;
+}
+message KeepAliveSignal {
+
 }
 message DeliveredSignal {
     string messageID = 1;
