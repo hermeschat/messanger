@@ -34,13 +34,13 @@ func Count(
 	opts ...*options.CountOptions,
 ) (int64, error) {
 
-	ss, err := topo.SelectServer(ctx, selector)
+	ss, err := topo.SelectServerLegacy(ctx, selector)
 	if err != nil {
 		return 0, err
 	}
 
 	desc := ss.Description()
-	conn, err := ss.Connection(ctx)
+	conn, err := ss.ConnectionLegacy(ctx)
 	if err != nil {
 		return 0, err
 	}

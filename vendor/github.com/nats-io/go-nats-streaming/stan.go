@@ -50,17 +50,39 @@ const (
 // Conn represents a connection to the NATS Streaming subsystem. It can Publish and
 // Subscribe to messages within the NATS Streaming cluster.
 type Conn interface {
-	// Publish
+	// Publish will publish to the cluster and wait for an ACK.
 	Publish(subject string, data []byte) error
+
+	// PublishAsync will publish to the cluster and asynchronously process
+	// the ACK or error state. It will return the GUID for the message being sent.
 	PublishAsync(subject string, data []byte, ah AckHandler) (string, error)
 
-	// Subscribe
+	// Subscribe will perform a subscription with the given options to the cluster.
+	//
+	// If no option is specified, DefaultSubscriptionOptions are used. The default start
+	// position is to receive new messages only (messages published after the subscription is
+	// registered in the cluster).
 	Subscribe(subject string, cb MsgHandler, opts ...SubscriptionOption) (Subscription, error)
 
-	// QueueSubscribe
+	// QueueSubscribe will perform a queue subscription with the given options to the cluster.
+	//
+	// If no option is specified, DefaultSubscriptionOptions are used. The default start
+	// position is to receive new messages only (messages published after the subscription is
+	// registered in the cluster).
 	QueueSubscribe(subject, qgroup string, cb MsgHandler, opts ...SubscriptionOption) (Subscription, error)
 
-	// Close
+	// Close a connection to the cluster.
+	//
+	// If there are active subscriptions at the time of the close, they are implicitly closed
+	// (not unsubscribed) by the cluster. This means that durable subscriptions are maintained.
+	//
+	// The wait on asynchronous publish calls are canceled and ErrConnectionClosed will be
+	// reported to the registered AckHandler. It is possible that the cluster received and
+	// persisted these messages.
+	//
+	// If a NATS connection is provided as an option to the Connect() call, the NATS
+	// connection is NOT closed when this call is invoked. This connection needs to be
+	// managed by the application.
 	Close() error
 
 	// NatsConn returns the underlying NATS conn. Use this with care. For
@@ -110,8 +132,11 @@ type Options struct {
 	// in the cluster.
 	NatsURL string
 
-	// NatsConn is a user provided low-level NATS Connection that the streaming
-	// connection will use to communicate with the cluster.
+	// NatsConn is a user provided low-level NATS connection that the streaming
+	// connection will use to communicate with the cluster. When set, closing
+	// the NATS streaming connection does NOT close this NATS connection.
+	// It is the responsibility of the application to manage the lifetime of
+	// the supplied NATS connection.
 	NatsConn *nats.Conn
 
 	// ConnectTimeout is the timeout for the initial Connect(). This value is also
@@ -196,7 +221,8 @@ func MaxPubAcksInflight(max int) Option {
 }
 
 // NatsConn is an Option to set the underlying NATS connection to be used
-// by a NATS Streaming Conn object.
+// by a streaming connection object. When such option is set, closing the
+// streaming connection does not close the provided NATS connection.
 func NatsConn(nc *nats.Conn) Option {
 	return func(o *Options) error {
 		o.NatsConn = nc

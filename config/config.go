@@ -11,6 +11,10 @@ import (
 type Config struct {
 }
 
+
+func GetConfig(key string) string {
+	return ""
+}
 //ReadConfig reads config file using given path
 func ReadConfig(filePath string) (*Config, error) {
 	content, err := ioutil.ReadFile(filePath)

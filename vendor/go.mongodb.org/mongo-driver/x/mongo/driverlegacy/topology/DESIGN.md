@@ -1,6 +1,16 @@
 # Topology Package Design
 This document outlines the design for this package.
 
+## Topology
+The `Topology` type handles monitoring the state of a MongoDB deployment and selecting servers.
+Updating the description is handled by finite state machine which implements the server discovery
+and monitoring specification. A `Topology` can be connected and fully disconnected, which enables
+saving resources. The `Topology` type also handles server selection following the server selection
+specification.
+
+## Server
+The `Server` type handles heartbeating a MongoDB server and holds a pool of connections.
+
 ## Connection
 Connections are handled by two main types and an auxiliary type. The two main types are `connection`
 and `Connection`. The first holds most of the logic required to actually read and write wire

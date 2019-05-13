@@ -9,7 +9,6 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/session"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type HermesServer struct {
@@ -75,7 +74,7 @@ func (h HermesServer) Read(ctx context.Context, message *api.ReadSignal) (*api.E
 }
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.Empty, error) {
 	cs := &session.CreateSession{
-		UserIP: "", // az ye jayi
+		UserIP: req.GetUserIP(),
 		UserID:"", //from jwt
 		ClientVersion:req.ClientVersion,
 		Node:req.Node,
@@ -91,12 +90,3 @@ func (h HermesServer) DestroySession(context.Context, *api.DestroySessionRequest
 	panic("implement me")
 }
 
-type HermesContext struct {
-	DeafultCtx context.Context
-	User       struct {
-		ID         string
-		AppID      string
-		ExpireDate time.Time
-		Roles      []string
-	}
-}

@@ -175,13 +175,13 @@ func parseOptions(csType StreamType, opts *options.ChangeStreamOptions, registry
 }
 
 func (cs *ChangeStream) runCommand(ctx context.Context, replaceOptions bool) error {
-	ss, err := cs.client.topology.SelectServer(ctx, cs.db.writeSelector)
+	ss, err := cs.client.topology.SelectServerLegacy(ctx, cs.db.writeSelector)
 	if err != nil {
 		return replaceErrors(err)
 	}
 
 	desc := ss.Description()
-	conn, err := ss.Connection(ctx)
+	conn, err := ss.ConnectionLegacy(ctx)
 	if err != nil {
 		return replaceErrors(err)
 	}

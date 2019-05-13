@@ -24,13 +24,13 @@ func EndSessions(
 	selector description.ServerSelector,
 ) ([]result.EndSessions, []error) {
 
-	ss, err := topo.SelectServer(ctx, selector)
+	ss, err := topo.SelectServerLegacy(ctx, selector)
 	if err != nil {
 		return nil, []error{err}
 	}
 
 	desc := ss.Description()
-	conn, err := ss.Connection(ctx)
+	conn, err := ss.ConnectionLegacy(ctx)
 	if err != nil {
 		return nil, []error{err}
 	}
