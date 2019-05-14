@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
+	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/join"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/session"
@@ -15,35 +16,44 @@ type HermesServer struct {
 
 }
 
+
+
 func (h HermesServer) Echo(ctx context.Context, s *api.Some) (*api.Empty, error) {
 	fmt.Println("Echo")
 	return &api.Empty{}, nil
 }
 
-func (h HermesServer) NewMessage(ctx context.Context,msg *api.Message) (*api.Empty, error) {
-
+func (h HermesServer) NewMessage(msg api.Hermes_NewMessageServer) error {
+	m,err := msg.Recv()
+	if err != nil {
+		logrus.Infof("canot recieve : %v", err)
+	}
 	nm := &newMessage.NewMessage{
-		Body:        msg.Body,
-		From:        msg.From,
-		To:          msg.To,
-		Channel:     msg.Channel,
-		MessageType: msg.MessageType,
+		Body:        m.Body,
+		From:        m.From,
+		To:          m.To,
+		Channel:     m.Channel,
+		MessageType: m.MessageType,
 		Session:     "",
 	}
-	err := newMessage.Handle(nm)
+
+	err = newMessage.Handle(nm)
 	if err != nil {
-		return nil, errors.Wrap(err, "error in new message")
+		return errors.Wrap(err, "error in new message")
 	}
 
-	return &api.Empty{}, nil
+	return nil
 }
-func (h HermesServer) EventBuff(api.Hermes_EventBuffServer) error {
+func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
+	eventHandler.UserSockets.Lock()
+	eventHandler.UserSockets.Us[m.SessionID] = &msg
+	eventHandler.UserSockets.Unlock()
 	panic("implement me")
 }
 
 func (h HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.Empty, error) {
 	jp := &join.JoinPayload{
-		UserID:    "", //should get from jwt
+		UserID:    message.UserID, //should get from jwt
 		SessionId: message.SessionId,
 	}
 	logrus.Infof(message.SessionId)

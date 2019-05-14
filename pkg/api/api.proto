@@ -2,7 +2,7 @@ syntax = "proto3";
 
 service Hermes {
     rpc EventBuff(stream Event) returns(stream Event);
-    rpc NewMessage (Message) returns (Empty);
+    rpc NewMessage (stream Message) returns (stream Message);
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc Join(JoinSignal) returns(Empty);
     rpc Echo(Some) returns (Empty);
@@ -23,6 +23,7 @@ message Event {
         ReadSignal read = 2;
         KeepAliveSignal keep = 3;
         DestroySessionRequest destorySess = 4;
+        Message newMessage = 5;
     }
 }
 message Empty{
@@ -37,6 +38,7 @@ message DeliveredSignal {
 }
 message JoinSignal {
     string sessionId = 1;
+    string userID = 2;
 }
 
 message DestroySessionRequest {
@@ -49,6 +51,7 @@ message Message {
     string channel = 3;
     string to = 4;
     string body = 5;
+    string sessionID = 6;
 }
 message GetOrCreateSessionResponse {
     string SessionID =1;

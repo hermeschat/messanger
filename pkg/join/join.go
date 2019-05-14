@@ -32,11 +32,11 @@ func Handle(sig *JoinPayload) error {
 		return errors.Wrap(err, "error in authenticating")
 	}
 	//get user id from jwt
-	userID := ""
+	userID := sig.UserID
 	ctx, _ := context.WithCancel(context.Background())
 
 	//TODO : fixit
-	sub := nats.MakeSubscriber(ctx, "amir","test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID,s.SessionID))
+	sub := nats.MakeSubscriber(ctx, sig.UserID,"test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID,s.SessionID))
 	go sub()
 	return nil
 }

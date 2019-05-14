@@ -29,27 +29,28 @@ func main() {
 	//
 	//logrus.Println(resp.SessionID)
 	//sid := resp.SessionID
-	sid := "7c222aa1-68cd-4a84-b4d5-039941180323"
+	userid:= "reza"
+	sid := "86ada2a3-f70f-40bb-a702-f2a6598000b4"
 	_, err = cli.Join(ctx, &api.JoinSignal{
-		UserID: "amir",
+		UserID: userid,
 		SessionId: sid,
 	})
 	if err != nil {
 		panic(err)
 	}
-	msgCli, err := cli.NewMessage(context.Background())
+	msgCli, err := cli.EventBuff(context.Background())
+	m := &api.Message{}
+	err = msgCli.RecvMsg(m)
 	if err != nil {
 		panic(err)
 	}
-	err = msgCli.Send(&api.Message{
-		MessageType: "1",
-		From:"amir",
-		To:"reza",
-		Body: "hey",
-	})
-	if err != nil {
-		panic(err)
-	}
-
+	logrus.Infof("Message recieved : %v", m)
+	logrus.Info("Done")
+	//cli.NewMessage(ctx, &api.Message{
+	//	MessageType: "1",
+	//	From:"amir",
+	//	To:"reza",
+	//	Body: "hey",
+	//})
 	// cli.NewMessage(ctx)
 }

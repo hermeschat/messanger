@@ -45,7 +45,7 @@ func Handle(message *NewMessage) error {
 		// In case of dDos attack with lots of invalid channelid posted here, we should
 		// check for channel existance in db or cache
 	}
-	logrus.Infof("%+v", targetChannel)
+	logrus.Infof("target channel %+v", targetChannel)
 	go func(targetChannel *channel.Channel) {
 		if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
 			targetChannel, err = channel.Get(targetChannel.ChannelID)
@@ -63,7 +63,7 @@ func Handle(message *NewMessage) error {
 		}
 	}(targetChannel)
 	message.Channel = targetChannel.ChannelID
-	logrus.Infof("%+v", message)
+	logrus.Infof("message is %+v", message)
 	//save to db
 	//err = saveMessageToMongo(message)
 	//if err != nil {
@@ -137,26 +137,30 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 	}}
 
 func ensureChannel(sessionID string, channelID string, userID string) error {
-	channels, err := getSession(sessionID)
+	//channels, err := getSession(sessionID)
+	//if err != nil {
+	//	return errors.Wrap(err, "Error in get session from redis")
+	//}
+	//channelExist := false
+	//for _, c := range channels {
+	//	if c == channelID {
+	//		channelExist = true
+	//	}
+	//}
+	//if !channelExist {
+	//	//subscribeChannel(channelID, userID)
+	//	//Send user discovery event
+	//	//user discovery event publishes a userid and a chanellid
+	//	//which this channels subscriber can listen to it and subscribe to given channel
+	//	//its equivalent for subscribeChannel(channelID, userID) in async way
+	//	err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
+	//	if err != nil {
+	//		return errors.Wrap(err, "Error in publishing user discovery event")
+	//	}
+	//}
+	err := user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
 	if err != nil {
-		return errors.Wrap(err, "Error in get session from redis")
-	}
-	channelExist := false
-	for _, c := range channels {
-		if c == channelID {
-			channelExist = true
-		}
-	}
-	if !channelExist {
-		//subscribeChannel(channelID, userID)
-		//Send user discovery event
-		//user discovery event publishes a userid and a chanellid
-		//which this channels subscriber can listen to it and subscribe to given channel
-		//its equivalent for subscribeChannel(channelID, userID) in async way
-		err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
-		if err != nil {
-			return errors.Wrap(err, "Error in publishing user discovery event")
-		}
+		return errors.Wrap(err, "Error in publishing user discovery event")
 	}
 	return nil
 }
@@ -191,7 +195,8 @@ func getSession(sessionID string) ([]string, error) {
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
-	natsClient, err := stan.Connect(clusterID,msg.From, stan.NatsURL(natsSrvAddr))
+	logrus.Info(msg.From)
+	natsClient, err := stan.Connect(clusterID, msg.From, stan.NatsURL(natsSrvAddr))
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}
@@ -203,5 +208,6 @@ func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, m
 	if err := natsClient.Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
+	logrus.Infof("Published into %s a new message as %s", ChannelId, msg.From)
 	return nil
 }
