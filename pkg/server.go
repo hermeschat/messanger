@@ -1,11 +1,13 @@
 package pkg
 
 import (
+	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/join"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/session"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
 
@@ -13,8 +15,10 @@ type HermesServer struct {
 
 }
 
-
-
+func (h HermesServer) Echo(ctx context.Context, s *api.Some) (*api.Empty, error) {
+	fmt.Println("Echo")
+	return &api.Empty{}, nil
+}
 
 func (h HermesServer) NewMessage(ctx context.Context,msg *api.Message) (*api.Empty, error) {
 
@@ -31,7 +35,7 @@ func (h HermesServer) NewMessage(ctx context.Context,msg *api.Message) (*api.Emp
 		return nil, errors.Wrap(err, "error in new message")
 	}
 
-	return nil, nil
+	return &api.Empty{}, nil
 }
 func (h HermesServer) EventBuff(api.Hermes_EventBuffServer) error {
 	panic("implement me")
@@ -42,6 +46,8 @@ func (h HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.E
 		UserID:    "", //should get from jwt
 		SessionId: message.SessionId,
 	}
+	logrus.Infof(message.SessionId)
+
 	err := join.Handle(jp)
 	if err != nil {
 		return &api.Empty{Status: "500"}, errors.Wrap(err, "error in joining")
@@ -52,14 +58,16 @@ func (h HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.E
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
 	cs := &session.CreateSession{
 		UserIP:        req.GetUserIP(),
-		UserID:        "", //from jwt
+		UserID:        req.UserID, //from jwt
 		ClientVersion: req.ClientVersion,
 		Node:          req.Node,
 	}
+	logrus.Println("created session model")
 	s, err := session.Create(cs)
 	if err != nil {
 		return &api.CreateSessionResponse{}, errors.Wrap(err, "error in creating session")
 	}
+	logrus.Println("done")
 	return &api.CreateSessionResponse{
 		SessionID:s.SessionID,
 	}, nil

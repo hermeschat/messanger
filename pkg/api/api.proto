@@ -1,10 +1,11 @@
 syntax = "proto3";
 
 service Hermes {
-    rpc EventBuff(stream Event) returns(Empty);
+    rpc EventBuff(stream Event) returns(stream Event);
     rpc NewMessage (Message) returns (Empty);
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc Join(JoinSignal) returns(Empty);
+    rpc Echo(Some) returns (Empty);
     // rpc Read(ReadSignal) returns(Empty);
     // rpc KeepAlive (KeepAliveSignal) returns (Empty);
     // rpc Deliverd (DeliveredSignal) returns (Empty);
@@ -13,6 +14,8 @@ service Hermes {
 message ReadSignal {
     string messageID = 1;
     string channelID = 2;
+}
+message Some {
 }
 message Event {
     oneof event {

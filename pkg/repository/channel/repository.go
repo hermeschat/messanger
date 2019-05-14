@@ -1,16 +1,20 @@
 package channel
 
 import (
+	"context"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/mongo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	mgo "go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
 //Channel ...
 type Channel struct {
-	ChannelID string
-	Members   []string
-	Creator   string
+	ChannelID string `json:"channelID" bson:"ChannelID"`
+	Members   []string `json:"Members" bson:"Members"`
+	Creator   string `json:"Creator" bson:"Creator"`
 }
 
 //ConstructFromMap ...
@@ -38,21 +42,34 @@ func Get(id string) (*Channel, error) {
 
 func (s *Channel) ToMap() (map[string]interface{}, error) {
 	m := map[string]interface{}{}
-	err := mapstructure.Decode(s, m)
+	err := mapstructure.Decode(s, &m)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't create map from this channel")
 	}
 	return m, nil
 }
-func GetAll(query map[string]interface{}) (*[]*Channel, error) {
-	s, err := mongo.FindAll("channels", query)
+func GetAll(query map[string]interface{}) ([]*Channel, error) {
+
+	cur, err := mongo.FindAll("channels", query)
+	if err == mgo.ErrNoDocuments {
+		return nil, mgo.ErrNoDocuments
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "can't find channel with given query")
 	}
-	channels := &[]*Channel{}
-	err = mapstructure.Decode(s, channels)
-	if err != nil {
-		return nil, errors.Wrap(err, "can't construct channel from given map from mongo")
+	var channels []*Channel
+	//err = cur.Decode(channels)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "can't construct channel from given map from mongo")
+	//}
+	for cur.Next(context.Background()) {
+		var elem Channel
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		logrus.Info(elem)
+		channels = append(channels, &elem)
 	}
 	return channels, nil
 }

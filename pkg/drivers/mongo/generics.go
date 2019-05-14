@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/pkg/errors"
 )
@@ -102,43 +103,41 @@ func UpdateOne(collName string, id string, data map[string]interface{}) error {
 }
 
 //FindAll finds all documents whom matches to query
-func FindAll(collName string, query map[string]interface{}) ([]map[string]interface{}, error) {
+func FindAll(collName string, query map[string]interface{}) (*mongo.Cursor, error) {
 	coll, err := GetCollection(collName)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get collection ")
 	}
 
-	res := coll.FindOne(context.Background(), query)
-	if res.Err() != nil {
-		return nil, errors.Wrap(res.Err(), "mongo find err")
-	}
-	output := []map[string]interface{}{}
+	cur, err := coll.Find(context.Background(), query)
 
-	err = res.Decode(output)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not parse mongoSingleResult As map")
+	if err == mongo.ErrNoDocuments {
+		return nil, mongo.ErrNoDocuments
 	}
-	return output, nil
+	if err != nil {
+		return nil, errors.Wrap(err, "mongo find err")
+	}
+	return cur, nil
 }
 
 //FindOneById finds matching ID in db
-func FindOneById(collName string, id string) (map[string]interface{}, error) {
+func FindOneById(collName string, id string) (*mongo.SingleResult, error) {
 	coll, err := GetCollection(collName)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get collection ")
 	}
-	filter := map[string]string{
-		"_id": id,
+	filter := map[string]interface{}{
+		"ChannelID": id,
 	}
 	res := coll.FindOne(context.Background(), filter)
 	if res.Err() != nil {
 		return nil, errors.Wrap(res.Err(), "mongo find err")
 	}
-	output := map[string]interface{}{}
+	//output := &map[string]interface{}{}
 
-	err = res.Decode(output)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not parse mongoSingleResult As map")
-	}
-	return output, nil
+	//err = res.Decode(output)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "could not parse mongoSingleResult As map")
+	//}
+	return res, nil
 }
