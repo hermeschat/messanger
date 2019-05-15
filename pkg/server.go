@@ -17,6 +17,12 @@ type HermesServer struct {
 
 }
 
+func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
+
+	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
+	return &api.Empty{}, nil
+}
+
 func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, error) {
 	panic("implement")
 }

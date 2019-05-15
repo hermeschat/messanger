@@ -60,8 +60,8 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 	fmt.Println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
 	claims, err := ValidateJWT(token, secretKey)
 	if err != nil {
-		log.Println(err)
-		return nil, UnauthorizedError{}
+		//log.Println(err)
+		return nil, err
 	}
 	serviceAvailable := false
 	var service IdentityService
@@ -82,7 +82,7 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 			}
 		}
 	}
-
+	_ = serviceAvailable
 	// nameID := claims["nameid"].(string)
 	userID := claims["id"].(string)
 
@@ -95,12 +95,14 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 			}
 		}
 	}
-	if !serviceAvailable {
-		// check if is rostam
-		if _, ok := rolesMap["rostam"]; !ok {
-			return nil, UnauthorizedError{}
-		}
-	}
+
+	//if !serviceAvailable {
+	//	// check if is rostam
+	//	if _, ok := rolesMap["rostam"]; !ok {
+	//		return nil, errors.New("is not rostam")
+	//	}
+	//}
+
 	merchantRoles := map[string][]string{}
 	if _merchantRoles, ok := claims["merchant_roles"]; ok {
 		if merchantRolesMapFace, ok := _merchantRoles.(map[string]interface{}); ok {
