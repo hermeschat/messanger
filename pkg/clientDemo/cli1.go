@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	con, err := grpc.Dial(":9044", grpc.WithInsecure())
+	con, err := grpc.Dial("192.168.41.37:30041", grpc.WithInsecure())
 	if err != nil {
 		logrus.Fatalf("error : %v", err)
 	}
