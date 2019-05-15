@@ -47,9 +47,9 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		}
 	}
 	fmt.Println("Get Applications")
-	url := config.GetConfig("ApplicationServiceURL") + "/applications/" + applicationID + "?services=true"
+	url := "https://api.paygear.ir/application/v3" + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "bearer "+config.GetConfig("HttpRequestAuthToken"))
+	req.Header.Set("Authorization", "bearer "+config.AuthToken)
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -67,7 +67,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		application := Application{}
 		json.Unmarshal(body, &application)
 		application.LoadedAt = time.Now()
-		application.ClientSecret = config.GetConfig("clientSecret")
+		application.ClientSecret = config.ClientSecret
 		applications[applicationID] = &application
 		return &application, nil
 	}

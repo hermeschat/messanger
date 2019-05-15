@@ -16,7 +16,7 @@ import (
 //UserDiscoveryEventHandler handles user discovery
 func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-
+		logrus.Info("In UserDiscoveryEventHandler")
 		ude := &api.UserDiscoveryEvent{}
 		err := ude.XXX_Unmarshal(msg.Data)
 		if err != nil {
@@ -55,7 +55,12 @@ var UserSockets = struct {
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		// push kon be user
+		logrus.Info("In NewMessage Event Handler")
+		UserSockets.RLock()
+		err := (*UserSockets.Us[userID]).Send(&api.Event{Event:&api.Event_NewMessage{&api.Message{
+			From: "server",
+		}}})
+		logrus.Errorf("cannot push to client ", err)
 		fmt.Printf("Recieved New Message In %s", channelID)
 	}
 }

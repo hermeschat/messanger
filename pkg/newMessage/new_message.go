@@ -46,7 +46,7 @@ func Handle(message *NewMessage) error {
 		// check for channel existance in db or cache
 	}
 	logrus.Infof("target channel %+v", targetChannel)
-	go func(targetChannel *channel.Channel) {
+	func(targetChannel *channel.Channel) {
 		if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
 			targetChannel, err = channel.Get(targetChannel.ChannelID)
 			if err != nil {
@@ -58,7 +58,8 @@ func Handle(message *NewMessage) error {
 		for _, member := range targetChannel.Members {
 			err := ensureChannel(message.Session, targetChannel.ChannelID, member)
 			if err != nil {
-				go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
+				logrus.Errorf("error in ensuring channel : %v", err)
+				retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
 			}
 		}
 	}(targetChannel)

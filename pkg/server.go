@@ -17,6 +17,12 @@ type HermesServer struct {
 
 }
 
+func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
+
+	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
+	return &api.Empty{Status:"JWT is ok"}, nil
+}
+
 func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, error) {
 	panic("implement")
 }
@@ -39,7 +45,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Errorf("Cannot get identity out of context")
 	}
 	eventHandler.UserSockets.Lock()
-	eventHandler.UserSockets.Us[ident.SessionID] = &a
+	eventHandler.UserSockets.Us[ident.ID] = &a
 	eventHandler.UserSockets.Unlock()
 	logrus.Info("we have a new event")
 	switch t := e.GetEvent().(type) {
@@ -67,7 +73,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			logrus.Info("Event is NewMessage")
 			nm := &newMessage.NewMessage{
 				Body:        m.Body,
-				From:        m.From,
+				From:        ident.ID,
 				To:          m.To,
 				Channel:     m.Channel,
 				MessageType: m.MessageType,
@@ -85,7 +91,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		if j != nil {
 			logrus.Info("Event is Join")
 			jp := &join.JoinPayload{
-				UserID:    j.UserID, //should get from jwt
+				UserID:    ident.ID, //should get from jwt
 				SessionId: j.SessionId,
 			}
 			err := join.Handle(jp)
@@ -101,9 +107,14 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 
 
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
+	i := ctx.Value("identity")
+	ident, ok := i.(*auth.Identity)
+	if !ok {
+		return &api.CreateSessionResponse{}, errors.New("could not get identity")
+	}
 	cs := &session.CreateSession{
 		UserIP:        req.GetUserIP(),
-		UserID:        req.UserID, //from jwt
+		UserID:        ident.ID, //from jwt
 		ClientVersion: req.ClientVersion,
 		Node:          req.Node,
 	}

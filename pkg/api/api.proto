@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service Hermes {
     rpc EventBuff(stream Event) returns(stream Event);
+    rpc Echo(Empty) returns (Empty);
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc ListChannels(Empty) returns (Channels); //aggreate
     rpc ListMessages (Empty) returns(Messages);
@@ -51,7 +52,6 @@ message DeliveredSignal {
 }
 message JoinSignal {
     string sessionId = 1;
-    string userID = 2;
 }
 
 message DestroySessionRequest {
@@ -78,7 +78,6 @@ message GetOrCreateSessionResponse {
 }
 message CreateSessionRequest {
     string ClientType = 1;
-    string UserID = 2;
 	string UserIP = 3;
 	string UserAgent = 4;
 	string ClientVersion = 5;
