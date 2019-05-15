@@ -1,9 +1,7 @@
 package pkg
 
 import (
-	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/join"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/session"
@@ -16,54 +14,69 @@ type HermesServer struct {
 
 }
 
-
-
-func (h HermesServer) Echo(ctx context.Context, s *api.Some) (*api.Empty, error) {
-	fmt.Println("Echo")
-	return &api.Empty{}, nil
+func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, error) {
+	panic("implement")
 }
 
-func (h HermesServer) NewMessage(msg api.Hermes_NewMessageServer) error {
-	m,err := msg.Recv()
-	if err != nil {
-		logrus.Infof("canot recieve : %v", err)
-	}
-	nm := &newMessage.NewMessage{
-		Body:        m.Body,
-		From:        m.From,
-		To:          m.To,
-		Channel:     m.Channel,
-		MessageType: m.MessageType,
-		Session:     "",
-	}
-
-	err = newMessage.Handle(nm)
-	if err != nil {
-		return errors.Wrap(err, "error in new message")
-	}
-
-	return nil
-}
-func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
-	eventHandler.UserSockets.Lock()
-	eventHandler.UserSockets.Us[m.SessionID] = &msg
-	eventHandler.UserSockets.Unlock()
+func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, error) {
 	panic("implement me")
 }
 
-func (h HermesServer) Join(ctx context.Context, message *api.JoinSignal) (*api.Empty, error) {
-	jp := &join.JoinPayload{
-		UserID:    message.UserID, //should get from jwt
-		SessionId: message.SessionId,
-	}
-	logrus.Infof(message.SessionId)
 
-	err := join.Handle(jp)
+func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
+	e, err := a.Recv()
 	if err != nil {
-		return &api.Empty{Status: "500"}, errors.Wrap(err, "error in joining")
+		logrus.Errorf("cannot receive event : %v", err)
+		return errors.Wrap(err, "error in reading EventBuff")
 	}
-	return &api.Empty{Status: "200"}, nil
+
+	logrus.Info("we have a new event")
+
+
+	switch t := e.GetEvent().(type) {
+	case *api.Event_Read:
+		logrus.Info("Event is read")
+	case *api.Event_Keep:
+		logrus.Info("Event is keep")
+	case *api.Event_NewMessage:
+		logrus.Info("Event is New Message")
+		m := e.GetNewMessage()
+		if m != nil {
+			logrus.Info("Event is NewMessage")
+			nm := &newMessage.NewMessage{
+				Body:        m.Body,
+				From:        m.From,
+				To:          m.To,
+				Channel:     m.Channel,
+				MessageType: m.MessageType,
+				Session:     "",
+			}
+
+			err = newMessage.Handle(nm)
+			if err != nil {
+				logrus.Errorf("Error in NewMessage Event : %v", err)
+			}
+		}
+	case *api.Event_Join:
+		j := e.GetJoin()
+		logrus.Info(j)
+		if j != nil {
+			logrus.Info("Event is Join")
+			jp := &join.JoinPayload{
+				UserID:    j.UserID, //should get from jwt
+				SessionId: j.SessionId,
+			}
+			err := join.Handle(jp)
+			if err != nil {
+				logrus.Errorf("Error in Join event : %v", err)
+			}
+		}
+	default:
+		logrus.Infof("Type not matched : %+T", t)
+	}
+	return nil
 }
+
 
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
 	cs := &session.CreateSession{

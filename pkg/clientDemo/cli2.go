@@ -54,3 +54,8 @@ func main() {
 	//})
 	// cli.NewMessage(ctx)
 }
+
+
+// join ro bokon event
+// bad vaghti join befreste socketesh ro to factroy negah dar
+// tamoom

@@ -45,10 +45,10 @@ func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *s
 	}
 var UserSockets = struct {
 	sync.RWMutex
-	Us map[string]*api.Hermes_NewMessageServer
+	Us map[string]*api.Hermes_EventBuffServer
 }{
 	sync.RWMutex{},
-	map[string]*api.Hermes_NewMessageServer{},
+	map[string]*api.Hermes_EventBuffServer{},
 }
 
 
