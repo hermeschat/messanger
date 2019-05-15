@@ -14,7 +14,7 @@ import (
 var AppContext = context.Background()
 
 func Launch(configPath string) {
-	lis, err := net.Listen("tcp", "localhost:9044")
+	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
 		logrus.Fatal("ERROR can't create a tcp listener ")
 	}
