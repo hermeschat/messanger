@@ -14,4 +14,5 @@ type Identity struct {
 	MerchantRoles map[string][]string
 	Service       IdentityService
 	AppId         string
+	SessionID 	  string
 }

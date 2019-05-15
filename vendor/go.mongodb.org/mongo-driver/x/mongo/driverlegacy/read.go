@@ -32,12 +32,12 @@ func Read(
 	if cmd.Session != nil && cmd.Session.PinnedServer != nil {
 		selector = cmd.Session.PinnedServer
 	}
-	ss, err := topo.SelectServer(ctx, selector)
+	ss, err := topo.SelectServerLegacy(ctx, selector)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := ss.Connection(ctx)
+	conn, err := ss.ConnectionLegacy(ctx)
 	if err != nil {
 		return nil, err
 	}

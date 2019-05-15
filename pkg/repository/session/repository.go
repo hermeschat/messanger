@@ -45,7 +45,7 @@ func Get(id string) (*Session, error) {
 
 func (s *Session) ToMap() (map[string]interface{}, error) {
 	m := map[string]interface{}{}
-	err := mapstructure.Decode(s, m)
+	err := mapstructure.Decode(s, &m)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't create map from this session")
 	}

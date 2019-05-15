@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"git.raad.cloud/cloud/hermes/config"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -46,9 +47,9 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		}
 	}
 	fmt.Println("Get Applications")
-	url := ApplicationServiceURL + "/applications/" + applicationID + "?services=true"
+	url := config.GetConfig("ApplicationServiceURL") + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "bearer "+HttpRequestAuthToken)
+	req.Header.Set("Authorization", "bearer "+config.GetConfig("HttpRequestAuthToken"))
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -66,7 +67,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		application := Application{}
 		json.Unmarshal(body, &application)
 		application.LoadedAt = time.Now()
-		application.ClientSecret = base64ScapeCharacter(base64ScapePadding(application.ClientSecret))
+		application.ClientSecret = config.GetConfig("clientSecret")
 		applications[applicationID] = &application
 		return &application, nil
 	}

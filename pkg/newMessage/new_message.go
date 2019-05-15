@@ -3,6 +3,7 @@ package newMessage
 import (
 	"encoding/json"
 	stan "github.com/nats-io/go-nats-streaming"
+	uuid "github.com/satori/go.uuid"
 	"strings"
 	"time"
 
@@ -44,9 +45,10 @@ func Handle(message *NewMessage) error {
 		// In case of dDos attack with lots of invalid channelid posted here, we should
 		// check for channel existance in db or cache
 	}
+	logrus.Infof("target channel %+v", targetChannel)
 	go func(targetChannel *channel.Channel) {
 		if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
-			targetChannel, err = channel.Get(message.Channel)
+			targetChannel, err = channel.Get(targetChannel.ChannelID)
 			if err != nil {
 				msg := errors.Wrap(err, "cannot get channel from db").Error()
 				logrus.Error(msg)
@@ -60,24 +62,35 @@ func Handle(message *NewMessage) error {
 			}
 		}
 	}(targetChannel)
-
+	message.Channel = targetChannel.ChannelID
+	logrus.Infof("message is %+v", message)
 	//save to db
+	//err = saveMessageToMongo(message)
+	//if err != nil {
+	//	logrus.Errorf("cannot save message to mongodb :%v", err)
+	//	return errors.Wrap(err, "error in saving message to mongo db")
+	//}
 	go saveMessageToMongo(message)
 	//Publish to nats
 	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
 	if err != nil {
 		return errors.Wrap(err, "error in publishing message")
 	}
-	return errors.Wrap(err, "")
+	return nil
 }
 
 func saveMessageToMongo(message *NewMessage) error {
-	err := message2.Add(&message2.Message{
+	uid, err := uuid.NewV4()
+	if err != nil {
+		logrus.Errorf("canot create uuid  : %v", err)
+	}
+	err = message2.Add(&message2.Message{
 		To:          message.To,
 		From:        message.From,
 		Time:        time.Now(),
 		MessageType: message.MessageType,
 		Body:        message.Body,
+		MessageID: uid.String(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
@@ -97,13 +110,20 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 	channels, err := channel.GetAll(bson.M{
 		"Members": bson.M{"$in": []string{from, to}, "$size": 2},
 	})
+
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot get channels")
 	}
+	uid, err := uuid.NewV4()
+	if err != nil {
+		return nil, errors.Wrap(err, "can't create uuid")
+	}
 	var targetChannel *channel.Channel
-	if len(*channels) < 1 {
+	if len(channels) < 1 {
+		logrus.Info("no channel found")
 		targetChannel = &channel.Channel{
 			Members: []string{to, from},
+			ChannelID: uid.String(),
 		}
 		err := saveChannelToMongo(targetChannel)
 		if err != nil {
@@ -111,32 +131,36 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 		}
 		return targetChannel, nil
 	} else {
-		targetChannel = (*channels)[0]
+		targetChannel = (channels)[0]
 		return targetChannel, nil
-	}
-}
+
+	}}
 
 func ensureChannel(sessionID string, channelID string, userID string) error {
-	channels, err := getSession(sessionID)
+	//channels, err := getSession(sessionID)
+	//if err != nil {
+	//	return errors.Wrap(err, "Error in get session from redis")
+	//}
+	//channelExist := false
+	//for _, c := range channels {
+	//	if c == channelID {
+	//		channelExist = true
+	//	}
+	//}
+	//if !channelExist {
+	//	//subscribeChannel(channelID, userID)
+	//	//Send user discovery event
+	//	//user discovery event publishes a userid and a chanellid
+	//	//which this channels subscriber can listen to it and subscribe to given channel
+	//	//its equivalent for subscribeChannel(channelID, userID) in async way
+	//	err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
+	//	if err != nil {
+	//		return errors.Wrap(err, "Error in publishing user discovery event")
+	//	}
+	//}
+	err := user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
 	if err != nil {
-		return errors.Wrap(err, "Error in get session from redis")
-	}
-	channelExist := false
-	for _, c := range channels {
-		if c == channelID {
-			channelExist = true
-		}
-	}
-	if !channelExist {
-		//subscribeChannel(channelID, userID)
-		//Send user discovery event
-		//user discovery event publishes a userid and a chanellid
-		//which this channels subscriber can listen to it and subscribe to given channel
-		//its equivalent for subscribeChannel(channelID, userID) in async way
-		err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
-		if err != nil {
-			return errors.Wrap(err, "Error in publishing user discovery event")
-		}
+		return errors.Wrap(err, "Error in publishing user discovery event")
 	}
 	return nil
 }
@@ -171,7 +195,8 @@ func getSession(sessionID string) ([]string, error) {
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
-	natsClient, err := stan.Connect(clusterID,msg.From, stan.NatsURL(natsSrvAddr))
+	logrus.Info(msg.From)
+	natsClient, err := stan.Connect(clusterID, msg.From, stan.NatsURL(natsSrvAddr))
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}
@@ -183,5 +208,6 @@ func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, m
 	if err := natsClient.Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
+	logrus.Infof("Published into %s a new message as %s", ChannelId, msg.From)
 	return nil
 }

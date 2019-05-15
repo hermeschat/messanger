@@ -16,6 +16,7 @@ type Message struct {
 	ChannelID   string
 	MessageType string
 	Body        string
+	Read 		bool
 }
 
 //ConstructFromMap ...
@@ -43,7 +44,7 @@ func Get(id string) (*Message, error) {
 
 func (s *Message) ToMap() (map[string]interface{}, error) {
 	m := map[string]interface{}{}
-	err := mapstructure.Decode(s, m)
+	err := mapstructure.Decode(s, &m)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't create map from this message")
 	}

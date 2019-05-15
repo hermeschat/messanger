@@ -60,7 +60,7 @@ func commitTransaction(
 	if cmd.Session != nil && cmd.Session.PinnedServer != nil {
 		selector = cmd.Session.PinnedServer
 	}
-	ss, err := topo.SelectServer(ctx, selector)
+	ss, err := topo.SelectServerLegacy(ctx, selector)
 	if err != nil {
 		// If retrying server selection, return the original error if it fails
 		if oldErr != nil {
@@ -78,7 +78,7 @@ func commitTransaction(
 		return result.TransactionResult{}, oldErr
 	}
 
-	conn, err := ss.Connection(ctx)
+	conn, err := ss.ConnectionLegacy(ctx)
 	if err != nil {
 		if oldErr != nil {
 			return result.TransactionResult{}, oldErr

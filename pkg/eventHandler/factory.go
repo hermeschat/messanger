@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"strings"
+	"sync"
 )
 
 //UserDiscoveryEventHandler handles user discovery
@@ -22,31 +23,40 @@ func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *s
 			logrus.Error(errors.Wrap(err, "cannot unmarshal UserDiscoveryEvent"))
 			return
 		}
-		if ude.UserID == userID {
-			channels, err := getSession(currentSession)
-			if err != nil {
-				logrus.Error(errors.Wrap(err, "Error in get session from redis"))
-			}
+		//if ude.UserID == userID {
+		//	channels, err := getSession(currentSession)
+		//	if err != nil {
+		//		logrus.Error(errors.Wrap(err, "Error in get session from redis"))
+		//	}
+		//	channelExist := false
+		//	for _, c := range channels {
+		//		if c == ude.ChannelID {
+		//			channelExist = true
+		//		}
+		//	}
 			channelExist := false
-			for _, c := range channels {
-				if c == ude.ChannelID {
-					channelExist = true
-				}
-			}
 			if !channelExist{
 				ctx, _ := context.WithCancel(context.Background())
+				logrus.Infof("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
 				sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
 				go sub()
 			}
 		}
 	}
+var UserSockets = struct {
+	sync.RWMutex
+	Us map[string]*api.Hermes_EventBuffServer
+}{
+	sync.RWMutex{},
+	map[string]*api.Hermes_EventBuffServer{},
 }
+
 
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		// push kon be user
-		fmt.Printf("New Message In %s", channelID)
+		fmt.Printf("Recieved New Message In %s", channelID)
 	}
 }
 

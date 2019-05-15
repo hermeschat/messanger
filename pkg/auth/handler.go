@@ -21,7 +21,7 @@ func Init(serviceName string, appServiceURL string, httpRequestAuthToken string)
 }
 
 // GetAuthentication check and get auth from given token
-func getAuthentication(token string, accountID string) (*Identity, error) {
+func GetAuthentication(token string, accountID string) (*Identity, error) {
 	fmt.Println("BBBBBBBBBBBBBBBBBBBBBBBBB")
 	if token == "" || len(token) < 7 {
 		return nil, UnauthorizedError{}

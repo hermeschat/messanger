@@ -5,6 +5,7 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository/session"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -20,17 +21,22 @@ type CreateSession struct {
 
 //wtf you think it would do ? it will create session dumbass
 func Create(cs *CreateSession) (*session.Session,error) {
+	sid, err :=  uuid.NewV4()
+	if err != nil {
+		return nil, errors.Wrap(err, "cant create new uuid")
+	}
 	s := &session.Session{
 		UserID:cs.UserID,
 		UserIP:cs.UserIP,
 		ClientVersion:cs.ClientVersion,
 		Node:cs.Node,
+		SessionID: sid.String(),
 	}
 	//create session in mongo
 	if err := session.Add(s); err != nil {
 		return nil, errors.Wrap(err, "error in creating")
 	}
-
+	logrus.Println("added to mongo db")
 	conn, err := redis.ConnectRedis()
 	if err != nil {
 		return nil, errors.Wrap(err, "error in connecting to redis")
@@ -76,6 +82,7 @@ func GetSession(sessionID string) (*session.Session, error) {
 	}
 	res, err := conn.Get(sessionID).Result()
 	if err == redis.Nil {
+		logrus.Infof("session not found in redis trying db")
 		return GetSessionFromDB(sessionID)
 	}
 	if err != nil {

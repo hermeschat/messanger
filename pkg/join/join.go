@@ -3,7 +3,7 @@ package join
 import (
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
-	"git.raad.cloud/cloud/hermes/pkg/repository/session"
+	"git.raad.cloud/cloud/hermes/pkg/session"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -16,7 +16,7 @@ type JoinPayload struct {
 
 func Handle(sig *JoinPayload) error {
 
-	s, err := session.Get(sig.SessionId)
+	s, err := session.GetSession(sig.SessionId)
 	if err != nil {
 		msg := errors.Wrap(err, "cannot get session").Error()
 		logrus.Error(msg)
@@ -32,11 +32,11 @@ func Handle(sig *JoinPayload) error {
 		return errors.Wrap(err, "error in authenticating")
 	}
 	//get user id from jwt
-	userID := ""
+	userID := sig.UserID
 	ctx, _ := context.WithCancel(context.Background())
 
 	//TODO : fixit
-	sub := nats.MakeSubscriber(ctx, sig.UserID,"test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID,"fixit"))
+	sub := nats.MakeSubscriber(ctx, sig.UserID,"test-cluster", "0.0.0.0:4222", "user-discovery", eventHandler.UserDiscoveryEventHandler(userID,s.SessionID))
 	go sub()
 	return nil
 }
