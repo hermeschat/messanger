@@ -16,6 +16,7 @@ type Message struct {
 	ChannelID   string
 	MessageType string
 	Body        string
+	Read 		bool
 }
 
 //ConstructFromMap ...

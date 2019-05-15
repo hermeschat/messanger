@@ -2,8 +2,11 @@ package pkg
 
 import (
 	"git.raad.cloud/cloud/hermes/pkg/api"
+	"git.raad.cloud/cloud/hermes/pkg/auth"
+	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/join"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
+	"git.raad.cloud/cloud/hermes/pkg/read"
 	"git.raad.cloud/cloud/hermes/pkg/session"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -29,15 +32,34 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Errorf("cannot receive event : %v", err)
 		return errors.Wrap(err, "error in reading EventBuff")
 	}
-
+	ctx := a.Context()
+	i := ctx.Value("identity")
+	ident, ok := i.(*auth.Identity)
+	if !ok {
+		logrus.Errorf("Cannot get identity out of context")
+	}
+	eventHandler.UserSockets.Lock()
+	eventHandler.UserSockets.Us[ident.SessionID] = &a
+	eventHandler.UserSockets.Unlock()
 	logrus.Info("we have a new event")
-
-
 	switch t := e.GetEvent().(type) {
 	case *api.Event_Read:
 		logrus.Info("Event is read")
+		r := e.GetRead()
+		rs := &read.ReadSignal{
+			UserID:ident.ID,
+			MessageID:r.MessageID,
+			ChannelID:r.ChannelID,
+		}
+		err = read.Handle(rs)
+		if err != nil {
+			logrus.Errorf("Error in handling read signal")
+		}
 	case *api.Event_Keep:
 		logrus.Info("Event is keep")
+		k := e.GetKeep()
+		_ = k
+		//find logic
 	case *api.Event_NewMessage:
 		logrus.Info("Event is New Message")
 		m := e.GetNewMessage()
