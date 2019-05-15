@@ -18,7 +18,6 @@ func UnaryAuthJWTInterceptor(ctx context.Context) (context.Context, error){
 	}
 
 	grpc_ctxtags.Extract(ctx).Set("identity", ident)
-	logrus.Infof("%+v", ident)
 	newCtx := context.WithValue(ctx, "identity", ident)
 	return newCtx, nil
 

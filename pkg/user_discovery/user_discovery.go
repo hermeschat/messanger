@@ -6,6 +6,7 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func PublishEvent(ude repository.UserDiscoveryEvent) error {
@@ -22,5 +23,6 @@ func PublishEvent(ude repository.UserDiscoveryEvent) error {
 	if err != nil {
 		return errors.Wrap(err, "cannot publish UserDiscoveryEvent")
 	}
+	logrus.Infof("Published User Discovery event %+v", u)
 	return nil
 }

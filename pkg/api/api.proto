@@ -52,7 +52,6 @@ message DeliveredSignal {
 }
 message JoinSignal {
     string sessionId = 1;
-    string userID = 2;
 }
 
 message DestroySessionRequest {
@@ -79,7 +78,6 @@ message GetOrCreateSessionResponse {
 }
 message CreateSessionRequest {
     string ClientType = 1;
-    string UserID = 2;
 	string UserIP = 3;
 	string UserAgent = 4;
 	string ClientVersion = 5;
