@@ -43,16 +43,21 @@ func main() {
 		panic(err)
 	}
 	logrus.Info("Wait for any event")
-	ev, err := eventCli.Recv()
-	switch ev.GetEvent().(type) {
-	case *api.Event_Read:
-		logrus.Info("Message has been read")
-	case *api.Event_NewMessage:
-		logrus.Info("New Message recieved")
-		m := ev.GetNewMessage()
-		logrus.Infof("%+v",m)
-	case *api.Event_Dlv:
-		logrus.Info("Message delivered")
+	for {
+		ev, err := eventCli.Recv()
+		if err != nil {
+			continue
+		}
+		switch ev.GetEvent().(type) {
+		case *api.Event_Read:
+			logrus.Info("Message has been read")
+		case *api.Event_NewMessage:
+			logrus.Info("New Message recieved")
+			m := ev.GetNewMessage()
+			logrus.Infof("%+v",m)
+		case *api.Event_Dlv:
+			logrus.Info("Message delivered")
+		}
 	}
 	//emp, err := cli.Echo(ctx, &api.Empty{})
 	//if err != nil {

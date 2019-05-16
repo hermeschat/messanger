@@ -14,9 +14,8 @@ import (
 )
 
 //UserDiscoveryEventHandler handles user discovery
-func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *stan.Msg) {
+func UserDiscoveryEventHandler(ctx context.Context,userID string, currentSession string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		logrus.Info("In UserDiscoveryEventHandler")
 		ude := &api.UserDiscoveryEvent{}
 		err := ude.XXX_Unmarshal(msg.Data)
 		if err != nil {
@@ -34,14 +33,15 @@ func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *s
 		//			channelExist = true
 		//		}
 		//	}
-			channelExist := false
-			if !channelExist{
-				ctx, _ := context.WithCancel(context.Background())
-				logrus.Infof("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
-				sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
-				go sub()
-			}
+		//	channelExist := false
+
+		logrus.Infof("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
+		sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
+		go sub()
+		if err != nil {
+			logrus.Errorf("Error in subscribing to channel", err)
 		}
+	}
 	}
 var UserSockets = struct {
 	sync.RWMutex
@@ -56,18 +56,20 @@ var UserSockets = struct {
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Info("In NewMessage Event Handler")
+
 		UserSockets.RLock()
 		err := (*UserSockets.Us[userID]).Send(&api.Event{Event:&api.Event_NewMessage{&api.Message{
 			From: "server",
 		}}})
+		UserSockets.RUnlock()
 		logrus.Errorf("cannot push to client ", err)
 		fmt.Printf("Recieved New Message In %s", channelID)
 	}
 }
 
-func subscribeChannel(channelID string, userID string) {
-	ctx, _ := context.WithCancel(context.Background())
-	sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
+func subscribeChannel(ctx context.Context, channelID string, userID string) {
+	//ctx, _ := context.WithTimeout(context.Background(), time.Hour * 1)
+	sub := nats.MakeSubscriber(ctx,userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
 	go sub()
 }
 

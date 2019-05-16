@@ -16,6 +16,7 @@ import (
 type HermesServer struct {
 
 }
+var AppContext = context.Background()
 
 func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
 
@@ -85,6 +86,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 				logrus.Errorf("Error in NewMessage Event : %v", err)
 			}
 		}
+		return nil
 	case *api.Event_Join:
 		j := e.GetJoin()
 		logrus.Info(j)
@@ -94,11 +96,13 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 				UserID:    ident.ID, //should get from jwt
 				SessionId: j.SessionId,
 			}
-			err := join.Handle(jp)
+
+			err := join.Handle(AppContext, jp)
 			if err != nil {
 				logrus.Errorf("Error in Join event : %v", err)
 			}
 		}
+		return nil
 	default:
 		logrus.Infof("Type not matched : %+T", t)
 	}

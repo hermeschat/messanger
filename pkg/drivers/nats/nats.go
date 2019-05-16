@@ -2,7 +2,7 @@ package nats
 
 import (
 	"context"
-	"fmt"
+	"github.com/nats-io/go-nats-streaming/pb"
 	"log"
 
 	"github.com/sirupsen/logrus"
@@ -67,12 +67,13 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 		//}
 
 		startOpt := stan.DeliverAllAvailable()
-
+		startOpt = stan.StartAt(pb.StartPosition_NewOnly)
 		sub, err := sc.QueueSubscribe(ChannelId, "qgroup", handler, startOpt, stan.DurableName("durable"))
 		if err != nil {
 			sc.Close()
 			log.Fatal(err)
 		}
+		_ = sub
 
 		logrus.Infof("Listening on [%s], clientID=[%s], qgroup=[%s] durable=[%s]\n", ChannelId, userID, "qgroup", "durable")
 
@@ -84,7 +85,7 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 
 				err := ctx.Err()
 				if err != nil {
-					fmt.Println("in <-ctx.Done(): ", err)
+					logrus.Infof("Closing Subscription <-ctx.Done(): ", err)
 				}
 				logrus.Infof("\n unsubscribing and closing connection...\n\n")
 				// Do not unsubscribe a durable on exit, except if asked to.

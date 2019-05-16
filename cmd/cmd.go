@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -15,7 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var AppContext = context.Background()
 
 func Launch(configPath string) {
 	logrus.Info("Checking health")
