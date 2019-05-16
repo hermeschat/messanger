@@ -2,10 +2,12 @@ package newMessage
 
 import (
 	"encoding/json"
-	"github.com/satori/go.uuid"
 	"strings"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
+
+	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
@@ -14,18 +16,16 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 )
 
 type NewMessage struct {
-	Session string
-	From string
-	To string
-	Channel string
+	Session     string
+	From        string
+	To          string
+	Channel     string
 	MessageType string
-	Body string
+	Body        string
 }
-
 
 func Handle(message *NewMessage) error {
 	var err error
@@ -91,7 +91,7 @@ func saveMessageToMongo(message *NewMessage) error {
 		Time:        time.Now(),
 		MessageType: message.MessageType,
 		Body:        message.Body,
-		MessageID: uid.String(),
+		MessageID:   uid.String(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
@@ -123,7 +123,7 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 	if len(channels) < 1 {
 		logrus.Info("no channel found")
 		targetChannel = &channel.Channel{
-			Members: []string{to, from},
+			Members:   []string{to, from},
 			ChannelID: uid.String(),
 		}
 		err := saveChannelToMongo(targetChannel)
@@ -135,7 +135,8 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 		targetChannel = (channels)[0]
 		return targetChannel, nil
 
-	}}
+	}
+}
 
 func ensureChannel(sessionID string, channelID string, userID string) error {
 	//channels, err := getSession(sessionID)
@@ -197,7 +198,7 @@ func getSession(sessionID string) ([]string, error) {
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
 	logrus.Info(msg.From)
-	conn, err := nats.NatsClient(clusterID, natsSrvAddr,msg.From)
+	conn, err := nats.NatsClient(clusterID, natsSrvAddr, msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}
