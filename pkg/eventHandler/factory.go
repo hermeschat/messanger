@@ -16,6 +16,7 @@ import (
 //UserDiscoveryEventHandler handles user discovery
 func UserDiscoveryEventHandler(ctx context.Context,userID string, currentSession string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
+		logrus.Info("!!!!!!!!!!!!!!!!discovery event handler called ")
 		ude := &api.UserDiscoveryEvent{}
 		err := ude.XXX_Unmarshal(msg.Data)
 		if err != nil {

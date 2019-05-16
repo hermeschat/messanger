@@ -7,39 +7,66 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	stan "github.com/nats-io/go-nats-streaming"
+	"github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"git.raad.cloud/cloud/hermes/pkg/session"
 )
 
 type Config struct {
 	NatsSrvAddr string
 	ClusterId   string
 }
+//NatsClient manage to keep nats connection open
+func NatsClient(clusterID string, natsSrvAddr string, clientID string,) (*stan.Conn, error) {
 
-func NatsClient(clusterID string, natsSrvAddr string) (stan.Conn, error) {
-	id, err := uuid.NewV4()
-	if err != nil {
-		return nil, errors.Wrap(err, "Can't generate UUID?!")
+	session.State.Lock()
+	conn, ok := (session.State).Ss[clientID]
+	session.State.Unlock()
+	if ok {
+		logrus.Warn("e khali nist")
+		logrus.Warn(clientID)
+		return conn, nil
 	}
-	natsClient, err := stan.Connect(clusterID, id.String(), stan.NatsURL(natsSrvAddr))
-	if err != nil {
-		return nil, errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	logrus.Warn("__________")
+	for k, _:= range(session.State).Ss{
+		logrus.Warn(k)
 	}
-	return natsClient, nil
+	logrus.Warn("-------------------")
+	logrus.Warn("e khalie!!!!!!!!!!!!!!!")
+	logrus.Warn(clientID)
+	natsClient, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsSrvAddr) )
+	//,stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
+	//		log.Fatalf("Connection lost, reason: %v", reason)
+	//	})
+	if err != nil {
+		return nil,errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+	}
+	session.State.Lock()
+	logrus.Warn("0000000000")
+	for k, _:= range(session.State).Ss{
+		logrus.Warn(k)
+	}
+	logrus.Warn("0000000000")
+	(session.State).Ss[clientID] = &natsClient
+	logrus.Warn("11111111111")
+	for k, _:= range(session.State).Ss{
+		logrus.Warn(k)
+	}
+	logrus.Warn("111111111111")
+	session.State.Unlock()
+	return &natsClient, nil
 }
 
-type Subscriber func() error
+type Subscriber func()
 
 func PublishNewMessage(clusterID string, userID, natsSrvAddr string, ChannelId string, bs []byte) error {
 	// Connect to NATS-Streaming
-	natsClient, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr))
-	if err != nil {
-		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
-	}
-	defer natsClient.Close()
 
-	if err := natsClient.Publish(ChannelId, bs); err != nil {
+	natscon, err := NatsClient(clusterID, natsSrvAddr, userID)
+	if err != nil{
+		return errors.Wrap(err, "failed to connect to nats")
+	}
+	if err := (*natscon).Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
 	return nil
@@ -47,18 +74,15 @@ func PublishNewMessage(clusterID string, userID, natsSrvAddr string, ChannelId s
 
 //t is type we need to pass to find our message type
 func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
-	return func() error {
-		durable := ""
-		sc, err := stan.Connect(clusterID, userID, stan.NatsURL(natsSrvAddr),
-			stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
-				log.Fatalf("Connection lost, reason: %v", reason)
-			}))
+	return func() {
+		durable := "durable"
+		natscon, err := NatsClient(clusterID, natsSrvAddr, userID)
+
 		if err != nil {
-			return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+			logrus.Error(errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr))
 		}
 		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", natsSrvAddr, clusterID, userID)
-		defer sc.Close()
-
+		//defer sc.Close()
 		// sample handler
 		//i := 0
 		//mcb := func(msg *stan.Msg) {
@@ -68,14 +92,13 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 
 		startOpt := stan.DeliverAllAvailable()
 		startOpt = stan.StartAt(pb.StartPosition_NewOnly)
-		sub, err := sc.QueueSubscribe(ChannelId, "qgroup", handler, startOpt, stan.DurableName("durable"))
+		sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt, stan.DurableName(userID))
 		if err != nil {
-			sc.Close()
 			log.Fatal(err)
 		}
 		_ = sub
 
-		logrus.Infof("Listening on [%s], clientID=[%s], qgroup=[%s] durable=[%s]\n", ChannelId, userID, "qgroup", "durable")
+		logrus.Infof("Listening on [%s], clientID=[%s], qgroup=[%s] durable=[%s]\n", ChannelId, userID, "qgroup", userID)
 
 		// Wait for a SIGINT (perhaps triggered by user with CTRL-C)
 		// Run cleanup when signal is received
@@ -92,12 +115,12 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 				if durable == "" {
 					sub.Unsubscribe()
 				}
-				sc.Close()
+				(*natscon).Close()
 				break
 			}
 
 		}()
-		return nil
+		//return nil
 	}
 }
 

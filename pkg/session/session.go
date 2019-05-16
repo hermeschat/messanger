@@ -5,10 +5,12 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository/session"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
+	"github.com/nats-io/go-nats-streaming"
+	"sync"
 )
 
 
@@ -18,6 +20,11 @@ type CreateSession struct {
 	ClientVersion string
 	Node string
 }
+var State = &struct {
+	sync.RWMutex
+	Ss map[string]*stan.Conn
+}{sync.RWMutex{}, map[string]*stan.Conn{}}
+//var State = &map[string]*stan.Conn{}
 
 //wtf you think it would do ? it will create session dumbass
 func Create(cs *CreateSession) (*session.Session,error) {

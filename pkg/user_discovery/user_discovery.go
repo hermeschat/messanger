@@ -10,8 +10,9 @@ import (
 )
 
 func PublishEvent(ude repository.UserDiscoveryEvent) error {
+
 	u := &api.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
-	conn, err := nats.NatsClient("test-cluster", "0.0.0.0:4222")
+	conn, err := nats.NatsClient("test-cluster", "0.0.0.0:4222",ude.UserID)
 	if err != nil {
 		return errors.Wrap(err, "cannot connect to nats")
 	}
@@ -19,7 +20,7 @@ func PublishEvent(ude repository.UserDiscoveryEvent) error {
 	if err != nil {
 		return errors.Wrap(err, "cannot marshal UserDiscoveryEvent")
 	}
-	err = conn.Publish("user-discovery", bs)
+	err = (*conn).Publish("user-discovery", bs)
 	if err != nil {
 		return errors.Wrap(err, "cannot publish UserDiscoveryEvent")
 	}

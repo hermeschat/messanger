@@ -14,14 +14,15 @@ import (
 )
 
 type HermesServer struct {
-
+	Ctx context.Context
 }
+
 var AppContext = context.Background()
 
 func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
 
 	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
-	return &api.Empty{Status:"JWT is ok"}, nil
+	return &api.Empty{Status: "JWT is ok"}, nil
 }
 
 func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, error) {
@@ -31,7 +32,6 @@ func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, 
 func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, error) {
 	panic("implement me")
 }
-
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	e, err := a.Recv()
@@ -54,9 +54,9 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Info("Event is read")
 		r := e.GetRead()
 		rs := &read.ReadSignal{
-			UserID:ident.ID,
-			MessageID:r.MessageID,
-			ChannelID:r.ChannelID,
+			UserID:    ident.ID,
+			MessageID: r.MessageID,
+			ChannelID: r.ChannelID,
 		}
 		err = read.Handle(rs)
 		if err != nil {
@@ -97,18 +97,17 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 				SessionId: j.SessionId,
 			}
 
-			err := join.Handle(AppContext, jp)
-			if err != nil {
-				logrus.Errorf("Error in Join event : %v", err)
-			}
+			join.Handle(h.Ctx, jp)
+			//if err != nil {
+			//	logrus.Errorf("Error in Join event : %v", err)
+			//}
 		}
-		return nil
+		//return nil
 	default:
 		logrus.Infof("Type not matched : %+T", t)
 	}
 	return nil
 }
-
 
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
 	i := ctx.Value("identity")
@@ -129,9 +128,10 @@ func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionR
 	}
 	logrus.Println("done")
 	return &api.CreateSessionResponse{
-		SessionID:s.SessionID,
+		SessionID: s.SessionID,
 	}, nil
 }
+
 //
 //func (h HermesServer) Deliverd(ctx context.Context, message *api.DeliveredSignal) (*api.Empty, error) {
 //	ds := &delivered.DeliverdSignal{
@@ -155,7 +155,6 @@ func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionR
 //	}
 //	return &api.Empty{Status: "200"}, nil
 //}
-
 
 //func (h HermesServer) DestroySession(context.Context, *api.DestroySessionRequest) (*api.Empty, error) {
 //	panic("implement me")

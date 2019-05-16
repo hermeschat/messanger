@@ -2,8 +2,7 @@ package newMessage
 
 import (
 	"encoding/json"
-	stan "github.com/nats-io/go-nats-streaming"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"strings"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 )
 
 type NewMessage struct {
@@ -59,7 +59,7 @@ func Handle(message *NewMessage) error {
 			err := ensureChannel(message.Session, targetChannel.ChannelID, member)
 			if err != nil {
 				logrus.Errorf("error in ensuring channel : %v", err)
-				go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
+				//go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
 			}
 		}
 	}(targetChannel)
@@ -197,16 +197,15 @@ func getSession(sessionID string) ([]string, error) {
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
 	logrus.Info(msg.From)
-	natsClient, err := stan.Connect(clusterID, msg.From, stan.NatsURL(natsSrvAddr))
+	conn, err := nats.NatsClient(clusterID, natsSrvAddr,msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}
-	defer natsClient.Close()
 	bs, err := json.Marshal(msg)
 	if err != nil {
 		return errors.Wrap(err, "error in marshaling message")
 	}
-	if err := natsClient.Publish(ChannelId, bs); err != nil {
+	if err := (*conn).Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
 	logrus.Infof("Published into %s a new message as %s", ChannelId, msg.From)
