@@ -2,7 +2,7 @@ syntax = "proto3";
 
 service Hermes {
     rpc EventBuff(stream Event) returns(stream Event);
-    rpc Echo(Empty) returns (Empty);
+    rpc Echo(Empty) returns (Empty); // for checking connection and jwt
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
     rpc ListChannels(Empty) returns (Channels); //aggreate
     rpc ListMessages (Empty) returns(Messages);

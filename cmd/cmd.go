@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"context"
-	"net"
-
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/nats-io/go-nats-streaming"
+	"net"
 
 	"git.raad.cloud/cloud/hermes/pkg"
 	"git.raad.cloud/cloud/hermes/pkg/api"
@@ -15,9 +14,14 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
-
+//Launch initalize needed things, Checks health of service by checking nats and db, and runs grpc server
 func Launch(configPath string) {
 	var AppContext = context.Background()
+
+	customFormatter := &logrus.TextFormatter{}
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.FullTimestamp = true
+	logrus.SetFormatter(customFormatter)
 
 	logrus.Info("Checking health")
 	healthCheck()
