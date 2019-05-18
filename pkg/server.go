@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"time"
 )
 
 type HermesServer struct {
@@ -34,19 +35,22 @@ func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, 
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
-	e, err := a.Recv()
-	if err != nil {
-		logrus.Errorf("cannot receive event : %v", err)
-		return errors.Wrap(err, "error in reading EventBuff")
-	}
+
 	ctx := a.Context()
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
+	loop:
+	time.Sleep(time.Second)
+	e, err := a.Recv()
+	if err != nil {
+		logrus.Errorf("cannot receive event : %v", err)
+		return errors.Wrap(err, "error in reading EventBuff")
+	}
 	eventHandler.UserSockets.Lock()
-	eventHandler.UserSockets.Us[ident.ID] = &a
+	eventHandler.UserSockets.Us[ident.ID] = a
 	eventHandler.UserSockets.Unlock()
 	logrus.Info("we have a new event")
 	switch t := e.GetEvent().(type) {
@@ -86,7 +90,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 				logrus.Errorf("Error in NewMessage Event : %v", err)
 			}
 		}
-		return nil
+		//return nil
 	case *api.Event_Join:
 		j := e.GetJoin()
 		logrus.Info(j)
@@ -106,7 +110,8 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	default:
 		logrus.Infof("Type not matched : %+T", t)
 	}
-	return nil
+	goto loop
+	//return nil
 }
 
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {

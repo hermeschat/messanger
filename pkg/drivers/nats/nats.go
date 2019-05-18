@@ -5,8 +5,6 @@ import (
 	"log"
 	"sync"
 
-	"github.com/nats-io/go-nats-streaming/pb"
-
 	"github.com/sirupsen/logrus"
 
 	stan "github.com/nats-io/go-nats-streaming"
@@ -82,7 +80,7 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 		//}
 
 		startOpt := stan.DeliverAllAvailable()
-		startOpt = stan.StartAt(pb.StartPosition_NewOnly)
+
 		// sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt, stan.DurableName(userID))
 		sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt)
 		if err != nil {
