@@ -19,3 +19,4 @@ hermes
 .vscode/%
 .idea
 temp
+pkg/auth
