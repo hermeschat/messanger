@@ -20,3 +20,4 @@ hermes
 .idea
 temp
 pkg/auth
+example-client
