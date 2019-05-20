@@ -1,21 +1,24 @@
 package pkg
 
 import (
+	"time"
+
 	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/auth"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/join"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/read"
 	"git.raad.cloud/cloud/hermes/pkg/session"
+	"git.raad.cloud/cloud/qr-service/utils/auth"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type HermesServer struct {
 	Ctx context.Context
+}
+type Identity struct {
 }
 
 var AppContext = context.Background()
@@ -42,7 +45,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
-	loop:
+loop:
 	time.Sleep(time.Second)
 	e, err := a.Recv()
 	if err != nil {
