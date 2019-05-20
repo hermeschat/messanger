@@ -21,3 +21,4 @@ hermes
 temp
 pkg/auth
 example-client
+.gitlab-ci.yml
