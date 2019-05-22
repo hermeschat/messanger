@@ -62,6 +62,7 @@ func healthCheck() {
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}
+
 	db := client.Database("hermes")
 	c, err := db.ListCollections(ctx, nil)
 	if err != nil {
