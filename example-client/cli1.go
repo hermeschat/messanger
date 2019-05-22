@@ -26,7 +26,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	return
+
 	resp, err := cli.CreateSession(ctx, &api.CreateSessionRequest{
 		ClientType: "Ubuntu",
 		UserAgent:  "Terminal",

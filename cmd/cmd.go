@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/nats-io/go-nats-streaming"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net"
 
 	"git.raad.cloud/cloud/hermes/pkg"
@@ -53,5 +54,6 @@ func healthCheck() {
 	if err != nil {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
+	mongo.Connect(context.Background(), )
 	return
 }
