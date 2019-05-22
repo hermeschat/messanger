@@ -34,7 +34,7 @@ var MongoURI = GetEnv("MongoURI", MongoHost)
 //MongoDBName
 var MongoDBName = GetEnv("MongoDBName", "qr_rc")
 
-var ApplicationServiceURL = "https://api.paygear.ir/application/v3"
+var ApplicationServiceURL = "http://app-rc"
 
 // Club Base URL
 var ClubBaseURL = base.GetEnv("ClubBaseURL", "https://api.paygear.ir/club")
