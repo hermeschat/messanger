@@ -75,6 +75,6 @@ func healthCheck() {
 		}
 		logrus.Infof("Collection Found : %v", name)
 	}
-	client.Disconnect()
+	client.Disconnect(ctx)
 	return
 }
