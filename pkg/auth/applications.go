@@ -48,7 +48,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		}
 	}
 	fmt.Println("Get Applications")
-	url := config.ApplicationServiceURL + "/v3" + "/applications/" + applicationID + "?services=true"
+	url := "http://app-rc/v3" + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", "bearer "+config.AuthToken)
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
