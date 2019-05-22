@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"git.raad.cloud/cloud/hermes/config"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"time"
-	)
+
+	"git.raad.cloud/cloud/hermes/config"
+	"github.com/sirupsen/logrus"
+)
 
 type Service struct {
 	BitwiseAbilities int64 `json:"bitwise_abilities,omitempty" structs:"bitwise_abilities,omitempty"`
@@ -47,7 +48,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		}
 	}
 	fmt.Println("Get Applications")
-	url := "https://api.paygear.ir/application/v3" + "/applications/" + applicationID + "?services=true"
+	url := config.ApplicationServiceURL + "/v3" + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", "bearer "+config.AuthToken)
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
