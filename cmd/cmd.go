@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"net"
 	"time"
 
@@ -62,20 +63,9 @@ func healthCheck() {
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}
-
-	db := client.Database("hermes")
-	c, err := db.ListCollections(ctx, nil)
+	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		logrus.Fatalf("could not get collections of hermes : %v", err)
+		logrus.Fatalf("could not ping database")
 	}
-	for c.Next(ctx) {
-		var name string
-		err := c.Decode(&name)
-		if err != nil {
-			logrus.Fatalf("error in decoding : %v", err)
-		}
-		logrus.Infof("Collection Found : %v", name)
-	}
-	client.Disconnect(ctx)
 	return
 }
