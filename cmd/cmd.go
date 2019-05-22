@@ -2,20 +2,14 @@ package cmd
 
 import (
 	"context"
+	"git.raad.cloud/cloud/hermes/pkg"
+	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/nats-io/go-nats-streaming"
-	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"net"
-	"time"
-
-	"git.raad.cloud/cloud/hermes/pkg"
-	"git.raad.cloud/cloud/hermes/pkg/api"
 	"google.golang.org/grpc"
+	"net"
 
 	"github.com/sirupsen/logrus"
 )
@@ -58,14 +52,14 @@ func healthCheck() {
 	if err != nil {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.43:27017"))
-	if err != nil {
-		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
-	}
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		logrus.Fatalf("could not ping database")
-	}
+	//ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	//client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.43:27017"))
+	//if err != nil {
+	//	logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
+	//}
+	//err = client.Ping(ctx, readpref.Primary())
+	//if err != nil {
+	//	logrus.Fatalf("could not ping database")
+	//}
 	return
 }
