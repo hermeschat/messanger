@@ -1,7 +1,7 @@
 package eventHandler
 
 import (
-	"fmt"
+	"encoding/json"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
@@ -14,9 +14,9 @@ import (
 )
 
 //UserDiscoveryEventHandler handles user discovery
-func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *stan.Msg) {
+func UserDiscoveryEventHandler(ctx context.Context,userID string, currentSession string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		logrus.Info("In UserDiscoveryEventHandler")
+		logrus.Info("!!!!!!!!!!!!!!!!discovery event handler called ")
 		ude := &api.UserDiscoveryEvent{}
 		err := ude.XXX_Unmarshal(msg.Data)
 		if err != nil {
@@ -34,40 +34,47 @@ func UserDiscoveryEventHandler(userID string, currentSession string) func(msg *s
 		//			channelExist = true
 		//		}
 		//	}
-			channelExist := false
-			if !channelExist{
-				ctx, _ := context.WithCancel(context.Background())
-				logrus.Infof("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
-				sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
-				go sub()
-			}
-		}
+		//	channelExist := false
+
+		logrus.Warnf("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
+		sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
+		sub()
+
+	}
 	}
 var UserSockets = struct {
 	sync.RWMutex
-	Us map[string]*api.Hermes_EventBuffServer
+	Us map[string]api.Hermes_EventBuffServer
 }{
 	sync.RWMutex{},
-	map[string]*api.Hermes_EventBuffServer{},
+	map[string]api.Hermes_EventBuffServer{},
 }
 
 
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
+		//logrus.Warnf("Message is %v", string(msg.Data))
+		m := &api.Message{}
+		err := json.Unmarshal(msg.Data, m)
+		//_ ,err := m.XXX_Marshal(msg.Data, false)
+		if err != nil {
+			logrus.Errorf("error in unmarshalling nats message in message handler")
+		}
 		logrus.Info("In NewMessage Event Handler")
+		logrus.Infof("Recieved a new message in %s", channelID)
 		UserSockets.RLock()
-		err := (*UserSockets.Us[userID]).Send(&api.Event{Event:&api.Event_NewMessage{&api.Message{
-			From: "server",
-		}}})
-		logrus.Errorf("cannot push to client ", err)
-		fmt.Printf("Recieved New Message In %s", channelID)
+		err = (UserSockets.Us[userID]).Send(&api.Event{Event:&api.Event_NewMessage{m}})
+		UserSockets.RUnlock()
+		if err != nil {
+			logrus.Errorf("cannot push to client ", err)
+		}
 	}
 }
 
-func subscribeChannel(channelID string, userID string) {
-	ctx, _ := context.WithCancel(context.Background())
-	sub := nats.MakeSubscriber(ctx, userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
+func subscribeChannel(ctx context.Context, channelID string, userID string) {
+	//ctx, _ := context.WithTimeout(context.Background(), time.Hour * 1)
+	sub := nats.MakeSubscriber(ctx,userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
 	go sub()
 }
 

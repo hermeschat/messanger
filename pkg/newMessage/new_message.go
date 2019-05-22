@@ -2,11 +2,12 @@ package newMessage
 
 import (
 	"encoding/json"
-	stan "github.com/nats-io/go-nats-streaming"
-	uuid "github.com/satori/go.uuid"
 	"strings"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
+
+	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
@@ -18,14 +19,13 @@ import (
 )
 
 type NewMessage struct {
-	Session string
-	From string
-	To string
-	Channel string
+	Session     string
+	From        string
+	To          string
+	Channel     string
 	MessageType string
-	Body string
+	Body        string
 }
-
 
 func Handle(message *NewMessage) error {
 	var err error
@@ -46,7 +46,7 @@ func Handle(message *NewMessage) error {
 		// check for channel existance in db or cache
 	}
 	logrus.Infof("target channel %+v", targetChannel)
-	func(targetChannel *channel.Channel) {
+	go func(targetChannel *channel.Channel) {
 		if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
 			targetChannel, err = channel.Get(targetChannel.ChannelID)
 			if err != nil {
@@ -59,7 +59,7 @@ func Handle(message *NewMessage) error {
 			err := ensureChannel(message.Session, targetChannel.ChannelID, member)
 			if err != nil {
 				logrus.Errorf("error in ensuring channel : %v", err)
-				retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
+				//go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
 			}
 		}
 	}(targetChannel)
@@ -91,7 +91,7 @@ func saveMessageToMongo(message *NewMessage) error {
 		Time:        time.Now(),
 		MessageType: message.MessageType,
 		Body:        message.Body,
-		MessageID: uid.String(),
+		MessageID:   uid.String(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
@@ -123,7 +123,7 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 	if len(channels) < 1 {
 		logrus.Info("no channel found")
 		targetChannel = &channel.Channel{
-			Members: []string{to, from},
+			Members:   []string{to, from},
 			ChannelID: uid.String(),
 		}
 		err := saveChannelToMongo(targetChannel)
@@ -135,7 +135,8 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 		targetChannel = (channels)[0]
 		return targetChannel, nil
 
-	}}
+	}
+}
 
 func ensureChannel(sessionID string, channelID string, userID string) error {
 	//channels, err := getSession(sessionID)
@@ -197,16 +198,15 @@ func getSession(sessionID string) ([]string, error) {
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
 	logrus.Info(msg.From)
-	natsClient, err := stan.Connect(clusterID, msg.From, stan.NatsURL(natsSrvAddr))
+	conn, err := nats.NatsClient(clusterID, natsSrvAddr, msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
 	}
-	defer natsClient.Close()
 	bs, err := json.Marshal(msg)
 	if err != nil {
 		return errors.Wrap(err, "error in marshaling message")
 	}
-	if err := natsClient.Publish(ChannelId, bs); err != nil {
+	if err := (*conn).Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
 	logrus.Infof("Published into %s a new message as %s", ChannelId, msg.From)

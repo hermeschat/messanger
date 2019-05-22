@@ -13,7 +13,7 @@ type DeliverdSignal struct {
 	MessageID string
 }
 
-//Handle ...
+//Handle delivered signal will publish a new event of type delivered in given channel to notify other users that the given message is delivered
 func Handle(sig *DeliverdSignal) error {
 	bs, err := json.Marshal(sig)
 	if err != nil {

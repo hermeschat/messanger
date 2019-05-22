@@ -1,12 +1,11 @@
 package config
 
 import (
-	base "github.com/alive2212/go-illuminate/config"
 	"os"
 	"time"
 
+	base "github.com/alive2212/go-illuminate/config"
 )
-
 
 // ServiceName name of service existing in app service
 var ServiceName = "qr"
@@ -19,7 +18,7 @@ var Port = GetEnv("PORT_TEST", "10000")
 var AuthToken = GetEnv("INTERNAL_REQUEST_AUTHENTICATION_TOKEN", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1laWQiOiJhY2NvdW50cy1zZXJ2aWNlIiwiaWQiOiI1OTgxYTFlNDFkNDFjODRjYWU5MDRmZDMiLCJ1bmlxdWVfbmFtZSI6ImFjY291bnRzLXNlcnZpY2UiLCJzdWIiOiJhY2NvdW50cy1zZXJ2aWNlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdC8iLCJyb2xlIjpbInpldXMiLCJyb3N0YW0iXSwiYXVkIjoiYjlkYzcxMmM5NTJiNGFhZmI0ODFhYmVkZTBmZWM0ZDgiLCJleHAiOjk5OTk5OTk5OTksIm5iZiI6MTQ5NzE3ODI0NSwiYXBwIjoiNWE5NTYzZjM4NDllMDY3NzEwNWRmNTI5In0.fyU5e4KXpZilnDcxhKRkbYw0paAX15RNGXpifgWvHbY")
 
 // API Key
-var	APIKey	= base.GetEnv("APIKey","5aa7e856ae7fbc00016ac5a0ede56b6989e14706a6215f4207a40996")
+var APIKey = base.GetEnv("APIKey", "5aa7e856ae7fbc00016ac5a0ede56b6989e14706a6215f4207a40996")
 
 // ClientID of current application
 var ClientID = GetEnv("CLIENT_ID", "b9dc712c952b4aafb481abede0fec4d8")
@@ -39,7 +38,6 @@ var ApplicationServiceURL = "https://api.paygear.ir/application/v3"
 
 // Club Base URL
 var ClubBaseURL = base.GetEnv("ClubBaseURL", "https://api.paygear.ir/club")
-
 
 // // Init initialize configurations
 func Init() {

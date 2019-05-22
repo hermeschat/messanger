@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	stan "github.com/nats-io/go-nats-streaming"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/nats-io/go-nats-streaming"
 	"net"
 
 	"git.raad.cloud/cloud/hermes/pkg"
@@ -14,10 +14,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
-
-var AppContext = context.Background()
-
+//Launch initalize needed things, Checks health of service by checking nats and db, and runs grpc server
 func Launch(configPath string) {
+	var AppContext = context.Background()
+
+	customFormatter := &logrus.TextFormatter{}
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.FullTimestamp = true
+	logrus.SetFormatter(customFormatter)
+
 	logrus.Info("Checking health")
 	healthCheck()
 	logrus.Info("Health check passed")
@@ -33,7 +38,7 @@ func Launch(configPath string) {
 	srv := grpc.NewServer(grpc.StreamInterceptor(streamChain), grpc.UnaryInterceptor(unaryChain))
 	//srv := grpc.NewServer()
 	logrus.Info("Created New GRPC Server")
-	hermes := pkg.HermesServer{}
+	hermes := pkg.HermesServer{AppContext}
 	api.RegisterHermesServer(srv, hermes)
 	logrus.Info("Registering Hermes RPCs")
 	err = srv.Serve(lis)
@@ -44,7 +49,7 @@ func Launch(configPath string) {
 }
 
 func healthCheck() {
-	_ , err := stan.Connect("test-cluster", "hermes-itself")
+	_, err := stan.Connect("test-cluster", "hermes-itself")
 	if err != nil {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
