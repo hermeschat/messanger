@@ -52,7 +52,8 @@ func Create(cs *CreateSession) (*session.Session,error) {
 	logrus.Infof("Json Marshal")
 	logrus.Infof("%+v", s)
 	status := conn.Set(s.SessionID, jsonSession, time.Hour*12)
-	if status.Err() != nil {
+	_, err = status.Result()
+	if err != nil {
 		logrus.Errorf("could not set redis key :%s", err.Error())
 		return s, nil
 	}
