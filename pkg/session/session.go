@@ -43,6 +43,7 @@ func Create(cs *CreateSession) (*session.Session,error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error in connecting to redis")
 	}
+	logrus.Info("Conencted To redis")
 	//TODO: initialize sessionID with mongo objectid
 	jsonSession, err := json.Marshal(s)
 	if err != nil {

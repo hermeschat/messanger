@@ -35,7 +35,6 @@ func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, 
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
-
 	ctx := a.Context()
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
