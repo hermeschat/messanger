@@ -4,14 +4,18 @@ service Hermes {
     rpc EventBuff(stream Event) returns(stream Event);
     rpc Echo(Empty) returns (Empty); // for checking connection and jwt
     rpc CreateSession (CreateSessionRequest) returns (CreateSessionResponse);
-    rpc ListChannels(Empty) returns (Channels); //aggreate
-    rpc ListMessages (Empty) returns(Messages);
+    rpc ListChannels(Empty) returns (Channels); //aggreate return aggregated account
+    rpc ListMessages (channelID) returns(Messages);
+    rpc GetChannel(channelID) returns(Channel);
     // rpc NewMessage (stream Message) returns (stream Message);
     // rpc Join(JoinSignal) returns(Empty);
     // rpc Read(ReadSignal) returns(Empty);
     // rpc KeepAlive (KeepAliveSignal) returns (Empty);
     // rpc Deliverd (DeliveredSignal) returns (Empty);
     // rpc DestroySession(DestroySessionRequest) returns (Empty);
+}
+message channelID {
+    string id = 1;
 }
 message ReadSignal {
     string messageID = 1;

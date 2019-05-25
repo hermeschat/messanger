@@ -58,7 +58,7 @@ func healthCheck() {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.43:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.42:27017"))
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}
