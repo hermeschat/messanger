@@ -16,7 +16,7 @@ func ConnectRedis() (*rds.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	Addr := fmt.Sprintf("%s:%s", "127.0.0.1", "6379")
+	Addr := fmt.Sprintf("%s:%s", "redis-rc", "6379")
 	client := rds.NewClient(&rds.Options{
 		Addr:        Addr,
 		Password:    "",     // no password set
