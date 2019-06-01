@@ -125,6 +125,10 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 		targetChannel = &channel.Channel{
 			Members:   []string{to, from},
 			ChannelID: uid.String(),
+			Roles: map[string][]string{
+				to:   []string{"RWM"},
+				from: []string{"RWM"},
+			},
 		}
 		err := saveChannelToMongo(targetChannel)
 		if err != nil {

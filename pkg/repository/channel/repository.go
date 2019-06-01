@@ -2,19 +2,36 @@ package channel
 
 import (
 	"context"
+	"log"
+
 	"git.raad.cloud/cloud/hermes/pkg/drivers/mongo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	mgo "go.mongodb.org/mongo-driver/mongo"
-	"log"
+)
+
+//Type specifies which type of channel we are using
+type Type int
+
+const (
+	//Secret chat with expire time
+	Secret = iota
+	//Private chat between two persons
+	Private
+	//TGChannel just Telegram channel
+	TGChannel
+	//Group is like telegram groups
+	Group
 )
 
 //Channel ...
 type Channel struct {
-	ChannelID string `json:"channelID" bson:"ChannelID"`
-	Members   []string `json:"Members" bson:"Members"`
-	Creator   string `json:"Creator" bson:"Creator"`
+	ChannelID string              `json:"channelID" bson:"ChannelID"`
+	Members   []string            `json:"Members" bson:"Members"`
+	Creator   string              `json:"Creator" bson:"Creator"`
+	Type      Type                `json:"type" bson:"type"`
+	Roles     map[string][]string `json:"roles" bson:"roles"`
 }
 
 //ConstructFromMap ...

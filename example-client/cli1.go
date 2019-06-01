@@ -36,7 +36,7 @@ func main() {
 	}
 	sid := resp.SessionID
 	logrus.Info(sid)
-	return
+	
 	eventCli, err := cli.EventBuff(ctx)
 	if err != nil {
 		panic(err)
