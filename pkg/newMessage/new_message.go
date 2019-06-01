@@ -129,6 +129,7 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 				to:   []string{"RWM"},
 				from: []string{"RWM"},
 			},
+			Type: channel.Private,
 		}
 		err := saveChannelToMongo(targetChannel)
 		if err != nil {
