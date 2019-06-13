@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"time"
+
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
@@ -11,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type HermesServer struct {
@@ -31,7 +32,11 @@ func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, 
 }
 
 func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, error) {
-	panic("implement me")
+	return &api.Messages{
+		Msg: []*api.Message{
+			&api.Message{From: "5c4c2683bfd02a2b923af8be", To: "5c4c2683bfd02a2b923af8bf", Body: "salam aleyk"},
+		},
+	}, nil
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
@@ -41,7 +46,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
-	loop:
+loop:
 	time.Sleep(time.Second)
 	e, err := a.Recv()
 	if err != nil {
