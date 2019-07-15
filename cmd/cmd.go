@@ -2,22 +2,24 @@ package cmd
 
 import (
 	"context"
+	"net"
+	"time"
+
 	"git.raad.cloud/cloud/hermes/pkg"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/nats-io/go-nats-streaming"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"google.golang.org/grpc"
-	"net"
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
+
 //Launch initalize needed things, Checks health of service by checking nats and db, and runs grpc server
 func Launch(configPath string) {
 	var AppContext = context.Background()
@@ -58,7 +60,7 @@ func healthCheck() {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.42:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.221:32017"))
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}
