@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"time"
 )
 
 // ServiceName name of service existing in app service
@@ -37,15 +36,6 @@ var ApplicationServiceURL = "http://app-rc"
 // Club Base URL
 var ClubBaseURL = GetEnv("ClubBaseURL", "https://api.paygear.ir/club")
 
-// // Init initialize configurations
-func Init() {
-	time.Local = time.UTC
-	ServiceName = GetEnv("SERVICE_NAME", ServiceName)
-	Port = GetEnv("PORT", "10000")
-	AuthToken = GetEnv("INTERNAL_REQUEST_AUTHENTICATION_TOKEN", AuthToken)
-	ApplicationServiceURL = GetEnv("APPLICATION_URL", ApplicationServiceURL)
-
-}
 func GetEnv(key, fallback string) string {
 	value := os.Getenv(key)
 	if len(value) == 0 {
