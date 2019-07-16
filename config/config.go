@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"time"
-
 )
 
 // ServiceName name of service existing in app service
@@ -43,8 +42,6 @@ func Init() {
 	time.Local = time.UTC
 	ServiceName = GetEnv("SERVICE_NAME", ServiceName)
 	Port = GetEnv("PORT", "10000")
-	MongoHost = GetEnv("MongoHost", "localhost")
-	MongoURI = GetEnv("MongoURI", MongoHost)
 	AuthToken = GetEnv("INTERNAL_REQUEST_AUTHENTICATION_TOKEN", AuthToken)
 	ApplicationServiceURL = GetEnv("APPLICATION_URL", ApplicationServiceURL)
 
