@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"git.raad.cloud/cloud/hermes/config"
 	"net"
 	"time"
 
@@ -60,7 +61,7 @@ func healthCheck() {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.221:32017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI))
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}

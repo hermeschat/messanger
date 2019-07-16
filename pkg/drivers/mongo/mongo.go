@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"git.raad.cloud/cloud/hermes/config"
 	"time"
 
 	"github.com/pkg/errors"
@@ -12,7 +13,7 @@ import (
 //GetCollection gets collection that you gave us name of
 func GetCollection(collectionName string) (*mongo.Collection, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://192.168.41.42:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI))
 	if err != nil {
 		return nil, errors.Wrap(err, "can't connect to mongodb FUCK")
 	}
