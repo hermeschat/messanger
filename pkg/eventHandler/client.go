@@ -162,7 +162,7 @@ func (c *Client) handleEvents(message []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "could not authorize token")
 	}
-
+	logrus.Info("Token is OK")
 	BaseHub.ClientsMap[ident.ID] = c
 	eventType, ok := event["type"]
 	if !ok {
