@@ -40,6 +40,7 @@ func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, 
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
+	logrus.Info(">>>>>>> We Are in Event Buff ")
 	ctx := a.Context()
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
@@ -57,6 +58,7 @@ loop:
 	eventHandler.UserSockets.Us[ident.ID] = a
 	eventHandler.UserSockets.Unlock()
 	logrus.Info("we have a new event")
+
 	switch t := e.GetEvent().(type) {
 	case *api.Event_Read:
 		logrus.Info("Event is read")
