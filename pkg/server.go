@@ -47,7 +47,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
-loop:
+
 	time.Sleep(time.Second)
 	e, err := a.Recv()
 	if err != nil {
@@ -116,8 +116,8 @@ loop:
 	default:
 		logrus.Infof("Type not matched : %+T", t)
 	}
-	goto loop
-	//return nil
+	//goto loop
+	return nil
 }
 
 func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
