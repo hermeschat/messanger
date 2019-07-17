@@ -210,6 +210,7 @@ func (c *Client) handleEvents(message []byte) error {
 		if err != nil {
 			return errors.Wrap(err, "error while decoding event into ReadSignal")
 		}
+		rs.UserID = ident.ID
 		Handle(context.Background(), rs)
 	}
 	return nil
