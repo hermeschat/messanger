@@ -46,6 +46,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
+loop:
 
 	time.Sleep(time.Millisecond * 500)
 	e, err := a.Recv()
@@ -58,7 +59,6 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	eventHandler.UserSockets.Us[ident.ID] = a
 	eventHandler.UserSockets.Unlock()
 	logrus.Info("we have a new event")
-loop:
 	switch t := e.GetEvent().(type) {
 	case *api.Event_Read:
 		logrus.Info("Event is read")
