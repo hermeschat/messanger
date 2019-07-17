@@ -1,8 +1,6 @@
 package pkg
 
 import (
-	"time"
-
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
@@ -13,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"time"
 )
 
 type HermesServer struct {
@@ -49,12 +48,12 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	}
 
 	time.Sleep(time.Second)
-	for{
 	e, err := a.Recv()
 	if err != nil {
 		logrus.Errorf("cannot receive event : %v", err)
 		return errors.Wrap(err, "error in reading EventBuff")
 	}
+
 	eventHandler.UserSockets.Lock()
 	eventHandler.UserSockets.Us[ident.ID] = a
 	eventHandler.UserSockets.Unlock()
@@ -118,7 +117,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Infof("Type not matched : %+T", t)
 	}
 	//goto loop
-	}
+
 	return nil
 }
 
