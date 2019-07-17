@@ -64,11 +64,17 @@ func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg)
 		logrus.Info("In NewMessage Event Handler")
 		logrus.Infof("Recieved a new message in %s", channelID)
 		UserSockets.RLock()
-		err = (UserSockets.Us[userID]).Send(&api.Event{Event:&api.Event_NewMessage{m}})
-		UserSockets.RUnlock()
-		if err != nil {
-			logrus.Errorf("cannot push to client ", err)
+		userSocket, ok := UserSockets.Us[userID]
+		if !ok {
+			logrus.Errorf("error: user socket not found ")
+			return
 		}
+		err=userSocket.Send(&api.Event{Event:&api.Event_NewMessage{m}})
+		if err != nil {
+			logrus.Errorf("error: cannot send event new message to user ")
+			return
+		}
+		UserSockets.RUnlock()
 	}
 }
 
