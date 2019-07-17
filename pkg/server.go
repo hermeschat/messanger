@@ -49,6 +49,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	}
 
 	time.Sleep(time.Second)
+	for{
 	e, err := a.Recv()
 	if err != nil {
 		logrus.Errorf("cannot receive event : %v", err)
@@ -117,6 +118,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Infof("Type not matched : %+T", t)
 	}
 	//goto loop
+	}
 	return nil
 }
 
