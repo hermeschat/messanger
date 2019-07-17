@@ -50,7 +50,7 @@ func main() {
 	time.Sleep(time.Second * 2)
 	err = eventCli.Send(&api.Event{Event: &api.Event_NewMessage{&api.Message{
 		To:   "5c4c2683bfd02a2b923af8bf",
-		Body: "salam 4",
+		Body: "salam 5",
 	}}})
 	logrus.Info("Sent message")
 	logrus.Info("Done")

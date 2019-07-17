@@ -1,10 +1,10 @@
 package eventHandler
 
 import (
-	"encoding/json"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
+	"git.raad.cloud/cloud/hermes/pkg/session"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -14,7 +14,7 @@ import (
 )
 
 //UserDiscoveryEventHandler handles user discovery
-func UserDiscoveryEventHandler(ctx context.Context,userID string, currentSession string) func(msg *stan.Msg) {
+func UserDiscoveryEventHandler(ctx context.Context, userID string, currentSession string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Info("!!!!!!!!!!!!!!!!discovery event handler called ")
 		ude := &api.UserDiscoveryEvent{}
@@ -41,7 +41,8 @@ func UserDiscoveryEventHandler(ctx context.Context,userID string, currentSession
 		sub()
 
 	}
-	}
+}
+
 var UserSockets = struct {
 	sync.RWMutex
 	Us map[string]api.Hermes_EventBuffServer
@@ -50,37 +51,42 @@ var UserSockets = struct {
 	map[string]api.Hermes_EventBuffServer{},
 }
 
-
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Warnf("Message is %v", string(msg.Data))
-		m := &api.Message{}
-		err := json.Unmarshal(msg.Data, m)
-		//_ ,err := m.XXX_Marshal(msg.Data, false)
-		if err != nil {
-			logrus.Errorf("error in unmarshalling nats message in message handler")
-		}
+		//m := &api.Message{}
+		//err := json.Unmarshal(msg.Data, m)
+		////_ ,err := m.XXX_Marshal(msg.Data, false)
+		//if err != nil {
+		//	logrus.Errorf("error in unmarshalling nats message in message handler")
+		//}
 		logrus.Info("In NewMessage Event Handler")
 		logrus.Infof("Recieved a new message in %s", channelID)
-		UserSockets.RLock()
-		userSocket, ok := UserSockets.Us[userID]
+		c, ok := BaseHub.ClientsMap[userID]
 		if !ok {
-			logrus.Errorf("error: user socket not found ")
-			return
+			logrus.Error("no active connection found for user")
 		}
-		err=userSocket.Send(&api.Event{Event:&api.Event_NewMessage{m}})
-		if err != nil {
-			logrus.Errorf("error: cannot send event new message to user ")
-			return
-		}
-		UserSockets.RUnlock()
+
+		c.send <- msg.Data
+		//UserSockets.RLock()
+		//userSocket, ok := UserSockets.Us[userID]
+		//if !ok {
+		//	logrus.Errorf("error: user socket not found ")
+		//	return
+		//}
+		//err=userSocket.Send(&api.Event{Event:&api.Event_NewMessage{m}})
+		//if err != nil {
+		//	logrus.Errorf("error: cannot send event new message to user ")
+		//	return
+		//}
+		//UserSockets.RUnlock()
 	}
 }
 
 func subscribeChannel(ctx context.Context, channelID string, userID string) {
 	//ctx, _ := context.WithTimeout(context.Background(), time.Hour * 1)
-	sub := nats.MakeSubscriber(ctx,userID,"test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
+	sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", channelID, NewMessageEventHandler(channelID, userID))
 	go sub()
 }
 
@@ -94,4 +100,35 @@ func getSession(sessionID string) ([]string, error) {
 		return nil, errors.Wrap(err, "Fail get from redis")
 	}
 	return strings.Split(channels, ","), nil
+}
+
+//JoinPayload ...
+type JoinPayload struct {
+	UserID    string
+	SessionId string
+}
+
+func Handle(ctx context.Context, sig *JoinPayload) {
+
+	s, err := session.GetSession(sig.SessionId)
+	if err != nil {
+		msg := errors.Wrap(err, "cannot get session").Error()
+		logrus.Error(msg)
+		logrus.Error(errors.Wrap(err, "error in joining"))
+	}
+	//logic session validation
+	_ = s
+	// check jwt
+	check := true
+	if !check {
+		msg := errors.New("jwt is shit")
+		logrus.Error(msg.Error())
+		logrus.Error(errors.Wrap(err, "error in authenticating"))
+	}
+	//get user id from jwt
+	//ctx, _ = context.WithTimeout(ctx, time.Hour*1)
+
+	logrus.Infof("Subscribing to user-discovery as %s", sig.UserID)
+	sub := nats.MakeSubscriber(ctx, sig.UserID, "test-cluster", "0.0.0.0:4222", "user-discovery", UserDiscoveryEventHandler(ctx, sig.UserID, s.SessionID))
+	go sub()
 }
