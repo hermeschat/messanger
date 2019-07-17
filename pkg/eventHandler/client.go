@@ -204,7 +204,13 @@ func (c *Client) handleEvents(message []byte) error {
 			logrus.Errorf("Error in handling read signal")
 		}
 	case "JOIN":
-		logrus.Println("READ event")
+		logrus.Println(" event is JOin")
+		rs := &JoinPayload{}
+		err := mapstructure.Decode(event, rs)
+		if err != nil {
+			return errors.Wrap(err, "error while decoding event into ReadSignal")
+		}
+		Handle(context.Background(), rs)
 	}
 	return nil
 }
