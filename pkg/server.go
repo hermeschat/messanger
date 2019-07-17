@@ -58,7 +58,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	eventHandler.UserSockets.Us[ident.ID] = a
 	eventHandler.UserSockets.Unlock()
 	logrus.Info("we have a new event")
-
+loop:
 	switch t := e.GetEvent().(type) {
 	case *api.Event_Read:
 		logrus.Info("Event is read")
@@ -116,6 +116,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	default:
 		logrus.Infof("Type not matched : %+T", t)
 	}
+	goto loop
 
 	return nil
 }

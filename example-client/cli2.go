@@ -44,10 +44,6 @@ func main() {
 
 	logrus.Info("Wait for any event")
 	for {
-		err := eventCli.Send(&api.Event{Event: &api.Event_Keep{&api.KeepAliveSignal{}}})
-		if err != nil {
-			panic(err)
-		}
 		ev, err := eventCli.Recv()
 		if err != nil {
 			continue
