@@ -27,29 +27,30 @@ func main() {
 		panic(err)
 	}
 
-	resp, err := cli.CreateSession(ctx, &api.CreateSessionRequest{
-		ClientType: "Ubuntu",
-		UserAgent:  "Terminal",
-	})
-	if err != nil {
-		panic(err)
-	}
-	sid := resp.SessionID
-	logrus.Info(sid)
-
+	//resp, err := cli.CreateSession(ctx, &api.CreateSessionRequest{
+	//	ClientType: "Ubuntu",
+	//	UserAgent:  "Terminal",
+	//})
+	//if err != nil {
+	//	panic(err)
+	//}
+	//sid := resp.SessionID
+	//logrus.Info(sid)
+	//
+	sid := "d4c67b1b-87a8-4c55-9738-a976b693247b"
 	eventCli, err := cli.EventBuff(ctx)
 	if err != nil {
 		panic(err)
 	}
-	//err = eventCli.Send(&api.Event{Event: &api.Event_Join{&api.JoinSignal{SessionId:sid}}})
-	//if err != nil {
-	//	panic(err)
-	//}
+	err = eventCli.Send(&api.Event{Event: &api.Event_Join{&api.JoinSignal{SessionId:sid}}})
+	if err != nil {
+		panic(err)
+	}
 	logrus.Info("Joined")
 	time.Sleep(time.Second * 2)
 	err = eventCli.Send(&api.Event{Event: &api.Event_NewMessage{&api.Message{
 		To:   "5c4c2683bfd02a2b923af8bf",
-		Body: "chetori?",
+		Body: "salam 1",
 	}}})
 	logrus.Info("Sent message")
 	logrus.Info("Done")

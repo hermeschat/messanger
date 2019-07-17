@@ -47,7 +47,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Errorf("Cannot get identity out of context")
 	}
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Millisecond * 500)
 	e, err := a.Recv()
 	if err != nil {
 		logrus.Errorf("cannot receive event : %v", err)
@@ -116,7 +116,6 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	default:
 		logrus.Infof("Type not matched : %+T", t)
 	}
-	//goto loop
 
 	return nil
 }

@@ -7,9 +7,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
+	"time"
 )
 
-func UnaryAuthJWTInterceptor(ctx context.Context) (context.Context, error){
+func UnaryAuthJWTInterceptor(ctx context.Context) (context.Context, error) {
 	logrus.Info("In UnaryJWTInterceptor")
 	ident, err := jwtCheck(ctx)
 	if err != nil {
@@ -19,19 +20,20 @@ func UnaryAuthJWTInterceptor(ctx context.Context) (context.Context, error){
 
 	grpc_ctxtags.Extract(ctx).Set("identity", ident)
 	newCtx := context.WithValue(ctx, "identity", ident)
+	newCtx, _ = context.WithTimeout(newCtx, time.Hour)
 	//newCtx, _ = context.WithTimeout(newCtx, time.Hour * 1)
 	return newCtx, nil
 
 }
-func jwtCheck(ctx context.Context) (*auth.Identity, error){
+func jwtCheck(ctx context.Context) (*auth.Identity, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, errors.New( "error in getting context meta data")
+		return nil, errors.New("error in getting context meta data")
 	}
 	//check jwt
 	bearer, exists := md["authorization"]
 	if !exists {
-		return nil,errors.New("no bearer token found")
+		return nil, errors.New("no bearer token found")
 	}
 	_ = bearer
 	// checkBearer(bearer)

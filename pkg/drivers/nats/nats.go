@@ -79,7 +79,7 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 		//	fmt.Println(msg, i)
 		//}
 
-		startOpt := stan.DeliverAllAvailable()
+		startOpt := stan.StartWithLastReceived()
 
 		// sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt, stan.DurableName(userID))
 		sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt)
