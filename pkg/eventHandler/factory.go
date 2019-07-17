@@ -54,7 +54,7 @@ var UserSockets = struct {
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		//logrus.Warnf("Message is %v", string(msg.Data))
+		logrus.Warnf("Message is %v", string(msg.Data))
 		m := &api.Message{}
 		err := json.Unmarshal(msg.Data, m)
 		//_ ,err := m.XXX_Marshal(msg.Data, false)
