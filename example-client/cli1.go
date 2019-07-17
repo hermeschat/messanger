@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = eventCli.Send(&api.Event{Event: &api.Event_Join{&api.JoinSignal{SessionId:sid}}})
+	err = eventCli.Send(&api.Event{Event: &api.Event_Join{&api.JoinSignal{SessionId: sid}}})
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ func main() {
 	time.Sleep(time.Second * 2)
 	err = eventCli.Send(&api.Event{Event: &api.Event_NewMessage{&api.Message{
 		To:   "5c4c2683bfd02a2b923af8bf",
-		Body: "salam 1",
+		Body: "salam 4",
 	}}})
 	logrus.Info("Sent message")
 	logrus.Info("Done")

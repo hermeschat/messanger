@@ -48,7 +48,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	}
 loop:
 
-	time.Sleep(time.Millisecond * 500)
+	time.Sleep(time.Millisecond * 2000)
 	e, err := a.Recv()
 	if err != nil {
 		logrus.Errorf("cannot receive event : %v", err)
