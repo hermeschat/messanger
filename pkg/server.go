@@ -40,10 +40,10 @@ func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, 
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
-	logrus.Info(">>>>>>> We Are in Event Buff ")
 	ctx := a.Context()
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
+	logrus.Info(">>>>>>> We Are in Event Buff ")
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
