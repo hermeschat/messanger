@@ -28,6 +28,8 @@ var MongoHost = GetEnv("MongoHost", "localhost")
 
 var MongoURI = GetEnv("MongoURI", "mongodb://192.168.41.221:32017")
 
+var DatabaseName = GetEnv("DBNAME", "hermes_rc")
+
 //MongoDBName
 var MongoDBName = GetEnv("MongoDBName", "hermes_rc")
 

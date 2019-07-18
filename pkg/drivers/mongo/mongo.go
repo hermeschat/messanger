@@ -18,6 +18,6 @@ func GetCollection(collectionName string) (*mongo.Collection, error) {
 		return nil, errors.Wrap(err, "can't connect to mongodb FUCK")
 	}
 	//TODO use config
-	coll := client.Database("hermes_rc").Collection(collectionName)
+	coll := client.Database(config.DatabaseName).Collection(collectionName)
 	return coll, nil
 }
