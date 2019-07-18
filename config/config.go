@@ -29,9 +29,9 @@ var MongoHost = GetEnv("MongoHost", "localhost")
 var MongoURI = GetEnv("MongoURI", "mongodb://192.168.41.221:32017")
 
 //MongoDBName
-var MongoDBName = GetEnv("MongoDBName", "hermes")
+var MongoDBName = GetEnv("MongoDBName", "hermes_rc")
 
-var ApplicationServiceURL = GetEnv("APPLICATION_SERVICE_URL", "https://api.paygear.ir/application")
+var ApplicationServiceURL = GetEnv("APPLICATION_SERVICE_URL", "https://api.paygear.ir/application/v3")
 
 // Club Base URL
 var ClubBaseURL = GetEnv("ClubBaseURL", "https://api.paygear.ir/club")

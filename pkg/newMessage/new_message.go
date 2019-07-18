@@ -2,6 +2,7 @@ package newMessage
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -75,6 +76,7 @@ func Handle(message *NewMessage) error {
 	//Publish to nats
 	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
 	if err != nil {
+		fmt.Println(targetChannel.ChannelID)
 		return errors.Wrap(err, "error in publishing message")
 	}
 	return nil
@@ -92,6 +94,7 @@ func saveMessageToMongo(message *NewMessage) error {
 		MessageType: message.MessageType,
 		Body:        message.Body,
 		MessageID:   uid.String(),
+		ChannelID:   message.Channel,
 	})
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")

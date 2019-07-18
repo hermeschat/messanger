@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var AppContext = context.Background()
+
 const (
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
@@ -59,7 +61,7 @@ type Client struct {
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *Client) readPump() {
+func (c *Client) readPump(ctx context.Context) {
 	defer func() {
 		c.hub.Unregister <- c
 		c.conn.Close()
@@ -76,7 +78,7 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		err = c.handleEvents(message)
+		err = c.handleEvents(ctx, message)
 		if err != nil {
 			logrus.Errorf("error in handling event: %v", err)
 		}
@@ -142,10 +144,10 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
 	go client.writePump()
-	go client.readPump()
+	go client.readPump(AppContext)
 }
 
-func (c *Client) handleEvents(message []byte) error {
+func (c *Client) handleEvents(ctx context.Context, message []byte) error {
 	logrus.Info("inja")
 	event := map[string]interface{}{}
 
@@ -187,6 +189,7 @@ func (c *Client) handleEvents(message []byte) error {
 		if err != nil {
 			return errors.Wrap(err, "error while decoding event into NewMessage")
 		}
+		nm.From = ident.ID
 		err = newMessage.Handle(nm)
 		if err != nil {
 			logrus.Errorf("Error in NewMessage Event : %v", err)

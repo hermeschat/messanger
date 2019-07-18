@@ -24,7 +24,7 @@ func Launch(configPath string) {
 	logrus.SetFormatter(customFormatter)
 
 	logrus.Info("Checking health")
-	healthCheck()
+	//healthCheck()
 	logrus.Info("Health check passed")
 	//lis, err := net.Listen("tcp", ":9000")
 	//if err != nil {
