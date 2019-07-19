@@ -215,6 +215,7 @@ func (c *Client) handleEvents(ctx context.Context, message []byte) error {
 		}
 		rs.UserID = ident.ID
 		Handle(context.Background(), rs)
+
 	}
 	return nil
 }

@@ -3,6 +3,8 @@ package newMessage
 import (
 	"encoding/json"
 	"fmt"
+	"git.raad.cloud/cloud/hermes/pkg/repository"
+	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
 	"strings"
 	"time"
 
@@ -10,10 +12,8 @@ import (
 
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
-	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
 	message2 "git.raad.cloud/cloud/hermes/pkg/repository/message"
-	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -47,7 +47,7 @@ func Handle(message *NewMessage) error {
 		// check for channel existance in db or cache
 	}
 	logrus.Infof("target channel %+v", targetChannel)
-	go func(targetChannel *channel.Channel) {
+	func(targetChannel *channel.Channel) {
 		if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
 			targetChannel, err = channel.Get(targetChannel.ChannelID)
 			if err != nil {
@@ -73,10 +73,10 @@ func Handle(message *NewMessage) error {
 	//	return errors.Wrap(err, "error in saving message to mongo db")
 	//}
 	go saveMessageToMongo(message)
+	logrus.Info("Trying To publish")
 	//Publish to nats
 	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
 	if err != nil {
-		fmt.Println(targetChannel.ChannelID)
 		return errors.Wrap(err, "error in publishing message")
 	}
 	return nil
@@ -147,31 +147,32 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 }
 
 func ensureChannel(sessionID string, channelID string, userID string) error {
-	//channels, err := getSession(sessionID)
-	//if err != nil {
-	//	return errors.Wrap(err, "Error in get session from redis")
-	//}
-	//channelExist := false
-	//for _, c := range channels {
-	//	if c == channelID {
-	//		channelExist = true
-	//	}
-	//}
-	//if !channelExist {
-	//	//subscribeChannel(channelID, userID)
-	//	//Send user discovery event
-	//	//user discovery event publishes a userid and a chanellid
-	//	//which this channels subscriber can listen to it and subscribe to given channel
-	//	//its equivalent for subscribeChannel(channelID, userID) in async way
-	//	err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
-	//	if err != nil {
-	//		return errors.Wrap(err, "Error in publishing user discovery event")
-	//	}
-	//}
-	err := user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
+	channels, err := getSessionsByUserID(sessionID)
 	if err != nil {
-		return errors.Wrap(err, "Error in publishing user discovery event")
+		return errors.Wrap(err, "Error in get session from redis")
 	}
+	channelExist := false
+	for _, c := range channels {
+		if c == channelID {
+			channelExist = true
+		}
+	}
+	if !channelExist {
+		logrus.Info("user is not subscribed to channel")
+		//subscribeChannel(channelID, userID)
+		//Send user discovery event
+		//user discovery event publishes a userid and a chanellid
+		//which this channels subscriber can listen to it and subscribe to given channel
+		//its equivalent for subscribeChannel(channelID, userID) in async way
+		err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
+		if err != nil {
+			return errors.Wrap(err, "Error in publishing user discovery event")
+		}
+	}
+	//err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
+	//if err != nil {
+	//	return errors.Wrap(err, "Error in publishing user discovery event")
+	//}
 	return nil
 }
 
@@ -205,7 +206,8 @@ func getSession(sessionID string) ([]string, error) {
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *NewMessage) error {
 	// Connect to NATS-Streaming
-	logrus.Info(msg.From)
+	logrus.Info("trying to connect to nats")
+	//logrus.Info(msg.From)
 	conn, err := nats.NatsClient(clusterID, natsSrvAddr, msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
@@ -217,6 +219,30 @@ func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, m
 	if err := (*conn).Publish(ChannelId, bs); err != nil {
 		return errors.Wrap(err, "failed to publish message")
 	}
+	logrus.Info("trying to publish")
 	logrus.Infof("Published into %s a new message as %s", ChannelId, msg.From)
 	return nil
+}
+
+func getSessionsByUserID(userID string) ([]string, error) {
+	con, err := redis.ConnectRedis()
+	if err != nil {
+		return nil, errors.Wrap(err, "error while trying to connect to redis")
+	}
+	defer con.Close()
+	channels := []string{}
+	res, err := con.Get(userID).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return []string{}, nil
+		}
+		return nil, errors.Wrap(err, "error while scanning redis output")
+	}
+	fmt.Println(">>>>>>>>>>>" + res)
+	err = json.Unmarshal([]byte(res), &channels)
+	if err != nil {
+
+		return nil, errors.Wrap(err, "error while Unmarshalling redis output")
+	}
+	return channels, nil
 }

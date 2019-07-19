@@ -2,10 +2,9 @@ package nats
 
 import (
 	"context"
-	"log"
-	"sync"
-
+	"github.com/nats-io/go-nats-streaming/pb"
 	"github.com/sirupsen/logrus"
+	"sync"
 
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
@@ -69,6 +68,7 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 
 		if err != nil {
 			logrus.Error(errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr))
+			return
 		}
 		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", natsSrvAddr, clusterID, userID)
 		//defer sc.Close()
@@ -79,12 +79,14 @@ func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSr
 		//	fmt.Println(msg, i)
 		//}
 
-		startOpt := stan.StartWithLastReceived()
-
+		//startOpt := stan.StartAt(pb.StartPosition_NewOnly)
+		//without := stan.StartWithLastReceived()
+		//wait := stan.AckWait(time.Second * 1)
 		// sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt, stan.DurableName(userID))
-		sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt)
+		sub, err := (*natscon).Subscribe(ChannelId, handler, stan.StartAt(pb.StartPosition_NewOnly))
 		if err != nil {
-			log.Fatal(err)
+			logrus.Error(err)
+			return
 		}
 		_ = sub
 

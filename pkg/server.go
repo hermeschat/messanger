@@ -4,14 +4,12 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
-	"git.raad.cloud/cloud/hermes/pkg/join"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/read"
 	"git.raad.cloud/cloud/hermes/pkg/session"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type HermesServer struct {
@@ -46,77 +44,77 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
-loop:
+	//loop to continuously read messages from buffer
+	for {
 
-	time.Sleep(time.Millisecond * 2000)
-	e, err := a.Recv()
-	if err != nil {
-		logrus.Errorf("cannot receive event : %v", err)
-		return errors.Wrap(err, "error in reading EventBuff")
-	}
-
-	eventHandler.UserSockets.Lock()
-	eventHandler.UserSockets.Us[ident.ID] = a
-	eventHandler.UserSockets.Unlock()
-	logrus.Info("we have a new event")
-	switch t := e.GetEvent().(type) {
-	case *api.Event_Read:
-		logrus.Info("Event is read")
-		r := e.GetRead()
-		rs := &read.ReadSignal{
-			UserID:    ident.ID,
-			MessageID: r.MessageID,
-			ChannelID: r.ChannelID,
-		}
-		err = read.Handle(rs)
+		e, err := a.Recv()
 		if err != nil {
-			logrus.Errorf("Error in handling read signal")
+			logrus.Errorf("cannot receive event : %v", err)
+			return errors.Wrap(err, "error in reading EventBuff")
 		}
-	case *api.Event_Keep:
-		logrus.Info("Event is keep")
-		k := e.GetKeep()
-		_ = k
-		//find logic
-	case *api.Event_NewMessage:
-		logrus.Info("Event is New Message")
-		m := e.GetNewMessage()
-		if m != nil {
-			logrus.Info("Event is NewMessage")
-			nm := &newMessage.NewMessage{
-				Body:        m.Body,
-				From:        ident.ID,
-				To:          m.To,
-				Channel:     m.Channel,
-				MessageType: m.MessageType,
-				Session:     "",
-			}
 
-			err = newMessage.Handle(nm)
+		eventHandler.UserSockets.Lock()
+		eventHandler.UserSockets.Us[ident.ID] = a
+		eventHandler.UserSockets.Unlock()
+		logrus.Info("we have a new event")
+		switch t := e.GetEvent().(type) {
+		case *api.Event_Read:
+			logrus.Info("Event is read")
+			r := e.GetRead()
+			rs := &read.ReadSignal{
+				UserID:    ident.ID,
+				MessageID: r.MessageID,
+				ChannelID: r.ChannelID,
+			}
+			err = read.Handle(rs)
 			if err != nil {
-				logrus.Errorf("Error in NewMessage Event : %v", err)
+				logrus.Errorf("Error in handling read signal")
 			}
-		}
-		//return nil
-	case *api.Event_Join:
-		j := e.GetJoin()
-		logrus.Info(j)
-		if j != nil {
-			logrus.Info("Event is Join")
-			jp := &join.JoinPayload{
-				UserID:    ident.ID, //should get from jwt
-				SessionId: j.SessionId,
-			}
+		case *api.Event_Keep:
+			logrus.Info("Event is keep")
+			k := e.GetKeep()
+			_ = k
+			//find logic
+		case *api.Event_NewMessage:
+			logrus.Info("Event is New Message")
+			m := e.GetNewMessage()
+			if m != nil {
+				logrus.Info("Event is NewMessage")
+				nm := &newMessage.NewMessage{
+					Body:        m.Body,
+					From:        ident.ID,
+					To:          m.To,
+					Channel:     m.Channel,
+					MessageType: m.MessageType,
+					Session:     "",
+				}
 
-			join.Handle(h.Ctx, jp)
-			//if err != nil {
-			//	logrus.Errorf("Error in Join event : %v", err)
-			//}
+				err = newMessage.Handle(nm)
+				if err != nil {
+					logrus.Errorf("Error in NewMessage Event : %v", err)
+				}
+			}
+			//return nil
+		case *api.Event_Join:
+			j := e.GetJoin()
+			logrus.Info(j)
+			if j != nil {
+				logrus.Info("Event is Join")
+				jp := &eventHandler.JoinPayload{
+					UserID:    ident.ID, //should get from jwt
+					SessionId: j.SessionId,
+				}
+
+				eventHandler.Handle(h.Ctx, jp)
+				//if err != nil {
+				//	logrus.Errorf("Error in Join event : %v", err)
+				//}
+			}
+			//return nil
+		default:
+			logrus.Infof("Type not matched : %+T", t)
 		}
-		//return nil
-	default:
-		logrus.Infof("Type not matched : %+T", t)
 	}
-	goto loop
 
 	return nil
 }

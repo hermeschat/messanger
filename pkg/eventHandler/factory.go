@@ -1,6 +1,8 @@
 package eventHandler
 
 import (
+	"encoding/json"
+	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
@@ -10,6 +12,7 @@ import (
 	"golang.org/x/net/context"
 	"strings"
 	"sync"
+	"time"
 )
 
 //UserDiscoveryEventHandler handles user discovery
@@ -22,23 +25,26 @@ func UserDiscoveryEventHandler(ctx context.Context, userID string, currentSessio
 			logrus.Error(errors.Wrap(err, "cannot unmarshal UserDiscoveryEvent"))
 			return
 		}
-		//if ude.UserID == userID {
-		//	channels, err := getSession(currentSession)
-		//	if err != nil {
-		//		logrus.Error(errors.Wrap(err, "Error in get session from redis"))
-		//	}
-		//	channelExist := false
-		//	for _, c := range channels {
-		//		if c == ude.ChannelID {
-		//			channelExist = true
-		//		}
-		//	}
-		//	channelExist := false
 
-		logrus.Warnf("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
-		sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
-		sub()
-
+		if ude.UserID == userID {
+			channels, err := getSessionsByUserID(ude.UserID)
+			if err != nil {
+				logrus.Error(errors.Wrap(err, "Error in get session from redis"))
+				return
+			}
+			channelExist := false
+			for _, c := range channels {
+				if c == ude.ChannelID {
+					channelExist = true
+				}
+			}
+			logrus.Warnf("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
+			if !channelExist {
+				sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID))
+				go sub()
+				return
+			}
+		}
 	}
 }
 
@@ -60,7 +66,7 @@ func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg)
 		//if err != nil {
 		//	logrus.Errorf("error in unmarshalling nats message in message handler")
 		//}
-		logrus.Info("In NewMessage Event Handler")
+		logrus.Infof("In NewMessage Event Handler as %s", userID)
 		logrus.Infof("Recieved a new message in %s", channelID)
 		c, ok := BaseHub.ClientsMap[userID]
 		if !ok {
@@ -127,9 +133,74 @@ func Handle(ctx context.Context, sig *JoinPayload) {
 	//}
 	//get user id from jwt
 	//ctx, _ = context.WithTimeout(ctx, time.Hour*1)
+	channels, err := getSessionsByUserID(sig.UserID)
+	if err != nil {
+		logrus.Error(errors.Wrap(err, "error while trying to get channels from redis").Error())
+		return
+	}
+	udSub := false
+	for _, c := range channels {
+		if c == "user-discovery" {
+			udSub = true
+		}
+	}
+	if !udSub {
+		logrus.Info("Not subscribed to user-discovery")
 
-	logrus.Infof("Subscribing to user-discovery as %s", sig.UserID)
-	sub := nats.MakeSubscriber(ctx, sig.UserID, "test-cluster", "0.0.0.0:4222", "user-discovery", UserDiscoveryEventHandler(ctx, sig.UserID, ""))
-	go sub()
+		err = addSessionByUserID(sig.UserID, "user-discovery")
+		if err != nil {
+			logrus.Error("error while trying to add session to redis")
+			return
+		}
+		logrus.Infof("Subscribing to user-discovery as %s", sig.UserID)
+		sub := nats.MakeSubscriber(ctx, sig.UserID, "test-cluster", "0.0.0.0:4222", "user-discovery", UserDiscoveryEventHandler(ctx, sig.UserID, ""))
+		go sub()
+		return
+	}
+	logrus.Info("Already subscribing to user-discovery")
+}
 
+func getSessionsByUserID(userID string) ([]string, error) {
+	con, err := redis.ConnectRedis()
+	if err != nil {
+		return nil, errors.Wrap(err, "error while trying to connect to redis")
+	}
+	defer con.Close()
+	channels := []string{}
+	res, err := con.Get(userID).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return []string{}, nil
+		}
+		return nil, errors.Wrap(err, "error while scanning redis output")
+	}
+	fmt.Println(">>>>>>>>>>>" + res)
+	err = json.Unmarshal([]byte(res), &channels)
+	if err != nil {
+
+		return nil, errors.Wrap(err, "error while Unmarshalling redis output")
+	}
+	return channels, nil
+}
+
+func addSessionByUserID(userID string, channelID string) error {
+	channels, err := getSessionsByUserID(userID)
+	if err != nil {
+		return errors.Wrap(err, "error while trying to get channels")
+	}
+	channels = append(channels, channelID)
+	con, err := redis.ConnectRedis()
+	if err != nil {
+		return errors.Wrap(err, "error while trying to connect to redis")
+	}
+	defer con.Close()
+	bs, err := json.Marshal(channels)
+	if err != nil {
+		return errors.Wrap(err, "error while trying to marshal channels")
+	}
+	err = con.Set(userID, string(bs), time.Hour*1).Err()
+	if err != nil {
+		return errors.Wrap(err, "error while adding new channels to redis")
+	}
+	return nil
 }
