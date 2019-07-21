@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"git.raad.cloud/cloud/hermes/pkg/api"
@@ -14,7 +15,7 @@ func main() {
 	//con, err := grpc.Dial("https://chat.paygear.ir:443")
 
 	//con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
-	con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
+	con, err := grpc.Dial("192.168.41.221:30041", grpc.WithInsecure())
 
 	if err != nil {
 		logrus.Fatalf("error : %v", err)
@@ -32,7 +33,12 @@ func main() {
 	}
 	sid := resp.SessionID
 	logrus.Info(sid)
-
+	msgs, err := cli.ListMessages(ctx, &api.Empty{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(msgs)
+	return
 	eventCli, err := cli.EventBuff(ctx)
 	if err != nil {
 		panic(err)

@@ -30,14 +30,14 @@ func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, 
 	panic("implement")
 }
 
-func (h HermesServer) ListMessages(ctx context.Context,_ *api.Empty) (*api.Messages, error) {
+func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Messages, error) {
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
 	if !ok {
 		return nil, errors.New("cannot get identity out of context")
 	}
 	msgs, err := message.GetAll(map[string]interface{}{
-		"$OR": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}},
+		"$or": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}},
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from database")
@@ -51,7 +51,7 @@ func (h HermesServer) ListMessages(ctx context.Context,_ *api.Empty) (*api.Messa
 		}
 		output = append(output, amsg)
 	}
-	return &api.Messages{Msg:output}, nil
+	return &api.Messages{Msg: output}, nil
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
