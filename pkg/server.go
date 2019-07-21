@@ -43,7 +43,7 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 		return nil, errors.Wrap(err, "error while trying to get messages from database")
 	}
 	output := []*api.Message{}
-	for m := range *msgs {
+	for _, m := range *msgs {
 		amsg := &api.Message{}
 		err = mapstructure.Decode(m, amsg)
 		if err != nil {
