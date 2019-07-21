@@ -33,7 +33,7 @@ func Serve() {
 		_ = ident
 		//get channels of this user from mongo
 	})
-	err := http.ListenAndServe(":9000", nil)
+	err := http.ListenAndServe(":9001", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

@@ -6,7 +6,9 @@ import (
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/read"
+	"git.raad.cloud/cloud/hermes/pkg/repository/message"
 	"git.raad.cloud/cloud/hermes/pkg/session"
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -28,12 +30,28 @@ func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, 
 	panic("implement")
 }
 
-func (h HermesServer) ListMessages(context.Context, *api.Empty) (*api.Messages, error) {
-	return &api.Messages{
-		Msg: []*api.Message{
-			&api.Message{From: "5c4c2683bfd02a2b923af8be", To: "5c4c2683bfd02a2b923af8bf", Body: "salam aleyk"},
-		},
-	}, nil
+func (h HermesServer) ListMessages(ctx context.Context,_ *api.Empty) (*api.Messages, error) {
+	i := ctx.Value("identity")
+	ident, ok := i.(*auth.Identity)
+	if !ok {
+		return nil, errors.New("cannot get identity out of context")
+	}
+	msgs, err := message.GetAll(map[string]interface{}{
+		"$OR": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}},
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "error while trying to get messages from database")
+	}
+	output := []*api.Message{}
+	for m := range *msgs {
+		amsg := &api.Message{}
+		err = mapstructure.Decode(m, amsg)
+		if err != nil {
+			return nil, errors.Wrap(err, "error while converting from repository message to api message")
+		}
+		output = append(output, amsg)
+	}
+	return &api.Messages{Msg:output}, nil
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {

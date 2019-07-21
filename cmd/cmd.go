@@ -5,6 +5,7 @@ import (
 	"git.raad.cloud/cloud/hermes/config"
 	"git.raad.cloud/cloud/hermes/pkg"
 	"git.raad.cloud/cloud/hermes/pkg/api"
+	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -39,7 +40,7 @@ func Launch(configPath string) {
 		logrus.Fatal("ERROR can't create a tcp listener ")
 	}
 	logrus.Info("Initializing Hermes")
-	//eventHandler.Serve()
+	eventHandler.Serve()
 	streamChain := grpc_middleware.ChainStreamServer(grpc_auth.StreamServerInterceptor(interceptor.UnaryAuthJWTInterceptor))
 	unaryChain := grpc_middleware.ChainUnaryServer(grpc_auth.UnaryServerInterceptor(interceptor.UnaryAuthJWTInterceptor))
 	logrus.Info("Interceptors Created")
