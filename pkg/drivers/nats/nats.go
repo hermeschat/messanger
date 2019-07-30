@@ -2,9 +2,10 @@ package nats
 
 import (
 	"context"
+	"sync"
+
 	"github.com/nats-io/go-nats-streaming/pb"
 	"github.com/sirupsen/logrus"
-	"sync"
 
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
@@ -15,22 +16,22 @@ type Config struct {
 	ClusterId   string
 }
 
-var state = struct {
-	mu sync.Mutex
+var State = struct {
+	Mu sync.RWMutex
 	Ss map[string]*stan.Conn
-}{sync.Mutex{}, map[string]*stan.Conn{}}
+}{sync.RWMutex{}, map[string]*stan.Conn{}}
 
 //NatsClient manage to keep nats connection open
 func NatsClient(clusterID string, natsSrvAddr string, clientID string) (*stan.Conn, error) {
-	state.mu.Lock()
-	conn, ok := state.Ss[clientID]
+	State.Mu.Lock()
+	conn, ok := State.Ss[clientID]
 	if ok || conn != nil {
-		state.mu.Unlock()
+		State.Mu.Unlock()
 		return conn, nil
 
 	}
 	logrus.Warnf("Connection was unusable: %v", conn)
-	delete(state.Ss, clientID)
+	delete(State.Ss, clientID)
 	logrus.Warnf("Trying to get a connection on behalf of %s", clientID)
 
 	natsClient, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsSrvAddr))
@@ -38,11 +39,11 @@ func NatsClient(clusterID string, natsSrvAddr string, clientID string) (*stan.Co
 	//		log.Fatalf("Connection lost, reason: %v", reason)
 	//	})
 	if err != nil {
-		logrus.Warnf("Ok is %v conn is %v State is %+v", ok, conn, state.Ss)
+		logrus.Warnf("Ok is %v conn is %v State is %+v", ok, conn, State.Ss)
 		return nil, errors.Wrapf(err, "Can't connect %v: %v", clientID, err)
 	}
-	state.Ss[clientID] = &natsClient
-	state.mu.Unlock()
+	State.Ss[clientID] = &natsClient
+	State.Mu.Unlock()
 	return &natsClient, nil
 }
 

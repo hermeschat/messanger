@@ -2,8 +2,10 @@ package pkg
 
 import (
 	"fmt"
+
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
+	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
@@ -91,11 +93,25 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		con, err := redis.ConnectRedis()
 		if err != nil {
 			logrus.Errorf("error while trying to clear redis cache of subscribed channels : %v", err)
+			return
 		}
 		_, err = con.Del(ident.ID).Result()
 		if err != nil {
 			logrus.Errorf("error while trying to clear redis cache of subscribed channels : %v", err)
+			return
 		}
+		nats.State.Mu.Lock()
+		natsCon, ok := nats.State.Ss[ident.ID]
+		if !ok {
+			logrus.Errorf("user nats connection not found")
+			return
+		}
+		err = (*natsCon).Close()
+		if err != nil {
+			logrus.Errorf("error while trying to close user nats connection")
+			return
+		}
+		nats.State.Mu.Unlock()
 	}() //loop to continuously read messages from buffer
 	for {
 
