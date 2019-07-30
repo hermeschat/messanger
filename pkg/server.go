@@ -111,6 +111,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			logrus.Errorf("error while trying to close user nats connection")
 			return
 		}
+		delete(nats.State.Ss, ident.ID)
 		nats.State.Mu.Unlock()
 	}() //loop to continuously read messages from buffer
 	for {
