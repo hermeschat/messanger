@@ -26,7 +26,8 @@ var ClientSecret = GetEnv("CLIENT_SECRET", "J0RYjUcIZHgm41GyPt4wEWUqKzOPXCQAY7n2
 //MongoHost url
 var MongoHost = GetEnv("MongoHost", "localhost")
 
-var MongoURI = GetEnv("MongoURI", "mongodb://192.168.41.221:32017")
+// var MongoURI = GetEnv("MongoURI", "mongodb://192.168.41.221:32017")
+var MongoURI = GetEnv("MongoURI", "mongodb://localhost:27017")
 
 var DatabaseName = GetEnv("DBNAME", "hermes_rc")
 

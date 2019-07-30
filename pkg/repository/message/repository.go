@@ -1,6 +1,8 @@
 package message
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
 	"git.raad.cloud/cloud/hermes/pkg/drivers/mongo"
@@ -9,7 +11,7 @@ import (
 )
 
 type Message struct {
-	MessageID   string `bson:"_id" json:"_id"`
+	MessageID   primitive.ObjectID `bson:"_id" json:"_id"`
 	From        string
 	To          string
 	Time        time.Time
@@ -50,16 +52,21 @@ func (s *Message) ToMap() (map[string]interface{}, error) {
 	}
 	return m, nil
 }
-func GetAll(query map[string]interface{}) (*[]*Message, error) {
+func GetAll(query map[string]interface{}) ([]*Message, error) {
 	s, err := mongo.FindAll("messages", query)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't find message with given query")
 	}
-	messages := &[]*Message{}
-	err = mapstructure.Decode(s, messages)
-	if err != nil {
-		return nil, errors.Wrap(err, "can't construct message from given map from mongo")
+	messages := []*Message{}
+	for s.Next(context.Background()) {
+		msg := &Message{}
+		err = s.Decode(msg)
+		if err != nil {
+			return nil, errors.Wrap(err, "error in decoding")
+		}
+		messages = append(messages, msg)
 	}
+
 	return messages, nil
 }
 

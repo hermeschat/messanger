@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 	"time"
 
@@ -83,17 +84,17 @@ func Handle(message *NewMessage) error {
 }
 
 func saveMessageToMongo(message *NewMessage) error {
-	uid, err := uuid.NewV4()
-	if err != nil {
-		logrus.Errorf("canot create uuid  : %v", err)
-	}
-	err = message2.Add(&message2.Message{
+	//uid, err := uuid.NewV4()
+	//if err != nil {
+	//	logrus.Errorf("canot create uuid  : %v", err)
+	//}
+	err := message2.Add(&message2.Message{
 		To:          message.To,
 		From:        message.From,
 		Time:        time.Now(),
 		MessageType: message.MessageType,
 		Body:        message.Body,
-		MessageID:   uid.String(),
+		MessageID:   primitive.NewObjectIDFromTimestamp(time.Now()),
 		ChannelID:   message.Channel,
 	})
 	if err != nil {

@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
@@ -31,6 +32,7 @@ func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, 
 }
 
 func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Messages, error) {
+	fmt.Println("hereinlistmessages")
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
 	if !ok {
@@ -43,7 +45,7 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 		return nil, errors.Wrap(err, "error while trying to get messages from database")
 	}
 	output := []*api.Message{}
-	for _, m := range *msgs {
+	for _, m := range msgs {
 		amsg := &api.Message{}
 		err = mapstructure.Decode(m, amsg)
 		if err != nil {
@@ -62,7 +64,9 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
-	//loop to continuously read messages from buffer
+	defer func() {
+
+	}() //loop to continuously read messages from buffer
 	for {
 
 		e, err := a.Recv()
