@@ -60,33 +60,33 @@ var UserSockets = struct {
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Warnf("Message is %v", string(msg.Data))
-		//m := &api.Message{}
-		//err := json.Unmarshal(msg.Data, m)
-		////_ ,err := m.XXX_Marshal(msg.Data, false)
-		//if err != nil {
-		//	logrus.Errorf("error in unmarshalling nats message in message handler")
-		//}
+		m := &api.Message{}
+		err := json.Unmarshal(msg.Data, m)
+		//_ ,err := m.XXX_Marshal(msg.Data, false)
+		if err != nil {
+			logrus.Errorf("error in unmarshalling nats message in message handler")
+		}
 		logrus.Infof("In NewMessage Event Handler as %s", userID)
 		logrus.Infof("Recieved a new message in %s", channelID)
-		c, ok := BaseHub.ClientsMap[userID]
+		//c, ok := BaseHub.ClientsMap[userID]
+		//if !ok {
+		//	logrus.Error("no active connection found for user")
+		//	return
+		//}
+
+		//c.send <- msg.Data
+		UserSockets.RLock()
+		userSocket, ok := UserSockets.Us[userID]
 		if !ok {
-			logrus.Error("no active connection found for user")
+			logrus.Errorf("error: user socket not found ")
 			return
 		}
-
-		c.send <- msg.Data
-		//UserSockets.RLock()
-		//userSocket, ok := UserSockets.Us[userID]
-		//if !ok {
-		//	logrus.Errorf("error: user socket not found ")
-		//	return
-		//}
-		//err=userSocket.Send(&api.Event{Event:&api.Event_NewMessage{m}})
-		//if err != nil {
-		//	logrus.Errorf("error: cannot send event new message to user ")
-		//	return
-		//}
-		//UserSockets.RUnlock()
+		err = userSocket.Send(&api.Event{Event: &api.Event_NewMessage{m}})
+		if err != nil {
+			logrus.Errorf("error: cannot send event new message to user ")
+			return
+		}
+		UserSockets.RUnlock()
 	}
 }
 

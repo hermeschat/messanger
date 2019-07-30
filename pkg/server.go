@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
+	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
 	"git.raad.cloud/cloud/hermes/pkg/newMessage"
 	"git.raad.cloud/cloud/hermes/pkg/read"
+	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
 	"git.raad.cloud/cloud/hermes/pkg/repository/message"
 	"git.raad.cloud/cloud/hermes/pkg/session"
 	"github.com/mitchellh/mapstructure"
@@ -27,12 +29,33 @@ func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error
 	return &api.Empty{Status: "JWT is ok"}, nil
 }
 
-func (h HermesServer) ListChannels(context.Context, *api.Empty) (*api.Channels, error) {
-	panic("implement")
+func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Channels, error) {
+	fmt.Println("hereinlistmessages")
+	i := ctx.Value("identity")
+	ident, ok := i.(*auth.Identity)
+	_ = ident
+	if !ok {
+		return nil, errors.New("cannot get identity out of context")
+	}
+	msgs, err := channel.GetAll(map[string]interface{}{
+		"$in": []string{}, //TODO fix query
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "error while trying to get messages from database")
+	}
+	output := []*api.Channel{}
+	for _, m := range msgs {
+		amsg := &api.Channel{}
+		err = mapstructure.Decode(m, amsg)
+		if err != nil {
+			return nil, errors.Wrap(err, "error while converting from repository message to api message")
+		}
+		output = append(output, amsg)
+	}
+	return &api.Channels{Msg: output}, nil
 }
 
 func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Messages, error) {
-	fmt.Println("hereinlistmessages")
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
 	if !ok {
@@ -65,7 +88,14 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Errorf("Cannot get identity out of context")
 	}
 	defer func() {
-
+		con, err := redis.ConnectRedis()
+		if err != nil {
+			logrus.Errorf("error while trying to clear redis cache of subscribed channels : %v", err)
+		}
+		_, err = con.Del(ident.ID).Result()
+		if err != nil {
+			logrus.Errorf("error while trying to clear redis cache of subscribed channels : %v", err)
+		}
 	}() //loop to continuously read messages from buffer
 	for {
 
