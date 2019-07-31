@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"context"
+	"net"
+	"time"
+
 	"git.raad.cloud/cloud/hermes/config"
 	"git.raad.cloud/cloud/hermes/pkg"
 	"git.raad.cloud/cloud/hermes/pkg/api"
+	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"git.raad.cloud/cloud/hermes/pkg/interceptor"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
-	"net"
-	"time"
 
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
@@ -70,6 +72,14 @@ func healthCheck() {
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		logrus.Fatalf("could not ping database")
+	}
+	con, err := redis.ConnectRedis()
+	if err != nil {
+		logrus.Fatalf("could not connect redis:%v", err)
+	}
+	_, err = con.Ping().Result()
+	if err != nil {
+		logrus.Fatalf("could not ping redis:%v", err)
 	}
 	return
 }
