@@ -1,17 +1,17 @@
 version: '3'
 services:
-  goapp:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        PROJECT: hermes
-    restart: always
-    environment:
-     - SQLHost=percona
-    ports:
-     - "32901:9044"
-    command: ["/app"]
+  # goapp:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     args:
+  #       PROJECT: hermes
+  #   restart: always
+  #   environment:
+  #    - SQLHost=percona
+  #   ports:
+  #    - "32901:9044"
+  #   command: ["/app"]
   mongo:
     image: mongo:latest
     container_name: "mongodb"

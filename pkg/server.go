@@ -71,6 +71,7 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 	}
 	output := []*api.Message{}
 	for _, m := range msgs {
+		fmt.Println(m)
 		amsg := &api.Message{}
 		err = mapstructure.Decode(m, amsg)
 		if err != nil {
@@ -78,6 +79,7 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 		}
 		output = append(output, amsg)
 	}
+	fmt.Printf("\n%+v", output)
 	return &api.Messages{Msg: output}, nil
 }
 

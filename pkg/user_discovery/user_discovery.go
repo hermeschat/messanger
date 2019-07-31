@@ -2,6 +2,7 @@ package user_discovery
 
 import (
 	"fmt"
+
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/repository"
@@ -28,4 +29,5 @@ func PublishEvent(ude repository.UserDiscoveryEvent) error {
 	}
 	logrus.Infof("Published User Discovery event %+v", u)
 	return nil
+
 }
