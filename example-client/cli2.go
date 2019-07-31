@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"git.raad.cloud/cloud/hermes/pkg/api"
@@ -33,12 +32,12 @@ func main() {
 	//}
 	//sid := resp.SessionID
 	//logrus.Info(sid)
-	msgs, err := cli.ListMessages(ctx, &api.Empty{})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(msgs)
-	return
+	// msgs, err := cli.ListMessages(ctx, &api.Empty{})
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(msgs)
+	// return
 	eventCli, err := cli.EventBuff(ctx)
 	if err != nil {
 		panic(err)

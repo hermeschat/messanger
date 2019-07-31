@@ -3,6 +3,10 @@ package eventHandler
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
 	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
@@ -10,9 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"strings"
-	"sync"
-	"time"
 )
 
 //UserDiscoveryEventHandler handles user discovery
@@ -59,7 +60,7 @@ var UserSockets = struct {
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		logrus.Warnf("Message is %v", string(msg.Data))
+		logrus.Warnf("22Message is %v", string(msg.Data))
 		m := &api.Message{}
 		err := json.Unmarshal(msg.Data, m)
 		//_ ,err := m.XXX_Marshal(msg.Data, false)
