@@ -12,7 +12,7 @@ const Nil = rds.Nil
 
 // ConnectRedis is used to connect to redis
 func ConnectRedis() (*rds.Client, error) {
-	dbName, err := strconv.Atoi("4")
+	dbName, err := strconv.Atoi("5")
 	if err != nil {
 		return nil, err
 	}
