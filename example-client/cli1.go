@@ -11,9 +11,9 @@ import (
 )
 
 func main() {
-	//con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
+	con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
 
-	con, err := grpc.Dial("192.168.41.221:30041", grpc.WithInsecure())
+	//con, err := grpc.Dial("192.168.41.221:30041", grpc.WithInsecure())
 	if err != nil {
 		logrus.Fatalf("error : %v", err)
 	}
@@ -49,8 +49,8 @@ func main() {
 	logrus.Info("Joined")
 	time.Sleep(time.Second * 2)
 	err = eventCli.Send(&api.Event{Event: &api.Event_NewMessage{&api.Message{
-		To:   "5c4c2683bfd02a2b923af8bf",
-		Body: "salam 5",
+		To:   "5c4c2683bfd02a2b923af8b5",
+		Body: "salam 6",
 	}}})
 	logrus.Info("Sent message")
 	logrus.Info("Done")

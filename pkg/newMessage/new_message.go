@@ -112,6 +112,7 @@ func saveChannelToMongo(c *channel.Channel) error {
 }
 
 func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error) {
+	logrus.Infof("\ncreating/getting new channel to send message from %s to %s", from, to)
 	channels, err := channel.GetAll(bson.M{
 		"Members": bson.M{"$in": []string{from, to}, "$size": 2},
 	})
@@ -159,7 +160,7 @@ func ensureChannel(sessionID string, channelID string, userID string) error {
 		}
 	}
 	if !channelExist {
-		logrus.Info("user is not subscribed to channel")
+		logrus.Infof("\nuser is not subscribed to channel %s", userID)
 		//subscribeChannel(channelID, userID)
 		//Send user discovery event
 		//user discovery event publishes a userid and a chanellid
