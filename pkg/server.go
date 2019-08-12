@@ -40,7 +40,9 @@ func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 		return nil, errors.New("cannot get identity out of context")
 	}
 	msgs, err := channel.GetAll(map[string]interface{}{
-		"$in": []string{}, //TODO fix query
+		"Members": map[string]interface{}{
+			"$in": []string{ident.ID},
+		}, //TODO fix query
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from database")
@@ -63,8 +65,22 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 	if !ok {
 		return nil, errors.New("cannot get identity out of context")
 	}
+	chns, err := channel.GetAll(map[string]interface{}{
+		"Members": map[string]interface{}{
+			"$in": []string{ident.ID},
+		},
+	})
+	var chnIds []string
+	for _, chn := range chns {
+		chnIds = append(chnIds, chn.ChannelID)
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "error in getting channels that user is member of")
+	}
 	msgs, err := message.GetAll(map[string]interface{}{
-		"$or": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}},
+		"$or": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}, {"ChannelID": map[string]interface{}{
+			"$in": chnIds,
+		}}},
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from database")

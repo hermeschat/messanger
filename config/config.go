@@ -39,6 +39,11 @@ var ApplicationServiceURL = GetEnv("APPLICATION_SERVICE_URL", "https://api.payge
 // Club Base URL
 var ClubBaseURL = GetEnv("ClubBaseURL", "https://api.paygear.ir/club")
 
+var RedisPort = GetEnv("REDIS_PORT", "6379")
+
+var RedisHost = GetEnv("REDIS_HOST", "127.0.0.1")
+var RedisDBName = GetEnv("REDIS_DB", "5")
+
 func GetEnv(key, fallback string) string {
 	value := os.Getenv(key)
 	if len(value) == 0 {
