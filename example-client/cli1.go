@@ -49,7 +49,7 @@ func main() {
 	logrus.Info("Joined")
 	time.Sleep(time.Second * 2)
 	err = eventCli.Send(&api.Event{Event: &api.Event_NewMessage{&api.Message{
-		To:   "5c4c2683bfd02a2b923af8b5",
+		To:   "5c4c2683bfd02a2b923af8b6",
 		Body: "salam 6",
 	}}})
 	logrus.Info("Sent message")

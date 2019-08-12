@@ -114,7 +114,7 @@ func saveChannelToMongo(c *channel.Channel) error {
 func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error) {
 	logrus.Infof("\ncreating/getting new channel to send message from %s to %s", from, to)
 	channels, err := channel.GetAll(bson.M{
-		"Members": bson.M{"$in": []string{from, to}, "$size": 2},
+		"Members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
 
 	if err != nil {
