@@ -46,7 +46,6 @@ func Launch(configPath string) {
 	unaryChain := grpc_middleware.ChainUnaryServer(grpc_auth.UnaryServerInterceptor(interceptor.UnaryAuthJWTInterceptor))
 	logrus.Info("Interceptors Created")
 	srv := grpc.NewServer(grpc.StreamInterceptor(streamChain), grpc.UnaryInterceptor(unaryChain))
-	//srv := grpc.NewServer()
 	logrus.Info("Created New GRPC Server")
 	hermes := pkg.HermesServer{AppContext}
 	api.RegisterHermesServer(srv, hermes)

@@ -65,11 +65,13 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 	if !ok {
 		return nil, errors.New("cannot get identity out of context")
 	}
-	chns, err := channel.GetAll(map[string]interface{}{
+	query := map[string]interface{}{
 		"Members": map[string]interface{}{
 			"$in": []string{ident.ID},
 		},
-	})
+	}
+
+	chns, err := channel.GetAll(query)
 	var chnIds []string
 	for _, chn := range chns {
 		chnIds = append(chnIds, chn.ChannelID)

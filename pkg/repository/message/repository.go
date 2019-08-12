@@ -52,19 +52,20 @@ func (s *Message) ToMap() (map[string]interface{}, error) {
 	}
 	return m, nil
 }
-func GetAll(query map[string]interface{}) ([]*Message, error) {
+func GetAll(query map[string]interface{}) ([]map[string]interface{}, error) {
 	s, err := mongo.FindAll("messages", query)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't find message with given query")
 	}
-	messages := []*Message{}
+	//messages := []*Message{}
+	messages := []map[string]interface{}{}
 	for s.Next(context.Background()) {
-		msg := &Message{}
+		msg := &map[string]interface{}{}
 		err = s.Decode(msg)
 		if err != nil {
 			return nil, errors.Wrap(err, "error in decoding")
 		}
-		messages = append(messages, msg)
+		messages = append(messages, *msg)
 	}
 
 	return messages, nil
