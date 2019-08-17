@@ -79,10 +79,9 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 	if err != nil {
 		return nil, errors.Wrap(err, "error in getting channels that user is member of")
 	}
+
 	msgs, err := message.GetAll(map[string]interface{}{
-		"$or": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}, {"ChannelID": map[string]interface{}{
-			"$in": chnIds,
-		}}},
+		"$or": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}},
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from database")
