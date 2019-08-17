@@ -32,7 +32,6 @@ func Launch(configPath string) {
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.FullTimestamp = true
 	logrus.SetFormatter(customFormatter)
-
 	logrus.Info("Checking health")
 	healthCheck()
 	logrus.Info("Health check passed")
