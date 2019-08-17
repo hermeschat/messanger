@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"fmt"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/pkg/errors"
@@ -37,6 +38,7 @@ func jwtCheck(ctx context.Context) (*auth.Identity, error) {
 	}
 	_ = bearer
 	// checkBearer(bearer)
+	fmt.Println(bearer[0])
 	ident, err := auth.GetAuthentication(bearer[0], "")
 	if err != nil {
 		return nil, errors.Wrap(err, "error in verifying jwt")
