@@ -3,12 +3,14 @@ package newMessage
 import (
 	"encoding/json"
 	"fmt"
-	"git.raad.cloud/cloud/hermes/pkg/repository"
-	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 	"time"
 
+	"git.raad.cloud/cloud/hermes/pkg/repository"
+	"git.raad.cloud/cloud/hermes/pkg/user_discovery"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/mitchellh/mapstructure"
 	uuid "github.com/satori/go.uuid"
 
 	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
@@ -116,7 +118,16 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 	channels, err := channel.GetAll(bson.M{
 		"Members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
+	cts := []*channel.Channel{}
+	for _, c := range channels {
+		ct := &channel.Channel{}
+		err := mapstructure.Decode(c, ct)
+		if err != nil {
+			return nil, errors.Wrap(err, "error in converting channle map to channel type")
+		}
+		cts = append(cts, ct)
 
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot get channels")
 	}
@@ -142,7 +153,7 @@ func getOrCreateExistingChannel(from string, to string) (*channel.Channel, error
 		}
 		return targetChannel, nil
 	} else {
-		targetChannel = (channels)[0]
+		targetChannel = (cts)[0]
 		return targetChannel, nil
 
 	}

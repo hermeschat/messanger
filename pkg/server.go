@@ -74,7 +74,7 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 	chns, err := channel.GetAll(query)
 	var chnIds []string
 	for _, chn := range chns {
-		chnIds = append(chnIds, chn.ChannelID)
+		chnIds = append(chnIds, chn["ChannelID"].(string))
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "error in getting channels that user is member of")

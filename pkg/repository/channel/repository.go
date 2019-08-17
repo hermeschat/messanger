@@ -65,7 +65,7 @@ func (s *Channel) ToMap() (map[string]interface{}, error) {
 	}
 	return m, nil
 }
-func GetAll(query map[string]interface{}) ([]*Channel, error) {
+func GetAll(query map[string]interface{}) ([]map[string]interface{}, error) {
 
 	cur, err := mongo.FindAll("channels", query)
 	if err == mgo.ErrNoDocuments {
@@ -74,19 +74,19 @@ func GetAll(query map[string]interface{}) ([]*Channel, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't find channel with given query")
 	}
-	var channels []*Channel
+	var channels []map[string]interface{}
 	//err = cur.Decode(channels)
 	//if err != nil {
 	//	return nil, errors.Wrap(err, "can't construct channel from given map from mongo")
 	//}
 	for cur.Next(context.Background()) {
-		var elem Channel
+		elem := map[string]interface{}{}
 		err := cur.Decode(&elem)
 		if err != nil {
 			log.Fatal(err)
 		}
 		logrus.Info(elem)
-		channels = append(channels, &elem)
+		channels = append(channels, elem)
 	}
 	return channels, nil
 }
