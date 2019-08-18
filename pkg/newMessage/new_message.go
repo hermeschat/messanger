@@ -68,6 +68,10 @@ func Handle(message *NewMessage) error {
 		}
 	}(targetChannel)
 	message.Channel = targetChannel.ChannelID
+	roles := targetChannel.Roles[message.From]
+	if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
+		return errors.New("user doesn't have write permission in this channel")
+	}
 	logrus.Infof("message is %+v", message)
 	//save to db
 	//err = saveMessageToMongo(message)
@@ -85,6 +89,14 @@ func Handle(message *NewMessage) error {
 	return nil
 }
 
+func checkRoles(roles string) bool {
+	for _, c := range roles {
+		if string(c) == "W" {
+			return true
+		}
+	}
+	return false
+}
 func saveMessageToMongo(message *NewMessage) error {
 	//uid, err := uuid.NewV4()
 	//if err != nil {
