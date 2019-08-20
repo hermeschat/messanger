@@ -43,6 +43,7 @@ func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 	output := []*api.Channel{}
 	for _, m := range msgs {
 		amsg := &api.Channel{}
+		amsg.ChannelId = fmt.Sprint(m["ChannelID"])
 		members := []string{}
 		for _, mem := range m["Members"].(primitive.A) {
 			members = append(members, fmt.Sprint(mem))
