@@ -43,10 +43,17 @@ func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 	output := []*api.Channel{}
 	for _, m := range msgs {
 		amsg := &api.Channel{}
-		err = mapstructure.Decode(m, amsg)
-		if err != nil {
-			return nil, errors.Wrap(err, "error while converting from repository message to api message")
+		members := []string{}
+		for _, mem := range m["Members"].(primitive.A) {
+			members = append(members, fmt.Sprint(mem))
 		}
+		amsg.Members = members
+		roles := map[string]string{}
+		for member, role := range m["Roles"].(map[string]interface{}) {
+			roles[member] = fmt.Sprint(role)
+		}
+		amsg.Roles = roles
+		amsg.Type = fmt.Sprint(m["Type"].(int32))
 		output = append(output, amsg)
 	}
 	return &api.Channels{Msg: output}, nil

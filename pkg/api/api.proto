@@ -32,6 +32,8 @@ message Channels {
 message Channel {
     repeated string members = 1;
     string name = 2;
+    string type = 3;
+    map<string, string> roles = 4;
 }
 
 message Event {
