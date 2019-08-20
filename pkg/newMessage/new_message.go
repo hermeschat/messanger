@@ -68,6 +68,7 @@ func Handle(message *NewMessage) error {
 		}
 	}(targetChannel)
 	message.Channel = targetChannel.ChannelID
+
 	// roles := targetChannel.Roles[message.From]
 	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
 	// 	return errors.New("user doesn't have write permission in this channel")
@@ -108,7 +109,7 @@ func saveMessageToMongo(message *NewMessage) error {
 	err := message2.Add(&message2.Message{
 		To:          message.To,
 		From:        message.From,
-		Time:        time.Now(),
+		Time:        time.Now().String(),
 		MessageType: message.MessageType,
 		Body:        message.Body,
 		MessageID:   primitive.NewObjectIDFromTimestamp(time.Now()),

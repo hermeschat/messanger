@@ -74,6 +74,7 @@ message Message {
     string sessionID = 6;
     string messageID = 7;
     string channelID = 8;
+    string time=9;
 }
 message GetOrCreateSessionResponse {
     string SessionID =1;

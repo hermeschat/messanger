@@ -2,19 +2,17 @@ package message
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
-
 	"git.raad.cloud/cloud/hermes/pkg/drivers/mongo"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Message struct {
 	MessageID   primitive.ObjectID `bson:"_id" json:"_id"`
 	From        string
 	To          string
-	Time        time.Time
+	Time        string
 	ChannelID   string
 	MessageType string
 	Body        string
