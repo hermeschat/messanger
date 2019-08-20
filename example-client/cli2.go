@@ -33,7 +33,7 @@ func main() {
 	// }
 	// sid := resp.SessionID
 	// logrus.Info(sid)
-	msgs, err := cli.ListChannels(ctx, &api.Empty{})
+	msgs, err := cli.ListMessages(ctx, &api.ChannelID{Id: "12ac74ab-fd50-4d51-84b0-78cd58f67565"})
 	if err != nil {
 		panic(err)
 	}

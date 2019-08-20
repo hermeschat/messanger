@@ -21,6 +21,17 @@ type Message struct {
 	Read        bool
 }
 
+/*
+	case normal_text = 0
+    case location = 1
+    case contact = 2
+    case payment_request = 3
+    case payment_response = 4
+    case url = 5
+    case image = 6
+    case video = 7
+    case voice = 8
+*/
 //ConstructFromMap ...
 func ConstructFromMap(m map[string]interface{}) (*Message, error) {
 	message := &Message{}
