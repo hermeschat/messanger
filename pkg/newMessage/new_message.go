@@ -68,10 +68,10 @@ func Handle(message *NewMessage) error {
 		}
 	}(targetChannel)
 	message.Channel = targetChannel.ChannelID
-	roles := targetChannel.Roles[message.From]
-	if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
-		return errors.New("user doesn't have write permission in this channel")
-	}
+	// roles := targetChannel.Roles[message.From]
+	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
+	// 	return errors.New("user doesn't have write permission in this channel")
+	// }
 	logrus.Infof("message is %+v", message)
 	//save to db
 	//err = saveMessageToMongo(message)
@@ -79,7 +79,10 @@ func Handle(message *NewMessage) error {
 	//	logrus.Errorf("cannot save message to mongodb :%v", err)
 	//	return errors.Wrap(err, "error in saving message to mongo db")
 	//}
-	go saveMessageToMongo(message)
+	err = saveMessageToMongo(message)
+	if err != nil {
+		return errors.Wrap(err, "error in saving message to database")
+	}
 	logrus.Info("Trying To publish")
 	//Publish to nats
 	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)

@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"git.raad.cloud/cloud/hermes/pkg/api"
 	"git.raad.cloud/cloud/hermes/pkg/auth"
@@ -21,14 +22,6 @@ import (
 
 type HermesServer struct {
 	Ctx context.Context
-}
-
-var AppContext = context.Background()
-
-func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
-
-	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
-	return &api.Empty{Status: "JWT is ok"}, nil
 }
 
 func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Channels, error) {
@@ -59,34 +52,23 @@ func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 	return &api.Channels{Msg: output}, nil
 }
 
-func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Messages, error) {
-	i := ctx.Value("identity")
-	ident, ok := i.(*auth.Identity)
-	if !ok {
-		return nil, errors.New("cannot get identity out of context")
-	}
-	query := map[string]interface{}{
-		"Members": map[string]interface{}{
-			"$in": []string{ident.ID},
-		},
-	}
-
-	chns, err := channel.GetAll(query)
-	var chnIds []string
-	for _, chn := range chns {
-		chnIds = append(chnIds, chn["ChannelID"].(string))
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "error in getting channels that user is member of")
-	}
+func (h HermesServer) ListMessages(ctx context.Context, ch *api.ChannelID) (*api.Messages, error) {
+	// i := ctx.Value("identity")
+	//ident, ok := i.(*auth.Identity)
+	//if !ok {
+	//	return nil, errors.New("cannot get identity out of context")
+	//}
 
 	msgs, err := message.GetAll(map[string]interface{}{
-		"$or": []map[string]interface{}{{"To": ident.ID}, {"From": ident.ID}},
+		"ChannelID": ch.Id,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from database")
 	}
 	output := []*api.Message{}
+	for _, msg := range msgs {
+		msg["MessageID"] = fmt.Sprint(msg["MessageID"].(primitive.ObjectID).Hex())
+	}
 	for _, m := range msgs {
 		fmt.Println(m)
 		amsg := &api.Message{}
@@ -98,6 +80,18 @@ func (h HermesServer) ListMessages(ctx context.Context, _ *api.Empty) (*api.Mess
 	}
 	fmt.Printf("\n%+v", output)
 	return &api.Messages{Msg: output}, nil
+}
+
+func (h HermesServer) GetChannel(ctx context.Context, _ *api.ChannelID) (*api.Channel, error) {
+	return nil, nil
+}
+
+var AppContext = context.Background()
+
+func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
+
+	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
+	return &api.Empty{Status: "JWT is ok"}, nil
 }
 
 func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
@@ -193,7 +187,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 					SessionId: j.SessionId,
 				}
 
-				eventHandler.Handle(h.Ctx, jp)
+				eventHandler.Handle(a.Context(), jp)
 				//if err != nil {
 				//	logrus.Errorf("Error in Join event : %v", err)
 				//}

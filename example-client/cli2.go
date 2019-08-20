@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"git.raad.cloud/cloud/hermes/pkg/api"
@@ -14,30 +15,30 @@ func main() {
 	//con, err := grpc.Dial("https://chat.paygear.ir:443")
 
 	con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
-	//con, err := grpc.Dial("192.168.41.221:30041", grpc.WithInsecure())
-
+	//con, err := grpc.Dial("192.168.41.221:30050", grpc.WithInsecure())
 	if err != nil {
 		logrus.Fatalf("error : %v", err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), time.Hour*2)
-	md := metadata.Pairs("Authorization", "bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiOWRjNzEyYzk1MmI0YWFmYjQ4MWFiZWRlMGZlYzRkOCIsImV4cCI6MTY2NTg3OTU1NSwibmJmIjoxNTYzMjg3NTU1LCJpZCI6IjVjNGMyNjgzYmZkMDJhMmI5MjNhZjhiNiIsIm1lcmNoYW50X3JvbGVzIjp7IjViMmRmZTA0Y2YyNjU2MDAwYzk3YWFlNyI6WyJhZG1pbiJdfSwicm9sZSI6WyJ6ZXVzIl0sImFwcCI6IjU5YmVjM2ZhMGVjYTgxMDAwMWNlZWI4NiIsInN2YyI6eyJhY2NvdW50Ijp7InBlcm0iOjB9LCJjYXNoaWVyIjp7InBlcm0iOjB9LCJjYXNob3V0Ijp7InBlcm0iOjB9LCJjbHViIjp7InBlcm0iOjB9LCJjbHViX3NlcnZpY2UiOnsicGVybSI6MH0sImNvdXBvbiI6eyJwZXJtIjowfSwiY3JlZGl0Ijp7InBlcm0iOjB9LCJkZWxpdmVyeSI6eyJwZXJtIjowfSwiZXZlbnQiOnsicGVybSI6MH0sImZpbGUiOnsicGVybSI6MH0sImdhbWlmaWNhdGlvbiI6eyJwZXJtIjowfSwiZ2VvIjp7InBlcm0iOjB9LCJtZXNzYWdpbmciOnsicGVybSI6MH0sIm5vdGljZXMiOnsicGVybSI6MH0sInBheW1lbnQiOnsicGVybSI6MH0sInByb2R1Y3QiOnsicGVybSI6MH0sInB1c2giOnsicGVybSI6MH0sInFyIjp7InBlcm0iOjB9LCJzZWFyY2giOnsicGVybSI6MH0sInNldHRsZW1lbnQiOnsicGVybSI6MH0sInNvY2lhbCI6eyJwZXJtIjowfSwic3luYyI6eyJwZXJtIjowfSwidHJhbnNwb3J0Ijp7InBlcm0iOjB9LCJ3YXJnIjp7InBlcm0iOjB9fX0.FGtPNUiI-cN-hTejqandEg1DZvMbjy-P9ZRh4zlenB8")
+	md := metadata.Pairs("Authorization", "bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiOWRjNzEyYzk1MmI0YWFmYjQ4MWFiZWRlMGZlYzRkOCIsImV4cCI6MTU3ODg3OTgxNCwibmJmIjoxNTY2Mjg3ODE0LCJpZCI6IjVjNGMyNjgzYmZkMDJhMmI5MjNhZjhiZSIsIm1lcmNoYW50X3JvbGVzIjp7IjViMmRmZTA0Y2YyNjU2MDAwYzk3YWFlNyI6WyJhZG1pbiJdfSwicm9sZSI6WyJ6ZXVzIl0sImFwcCI6IjU5YmVjM2ZhMGVjYTgxMDAwMWNlZWI4NiIsInN2YyI6eyJhY2NvdW50Ijp7InBlcm0iOjB9LCJjYXNoaWVyIjp7InBlcm0iOjB9LCJjYXNob3V0Ijp7InBlcm0iOjB9LCJjbHViIjp7InBlcm0iOjB9LCJjbHViX3NlcnZpY2UiOnsicGVybSI6MH0sImNvdXBvbiI6eyJwZXJtIjowfSwiY3JlZGl0Ijp7InBlcm0iOjB9LCJkZWxpdmVyeSI6eyJwZXJtIjowfSwiZXZlbnQiOnsicGVybSI6MH0sImZpbGUiOnsicGVybSI6MH0sImdhbWlmaWNhdGlvbiI6eyJwZXJtIjowfSwiZ2VvIjp7InBlcm0iOjB9LCJtZXNzYWdpbmciOnsicGVybSI6MH0sIm5vdGljZXMiOnsicGVybSI6MH0sInBheW1lbnQiOnsicGVybSI6MH0sInByb2R1Y3QiOnsicGVybSI6MH0sInB1c2giOnsicGVybSI6MH0sInFyIjp7InBlcm0iOjB9LCJzZWFyY2giOnsicGVybSI6MH0sInNldHRsZW1lbnQiOnsicGVybSI6MH0sInNvY2lhbCI6eyJwZXJtIjowfSwic3luYyI6eyJwZXJtIjowfSwidHJhbnNwb3J0Ijp7InBlcm0iOjB9LCJ3YXJnIjp7InBlcm0iOjB9fX0.cjy_ns-NUqssE6jUvceL0_LUXzoSOHYDxvGLDFxdPHU")
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	cli := api.NewHermesClient(con)
-	//resp, err := cli.CreateSession(ctx, &api.CreateSessionRequest{
-	//	ClientType: "Ubuntu",
-	//	UserAgent:  "Terminal",
-	//})
-	//if err != nil {
-	//	panic(err)
-	//}
-	//sid := resp.SessionID
-	//logrus.Info(sid)
-	//msgs, err := cli.ListMessages(ctx, &api.Empty{})
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println(msgs)
-	//return
+
+	// resp, err := cli.CreateSession(ctx, &api.CreateSessionRequest{
+	// 	ClientType: "Ubuntu",
+	// 	UserAgent:  "Terminal",
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// sid := resp.SessionID
+	// logrus.Info(sid)
+	msgs, err := cli.ListChannels(ctx, &api.Empty{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(msgs)
+	return
 	eventCli, err := cli.EventBuff(ctx)
 	if err != nil {
 		panic(err)

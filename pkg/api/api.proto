@@ -69,6 +69,7 @@ message Message {
     string to = 4;
     string body = 5;
     string sessionID = 6;
+    string messageID = 7;
 }
 message GetOrCreateSessionResponse {
     string SessionID =1;
