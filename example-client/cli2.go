@@ -14,8 +14,8 @@ import (
 func main() {
 	//con, err := grpc.Dial("https://chat.paygear.ir:443")
 
-	con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
-	//con, err := grpc.Dial("192.168.41.221:30050", grpc.WithInsecure())
+	//con, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
+	con, err := grpc.Dial("192.168.41.221:30050", grpc.WithInsecure())
 	if err != nil {
 		logrus.Fatalf("error : %v", err)
 	}
@@ -33,7 +33,7 @@ func main() {
 	// }
 	// sid := resp.SessionID
 	// logrus.Info(sid)
-	msgs, err := cli.ListMessages(ctx, &api.ChannelID{Id: "12ac74ab-fd50-4d51-84b0-78cd58f67565"})
+	msgs, err := cli.ListMessages(ctx, &api.ChannelID{Id: "85403be4-7ceb-4cbd-965f-9bb9efc64963"})
 	if err != nil {
 		panic(err)
 	}

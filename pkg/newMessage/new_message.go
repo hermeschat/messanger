@@ -33,6 +33,7 @@ type NewMessage struct {
 
 func Handle(message *NewMessage) error {
 	var err error
+	logrus.Infof("######$$$$$$8==> %+v", message)
 	if message.To == "" && message.Channel == "" {
 		return errors.New("error in new message")
 	}
