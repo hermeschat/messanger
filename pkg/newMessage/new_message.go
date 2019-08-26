@@ -51,24 +51,27 @@ func Handle(message *NewMessage) error {
 		// check for channel existance in db or cache
 	}
 	logrus.Infof("target channel %+v", targetChannel)
-	func(targetChannel *channel.Channel) {
-		if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
-			targetChannel, err = channel.Get(targetChannel.ChannelID)
-			if err != nil {
-				msg := errors.Wrap(err, "cannot get channel from db").Error()
-				logrus.Error(msg)
-			}
+	//func(targetChannel *channel.Channel) {
+	if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
+		targetChannel, err = channel.Get(targetChannel.ChannelID)
+		if err != nil {
+			msg := errors.Wrap(err, "cannot get channel from db").Error()
+			logrus.Error(msg)
 		}
-
-		for _, member := range targetChannel.Members {
-			err := ensureChannel(message.Session, targetChannel.ChannelID, member)
-			if err != nil {
-				logrus.Errorf("error in ensuring channel : %v", err)
-				//go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
-			}
-		}
-	}(targetChannel)
+	}
 	message.Channel = targetChannel.ChannelID
+	err = saveMessageToMongo(message)
+	if err != nil {
+		return errors.Wrap(err, "error in saving message to database")
+	}
+	for _, member := range targetChannel.Members {
+		err := ensureChannel(message.Session, targetChannel.ChannelID, member)
+		if err != nil {
+			logrus.Errorf("error in ensuring channel : %v", err)
+			//go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
+		}
+	}
+	//}(targetChannel)
 
 	// roles := targetChannel.Roles[message.From]
 	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
@@ -81,10 +84,7 @@ func Handle(message *NewMessage) error {
 	//	logrus.Errorf("cannot save message to mongodb :%v", err)
 	//	return errors.Wrap(err, "error in saving message to mongo db")
 	//}
-	err = saveMessageToMongo(message)
-	if err != nil {
-		return errors.Wrap(err, "error in saving message to database")
-	}
+
 	logrus.Info("Trying To publish")
 	//Publish to nats
 	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
