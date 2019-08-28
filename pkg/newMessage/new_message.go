@@ -38,18 +38,20 @@ func Handle(message *NewMessage) error {
 		return errors.New("error in new message")
 	}
 	targetChannel := &channel.Channel{}
-	if message.To != "" {
-		targetChannel, err = getOrCreateExistingChannel(message.From, message.To)
-		if err != nil {
-			logrus.Error(errors.Wrap(err, "failed to get or create channel"))
-			return errors.Wrap(err, "error in getting channel")
-		}
-	}
 	if message.Channel != "" {
 		targetChannel = &channel.Channel{ChannelID: message.Channel}
-		// In case of dDos attack with lots of invalid channelid posted here, we should
-		// check for channel existance in db or cache
+	} else {
+		if message.To != "" {
+			targetChannel, err = getOrCreateExistingChannel(message.From, message.To)
+			if err != nil {
+				logrus.Error(errors.Wrap(err, "failed to get or create channel"))
+				return errors.Wrap(err, "error in getting channel")
+			}
+		} else {
+			return errors.Wrap(err, "no valid receiver whether channel or userId found")
+		}
 	}
+
 	logrus.Infof("target channel %+v", targetChannel)
 	//func(targetChannel *channel.Channel) {
 	if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
