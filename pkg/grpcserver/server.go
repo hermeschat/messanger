@@ -32,21 +32,22 @@ type hermesServer struct {
 
 //CreateGRPCServer creates a new grpc server
 func CreateGRPCServer(ctx context.Context) {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Config().Get("PORT")))
+	if err != nil {
+		logrus.Fatal("ERROR can't create a tcp listener ")
+	}
 	streamChain := grpcmiddleware.ChainStreamServer(grpc_auth.StreamServerInterceptor(UnaryAuthJWTInterceptor))
 	unaryChain := grpcmiddleware.ChainUnaryServer(grpc_auth.UnaryServerInterceptor(UnaryAuthJWTInterceptor))
 	logrus.Info("Interceptors Created")
 	srv := grpc.NewServer(grpc.StreamInterceptor(streamChain), grpc.UnaryInterceptor(unaryChain))
-	lis, err := net.Listen("tcp", config.Config().Get(""))
-	if err != nil {
-		logrus.Fatal("ERROR can't create a tcp listener ")
-	}
 	pb.RegisterHermesServer(srv, hermesServer{context.Background()})
 	logrus.Info("Registering Hermes GRPC")
 	err = srv.Serve(lis)
 	if err != nil {
 		logrus.Fatal("ERROR in serving listener")
 	}
-	logrus.Info("Created New GRPC Server")
+
+	logrus.Info("GRPC is Live !!!")
 }
 
 func (h hermesServer) ListChannels(ctx context.Context, _ *pb.Empty) (*pb.Channels, error) {
