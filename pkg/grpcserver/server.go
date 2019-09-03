@@ -1,48 +1,72 @@
-package pkg
+package grpcserver
 
 import (
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net"
 
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/auth"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
-	"git.raad.cloud/cloud/hermes/pkg/eventHandler"
-	"git.raad.cloud/cloud/hermes/pkg/newMessage"
-	"git.raad.cloud/cloud/hermes/pkg/read"
-	"git.raad.cloud/cloud/hermes/pkg/repository/channel"
-	"git.raad.cloud/cloud/hermes/pkg/repository/message"
-	"git.raad.cloud/cloud/hermes/pkg/session"
+	"hermes/api/pb"
+	"hermes/config"
+	auth "hermes/paygearauth"
+	"hermes/pkg/db"
+	"hermes/pkg/drivers/nats"
+	"hermes/pkg/drivers/redis"
+	"hermes/pkg/eventHandler"
+	"hermes/pkg/message"
+	"hermes/pkg/read"
+
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/mitchellh/mapstructure"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
-type HermesServer struct {
+type hermesServer struct {
 	Ctx context.Context
 }
 
-func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Channels, error) {
-	fmt.Println("hereinlistmessages")
+//CreateGRPCServer creates a new grpc server
+func CreateGRPCServer(ctx context.Context) {
+	streamChain := grpcmiddleware.ChainStreamServer(grpc_auth.StreamServerInterceptor(UnaryAuthJWTInterceptor))
+	unaryChain := grpcmiddleware.ChainUnaryServer(grpc_auth.UnaryServerInterceptor(UnaryAuthJWTInterceptor))
+	logrus.Info("Interceptors Created")
+	srv := grpc.NewServer(grpc.StreamInterceptor(streamChain), grpc.UnaryInterceptor(unaryChain))
+	lis, err := net.Listen("tcp", config.Config().Get(""))
+	if err != nil {
+		logrus.Fatal("ERROR can't create a tcp listener ")
+	}
+	pb.RegisterHermesServer(srv, hermesServer{context.Background()})
+	logrus.Info("Registering Hermes GRPC")
+	err = srv.Serve(lis)
+	if err != nil {
+		logrus.Fatal("ERROR in serving listener")
+	}
+	logrus.Info("Created New GRPC Server")
+}
+
+func (h hermesServer) ListChannels(ctx context.Context, _ *pb.Empty) (*pb.Channels, error) {
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
 	_ = ident
 	if !ok {
 		return nil, errors.New("cannot get identity out of context")
 	}
-	msgs, err := channel.GetAll(map[string]interface{}{
+	msgs, err := db.Instance().Repo("channels").Get(map[string]interface{}{
 		"Members": map[string]interface{}{
 			"$in": []string{ident.ID},
 		}, //TODO fix query
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "error while trying to get messages from database")
+		return nil, errors.Wrap(err, "error while trying to get messages from db")
 	}
-	output := []*api.Channel{}
+	output := []*pb.Channel{}
 	for _, m := range msgs {
-		amsg := &api.Channel{}
+		amsg := &pb.Channel{}
 		amsg.ChannelId = fmt.Sprint(m["ChannelID"])
 		members := []string{}
 		for _, mem := range m["Members"].(primitive.A) {
@@ -57,52 +81,53 @@ func (h HermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 		amsg.Type = fmt.Sprint(m["Type"].(int32))
 		output = append(output, amsg)
 	}
-	return &api.Channels{Msg: output}, nil
+	return &pb.Channels{Msg: output}, nil
 }
 
-func (h HermesServer) ListMessages(ctx context.Context, ch *api.ChannelID) (*api.Messages, error) {
+func (h hermesServer) ListMessages(ctx context.Context, ch *pb.ChannelID) (*pb.Messages, error) {
 	// i := ctx.Value("identity")
 	//ident, ok := i.(*auth.Identity)
 	//if !ok {
 	//	return nil, errors.New("cannot get identity out of context")
 	//}
 
-	msgs, err := message.GetAll(map[string]interface{}{
+	msgs, err := db.Instance().Repo("messages").Get(map[string]interface{}{
 		"ChannelID": ch.Id,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "error while trying to get messages from database")
+		return nil, errors.Wrap(err, "error while trying to get messages from db")
 	}
-	output := []*api.Message{}
+	output := []*pb.Message{}
 	for _, msg := range msgs {
 		msg["MessageID"] = fmt.Sprint(msg["MessageID"].(primitive.ObjectID).Hex())
 	}
 	for _, m := range msgs {
 		fmt.Println(m)
-		amsg := &api.Message{}
+		amsg := &pb.Message{}
 		err = mapstructure.Decode(m, amsg)
 		if err != nil {
-			return nil, errors.Wrap(err, "error while converting from repository message to api message")
+			return nil, errors.Wrap(err, "error while converting from repository message to message")
 		}
 		output = append(output, amsg)
 	}
 	fmt.Printf("\n%+v", output)
-	return &api.Messages{Msg: output}, nil
+	return &pb.Messages{Msg: output}, nil
 }
 
-func (h HermesServer) GetChannel(ctx context.Context, _ *api.ChannelID) (*api.Channel, error) {
+func (h hermesServer) GetChannel(ctx context.Context, _ *pb.ChannelID) (*pb.Channel, error) {
 	return nil, nil
 }
 
 var AppContext = context.Background()
 
-func (h HermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
+func (h hermesServer) Echo(ctx context.Context, a *pb.Empty) (*pb.Empty, error) {
 
 	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
-	return &api.Empty{Status: "JWT is ok"}, nil
+	return &pb.Empty{Status: "JWT is ok"}, nil
 }
 
-func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
+//EventBuff ..
+func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 	ctx := a.Context()
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
@@ -148,7 +173,7 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		eventHandler.UserSockets.Unlock()
 		logrus.Info("we have a new event")
 		switch t := e.GetEvent().(type) {
-		case *api.Event_Read:
+		case *pb.Event_Read:
 			logrus.Info("Event is read")
 			r := e.GetRead()
 			rs := &read.ReadSignal{
@@ -160,32 +185,31 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			if err != nil {
 				logrus.Errorf("Error in handling read signal")
 			}
-		case *api.Event_Keep:
+		case *pb.Event_Keep:
 			logrus.Info("Event is keep")
 			k := e.GetKeep()
 			_ = k
 			//find logic
-		case *api.Event_NewMessage:
+		case *pb.Event_NewMessage:
 			logrus.Info("Event is New Message")
 			m := e.GetNewMessage()
 			if m != nil {
-				logrus.Info("Event is NewMessage")
-				nm := &newMessage.NewMessage{
+				logrus.Info("Event is Message")
+				nm := &db.Message{
 					Body:        m.Body,
 					From:        ident.ID,
 					To:          m.To,
-					Channel:     m.Channel,
+					ChannelID:   m.Channel,
 					MessageType: m.MessageType,
-					Session:     "",
 				}
 
-				err = newMessage.Handle(nm)
+				err = message.Handle(nm)
 				if err != nil {
-					logrus.Errorf("Error in NewMessage Event : %v", err)
+					logrus.Errorf("Error in Message Event : %v", err)
 				}
 			}
 			//return nil
-		case *api.Event_Join:
+		case *pb.Event_Join:
 			j := e.GetJoin()
 			logrus.Info(j)
 			if j != nil {
@@ -208,59 +232,3 @@ func (h HermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 
 	return nil
 }
-
-func (h HermesServer) CreateSession(ctx context.Context, req *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
-	i := ctx.Value("identity")
-	ident, ok := i.(*auth.Identity)
-	if !ok {
-		return &api.CreateSessionResponse{}, errors.New("could not get identity")
-	}
-	cs := &session.CreateSession{
-		UserIP:        req.GetUserIP(),
-		UserID:        ident.ID, //from jwt
-		ClientVersion: req.ClientVersion,
-		Node:          req.Node,
-	}
-	logrus.Println("created session model")
-	s, err := session.Create(cs)
-	if err != nil {
-		return &api.CreateSessionResponse{}, errors.Wrap(err, "error in creating session")
-	}
-	logrus.Println("done")
-	return &api.CreateSessionResponse{
-		SessionID: s.SessionID,
-	}, nil
-}
-
-//
-//func (h HermesServer) Deliverd(ctx context.Context, message *api.DeliveredSignal) (*api.Empty, error) {
-//	ds := &delivered.DeliverdSignal{
-//		MessageID: message.MessageID,
-//		ChannelID: message.ChannelID,
-//	}
-//	err := delivered.Handle(ds)
-//	if err != nil {
-//		return &api.Empty{Status: "500"}, errors.Wrap(err, "error in delivering message")
-//	}
-//	return &api.Empty{Status: "200"}, nil
-//}
-//func (h HermesServer) Read(ctx context.Context, message *api.ReadSignal) (*api.Empty, error) {
-//	rs := &read.ReadSignal{
-//		MessageID: message.MessageID,
-//		ChannelID: message.ChannelID,
-//	}
-//	err := read.Handle(rs)
-//	if err != nil {
-//		return &api.Empty{Status: "500"}, errors.Wrap(err, "error in reading")
-//	}
-//	return &api.Empty{Status: "200"}, nil
-//}
-
-//func (h HermesServer) DestroySession(context.Context, *api.DestroySessionRequest) (*api.Empty, error) {
-//	panic("implement me")
-//}
-
-//
-//func (h HermesServer) KeepAlive(context.Context, *api.Message) (*api.Empty, error) {
-//	panic("implement me")
-//}

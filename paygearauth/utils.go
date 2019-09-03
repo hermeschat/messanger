@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 import (
 	"encoding/base64"

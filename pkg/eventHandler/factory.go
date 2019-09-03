@@ -7,20 +7,20 @@ import (
 	"sync"
 	"time"
 
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"hermes/api/pb"
+	"hermes/pkg/drivers/nats"
+	"hermes/pkg/drivers/redis"
 )
 
 //UserDiscoveryEventHandler handles user discovery
 func UserDiscoveryEventHandler(ctx context.Context, userID string, currentSession string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Info("!!!!!!!!!!!!!!!!discovery event handler called ")
-		ude := &api.UserDiscoveryEvent{}
+		ude := &pb.UserDiscoveryEvent{}
 		err := ude.XXX_Unmarshal(msg.Data)
 		if err != nil {
 			logrus.Error(errors.Wrap(err, "cannot unmarshal UserDiscoveryEvent"))
@@ -51,17 +51,17 @@ func UserDiscoveryEventHandler(ctx context.Context, userID string, currentSessio
 
 var UserSockets = struct {
 	sync.RWMutex
-	Us map[string]api.Hermes_EventBuffServer
+	Us map[string]pb.Hermes_EventBuffServer
 }{
 	sync.RWMutex{},
-	map[string]api.Hermes_EventBuffServer{},
+	map[string]pb.Hermes_EventBuffServer{},
 }
 
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Warnf("22Message is %v", string(msg.Data))
-		m := &api.Message{}
+		m := &pb.Message{}
 		err := json.Unmarshal(msg.Data, m)
 		//_ ,err := m.XXX_Marshal(msg.Data, false)
 		if err != nil {
@@ -82,7 +82,7 @@ func NewMessageEventHandler(channelID string, userID string) func(msg *stan.Msg)
 			logrus.Errorf("error: user socket not found ")
 			return
 		}
-		err = userSocket.Send(&api.Event{Event: &api.Event_NewMessage{m}})
+		err = userSocket.Send(&pb.Event{Event: &pb.Event_NewMessage{m}})
 		if err != nil {
 			logrus.Errorf("error: cannot send event new message to user ")
 			return
@@ -117,23 +117,6 @@ type JoinPayload struct {
 
 func Handle(ctx context.Context, sig *JoinPayload) {
 
-	//s, err := session.GetSession(sig.SessionId)
-	//if err != nil {
-	//	msg := errors.Wrap(err, "cannot get session").Error()
-	//	logrus.Error(msg)
-	//	logrus.Error(errors.Wrap(err, "error in joining"))
-	//}
-	//logic session validation
-	//_ = s
-	// check jwt
-	//check := true
-	//if !check {
-	//	msg := errors.New("jwt is shit")
-	//	logrus.Error(msg.Error())
-	//	logrus.Error(errors.Wrap(err, "error in authenticating"))
-	//}
-	//get user id from jwt
-	//ctx, _ = context.WithTimeout(ctx, time.Hour*1)
 	channels, err := getSessionsByUserID(sig.UserID)
 	if err != nil {
 		logrus.Error(errors.Wrap(err, "error while trying to get channels from redis").Error())

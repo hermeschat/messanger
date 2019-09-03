@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 //
 //// Allow to check authentication of routes

@@ -1,14 +1,18 @@
 package main
 
 import (
-	"git.raad.cloud/cloud/hermes/cmd"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/redis"
 	"github.com/sirupsen/logrus"
+	"hermes/cmd"
+	"hermes/config"
+	"hermes/pkg/drivers/redis"
 )
 
 func main() {
-
-	cmd.Launch("")
+	err := config.FromEnv(nil)
+	if err != nil {
+		logrus.Fatalf("error in loading config map from env: %v", err)
+	}
+	cmd.Launch()
 	defer func() {
 		if err := recover(); err != nil {
 			logrus.Errorf("panic happend:\n%v", err)

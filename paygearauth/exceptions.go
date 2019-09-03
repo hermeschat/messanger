@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 type (
 	// HTTPError custom http error to handle custom errors

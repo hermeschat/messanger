@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+service Hermes {
+    rpc EventBuff(stream Event) returns(stream Event);
+    rpc ListChannels(Empty) returns (Channels);
+    rpc ListMessages (channelID) returns(Messages);
+    rpc GetChannel(channelID) returns(Channel);
+    rpc Echo(Empty) returns (Empty);
+}
+message channelID {
+    string id = 1;
+}
+message ReadSignal {
+    string messageID = 1;
+    string channelID = 2;
+}
+
+message Messages {
+    repeated Message msg = 1;
+}
+message Channels {
+    repeated Channel msg = 1;
+}
+
+message Channel {
+    repeated string members = 1;
+    string name = 2;
+    string type = 3;
+    map<string, string> roles = 4;
+    string channelId = 5;
+}
+
+message Event {
+    oneof event {
+        DeliveredSignal dlv = 1;
+        ReadSignal read = 2;
+        KeepAliveSignal keep = 3;
+        Message newMessage = 5;
+        JoinSignal join = 6;
+    }
+}
+message Empty{
+    string status = 1;
+}
+message KeepAliveSignal {
+
+}
+message DeliveredSignal {
+    string messageID = 1;
+    string channelID = 2;
+}
+message JoinSignal {
+    string sessionId = 1;
+}
+
+message UserDiscoveryEvent {
+    string UserID = 1;
+    string ChannelID = 2;
+}
+
+message Message {
+    string messageType = 1;
+    string from = 2;
+    string channel = 3;
+    string to = 4;
+    string body = 5;
+    string sessionID = 6;
+    string messageID = 7;
+    string channelID = 8;
+    string time=9;
+}

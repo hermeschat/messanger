@@ -2,9 +2,9 @@ FROM golang:1.12.2 AS builder
 
 ARG PROJECT
 
-COPY . /go/src/git.raad.cloud/cloud/${PROJECT}
+COPY . /go/src/${PROJECT}
 
-WORKDIR /go/src/git.raad.cloud/cloud/${PROJECT}
+WORKDIR /go/src/${PROJECT}
 
 RUN go get -v
 

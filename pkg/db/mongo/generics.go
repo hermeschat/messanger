@@ -2,27 +2,19 @@ package mongo
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/pkg/errors"
 )
 
-//Model ....
-type Model interface {
-	ToMap() (map[string]interface{}, error)
-}
-
 //InsertOne insert a new document in db
-func InsertOne(collName string, m Model) error {
-	coll, err := GetCollection(collName)
+func InsertOne(collName string, m map[string]interface{}) error {
+	coll, err := collection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
-	mp, err := m.ToMap()
-	if err != nil {
-		return errors.Wrap(err, "can't create map from given struct ")
-	}
-	_, err = coll.InsertOne(context.Background(), mp)
+	_, err = coll.InsertOne(context.Background(), m)
 	if err != nil {
 		return errors.Wrap(err, "could not insert a new document")
 	}
@@ -31,7 +23,7 @@ func InsertOne(collName string, m Model) error {
 
 //InsertAll inserts given array of maps to mongoDB
 func InsertAll(collName string, ms []interface{}) error {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
@@ -45,7 +37,7 @@ func InsertAll(collName string, ms []interface{}) error {
 
 //DeleteById removes a document with given Id
 func DeleteById(collName string, id string) error {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
@@ -61,7 +53,7 @@ func DeleteById(collName string, id string) error {
 
 //DeleteAllMatched removed all matched documents
 func DeleteAllMatched(collName string, filter map[string]interface{}) error {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
@@ -75,7 +67,7 @@ func DeleteAllMatched(collName string, filter map[string]interface{}) error {
 
 //UpdateAllMatched updates all matched documents
 func UpdateAllMatched(collName string, query map[string]interface{}, data map[string]interface{}) error {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
@@ -88,7 +80,7 @@ func UpdateAllMatched(collName string, query map[string]interface{}, data map[st
 
 //UpdateOne updates document with given id and data
 func UpdateOne(collName string, id string, data map[string]interface{}) error {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return errors.Wrap(err, "could not get collection ")
 	}
@@ -104,7 +96,7 @@ func UpdateOne(collName string, id string, data map[string]interface{}) error {
 
 //FindAll finds all documents whom matches to query
 func FindAll(collName string, query map[string]interface{}) (*mongo.Cursor, error) {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get collection ")
 	}
@@ -122,7 +114,7 @@ func FindAll(collName string, query map[string]interface{}) (*mongo.Cursor, erro
 
 //FindOneById finds matching ID in db
 func FindOneById(collName string, id string) (*mongo.SingleResult, error) {
-	coll, err := GetCollection(collName)
+	coll, err := collection(collName)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get collection ")
 	}

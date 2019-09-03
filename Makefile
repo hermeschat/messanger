@@ -1,2 +1,2 @@
-gen-proto:
-	protoc --go_out=plugins=grpc:. ./pkg/api/api.proto
+proto:
+	protoc --go_out=plugins=grpc:. ./api/pb/api.proto

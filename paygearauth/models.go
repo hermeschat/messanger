@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 // IdentityService service info of identity
 type IdentityService struct {
@@ -14,5 +14,5 @@ type Identity struct {
 	MerchantRoles map[string][]string
 	Service       IdentityService
 	AppId         string
-	SessionID 	  string
+	SessionID     string
 }

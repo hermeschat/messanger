@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 //
 //// helpers function for checking card is blocked or not

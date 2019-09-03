@@ -2,10 +2,11 @@ package read
 
 import (
 	"encoding/json"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/mongo"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
+
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"hermes/pkg/db/mongo"
+	"hermes/pkg/drivers/nats"
 )
 
 type ReadSignal struct {
@@ -25,7 +26,7 @@ func Handle(sig *ReadSignal) error {
 	}
 	err = mongo.UpdateAllMatched("messages", bson.M{"message_id": sig.MessageID}, bson.M{"$set": bson.M{"read": true}})
 	if err != nil {
-		return errors.Wrap(err , "error in updating mongo db to put read")
+		return errors.Wrap(err, "error in updating mongo db to put read")
 	}
 	return nil
 }

@@ -3,17 +3,16 @@ package user_discovery
 import (
 	"fmt"
 
-	"git.raad.cloud/cloud/hermes/pkg/api"
-	"git.raad.cloud/cloud/hermes/pkg/drivers/nats"
-	"git.raad.cloud/cloud/hermes/pkg/repository"
 	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"hermes/api/pb"
+	"hermes/pkg/drivers/nats"
 )
 
-func PublishEvent(ude repository.UserDiscoveryEvent) error {
+func PublishEvent(ude UserDiscoveryEvent) error {
 
-	u := &api.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
+	u := &pb.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
 	fmt.Println("client id is ", ude.UserID)
 	conn, err := nats.NatsClient("test-cluster", "0.0.0.0:4222", ude.UserID)
 	if err != nil {
@@ -30,4 +29,11 @@ func PublishEvent(ude repository.UserDiscoveryEvent) error {
 	logrus.Infof("Published User Discovery event %+v", u)
 	return nil
 
+}
+
+//UserDiscoveryEvent is the message we send to discovery channel to tell a user
+//to subscribe to a certain channel in async way
+type UserDiscoveryEvent struct {
+	ChannelID string
+	UserID    string
 }

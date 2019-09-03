@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 import "golang.org/x/crypto/bcrypt"
 

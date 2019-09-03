@@ -1,4 +1,4 @@
-package auth
+package paygearauth
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"git.raad.cloud/cloud/hermes/config"
 	"github.com/sirupsen/logrus"
+	"hermes/config"
 )
 
 type Service struct {
@@ -48,9 +48,9 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		}
 	}
 	fmt.Println("Get Applications")
-	url := config.ApplicationServiceURL + "/applications/" + applicationID + "?services=true"
+	url := config.Config().Get("application_service_url") + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "bearer "+config.AuthToken)
+	req.Header.Set("Authorization", "bearer "+config.Config().Get("authtoken"))
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -68,7 +68,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		application := Application{}
 		json.Unmarshal(body, &application)
 		application.LoadedAt = time.Now()
-		application.ClientSecret = config.ClientSecret
+		application.ClientSecret = config.Config().Get("client_secret")
 		applications[applicationID] = &application
 		return &application, nil
 	}

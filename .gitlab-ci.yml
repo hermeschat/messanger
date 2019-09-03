@@ -8,7 +8,7 @@ stages:
 development:
     stage: build
     script:
-      - ssh -t deploy@192.168.41.50 "deploy-go.sh git@git.raad.cloud:cloud/$SERVICE_NAME.git /docker/go/src/git.raad.cloud/cloud/$SERVICE_NAME develop"
+      - ssh -t deploy@192.168.41.50 "deploy-go.sh git@git.raad.cloud:cloud/$SERVICE_NAME.git /docker/go/src/$SERVICE_NAME develop"
     only:
         - develop
     environment: development
