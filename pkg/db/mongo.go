@@ -6,6 +6,12 @@ type Mongo struct {
 	repos map[string]Repository
 }
 
+func NewMongo() *Mongo {
+	return &Mongo{
+		make(map[string]Repository),
+	}
+}
+
 func (m *Mongo) Repo(name string) Repository {
 	repo, exists := m.repos[name]
 	if !exists {

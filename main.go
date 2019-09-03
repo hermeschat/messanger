@@ -3,15 +3,11 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"hermes/cmd"
-	"hermes/config"
 	"hermes/pkg/drivers/redis"
 )
 
 func main() {
-	err := config.FromEnv(nil)
-	if err != nil {
-		logrus.Fatalf("error in loading config map from env: %v", err)
-	}
+
 	cmd.Launch()
 	defer func() {
 		if err := recover(); err != nil {

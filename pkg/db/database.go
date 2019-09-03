@@ -101,10 +101,10 @@ func Instance() HermesDatabase {
 	return hermesDatabaseInstance
 }
 
-func init() {
+func Init() {
 	switch config.Config().Get("database_type") {
 	case "mongo":
-		hermesDatabaseInstance = &Mongo{}
+		hermesDatabaseInstance = NewMongo()
 		initMongoRepos(hermesDatabaseInstance)
 	case "cassandra":
 		return

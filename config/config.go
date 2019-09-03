@@ -3,9 +3,6 @@ package config
 import (
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
 )
 
 //ConfigMap represnets config
@@ -49,10 +46,10 @@ func Config() ConfigMap {
 /*FromEnv gets a map from env key to default value,
 tries to get key from env if not found uses default value present as value of map */
 func FromEnv(kd map[string]string) error {
-	err := godotenv.Load("config.env", "secrets.env")
-	if err != nil {
-		return errors.Wrap(err, "error in loading env file")
-	}
+	//err := godotenv.Load("config.env", "secrets.env")
+	//if err != nil {
+	//	return errors.Wrap(err, "error in loading env file")
+	//}
 	if kd == nil {
 		kd = envList
 	}
