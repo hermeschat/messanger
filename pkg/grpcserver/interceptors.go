@@ -32,7 +32,7 @@ func jwtCheck(ctx context.Context) (*paygearauth.Identity, error) {
 		return nil, errors.New("error in getting context meta data")
 	}
 	//check jwt
-	bearer, exists := md["paygearauth"]
+	bearer, exists := md["authorization"]
 	if !exists {
 		return nil, errors.New("no bearer token found")
 	}
