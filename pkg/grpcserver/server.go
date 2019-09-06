@@ -127,7 +127,6 @@ var appContext = context.Background()
 
 func (h hermesServer) Echo(ctx context.Context, a *pb.Empty) (*pb.Empty, error) {
 
-	logrus.Infof("Identity is :\n %+v", ctx.Value("identity"))
 	return &pb.Empty{Status: "JWT is ok"}, nil
 }
 
@@ -136,7 +135,6 @@ func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 	ctx := a.Context()
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)
-	logrus.Info(">>>>>>> We Are in Event Buff ")
 	if !ok {
 		logrus.Errorf("Cannot get identity out of context")
 	}
@@ -176,7 +174,6 @@ func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 		userSockets.Lock()
 		userSockets.Us[ident.ID] = a
 		userSockets.Unlock()
-		logrus.Info("we have a new event")
 		switch t := e.GetEvent().(type) {
 		case *pb.Event_Read:
 			logrus.Info("Event is read")
