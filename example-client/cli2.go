@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"hermes/api/pb"
@@ -34,12 +33,12 @@ func main() {
 	// }
 	// sid := resp.SessionID
 	// logrus.Info(sid)
-	msgs, err := cli.ListMessages(ctx, &pb.ChannelID{Id: "85403be4-7ceb-4cbd-965f-9bb9efc64963"})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(msgs)
-	return
+	// msgs, err := cli.ListMessages(ctx, &pb.ChannelID{Id: "85403be4-7ceb-4cbd-965f-9bb9efc64963"})
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(msgs)
+	// return
 	eventCli, err := cli.EventBuff(ctx)
 	if err != nil {
 		panic(err)

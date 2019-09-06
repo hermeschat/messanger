@@ -34,7 +34,6 @@ func Launch() {
 	logrus.Info("Health check passed")
 	grpcserver.CreateGRPCServer(appContext)
 	logrus.Info("Initializing Hermes")
-	//eventHandler.Serve()
 
 }
 
@@ -44,8 +43,8 @@ func healthCheck() {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	logrus.Infof("Database URI is %v", config.C().Get("database_uri"))
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.C().Get("database_uri")))
+	logrus.Infof("Database URI is %v", config.C().Get("mongo_uri"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.C().Get("mongo_uri")))
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}

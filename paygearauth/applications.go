@@ -3,7 +3,6 @@ package paygearauth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -50,12 +49,10 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 	}
 	url := config.C().Get("application_service_url") + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "bearer "+config.C().Get("authtoken"))
+	req.Header.Set("Authorization", "bearer "+config.C().Get("auth_token"))
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	fmt.Println(url)
-	fmt.Println(resp)
 	if err != nil {
 		logrus.Errorf("error on client.Do to get application info. \n error is : %s\n ", err)
 		return nil, err

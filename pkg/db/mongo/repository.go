@@ -2,18 +2,19 @@ package mongo
 
 import (
 	"context"
+	"hermes/config"
+	"time"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"hermes/config"
-	"time"
 )
 
 //collection gets collection that you gave us name of
 func collection(collectionName string) (*mongo.Collection, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("database_uri"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.C().Get("mongo_uri")))
 	if err != nil {
 		return nil, errors.Wrap(err, "can't connect to mongodb FUCK")
 	}
