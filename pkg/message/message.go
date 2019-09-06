@@ -7,16 +7,16 @@ import (
 	"time"
 
 	"hermes/pkg/db"
-	"hermes/pkg/user_discovery"
 
 	"github.com/mitchellh/mapstructure"
 	uuid "github.com/satori/go.uuid"
 
+	"hermes/pkg/drivers/nats"
+	"hermes/pkg/drivers/redis"
+	"hermes/pkg/discovery"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
-	"hermes/pkg/drivers/nats"
-	"hermes/pkg/drivers/redis"
 )
 
 func Handle(message *db.Message) error {
@@ -184,7 +184,7 @@ func ensureChannel(channelID string, userID string) error {
 		//user discovery event publishes a userid and a chanellid
 		//which this channels subscriber can listen to it and subscribe to given channel
 		//its equivalent for subscribeChannel(channelID, userID) in async way
-		err = user_discovery.PublishEvent(user_discovery.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
+		err = discovery.PublishUserDiscoveryEvent(discovery.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
 		if err != nil {
 			return errors.Wrap(err, "Error in publishing user discovery event")
 		}

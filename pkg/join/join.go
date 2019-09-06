@@ -1,44 +1,55 @@
-package user_discovery
+package join
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
-	"time"
-
-	"github.com/gogo/protobuf/proto"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"hermes/api/pb"
+	"hermes/pkg/discovery"
 	"hermes/pkg/drivers/nats"
 	"hermes/pkg/drivers/redis"
+	"sync"
+	"time"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
-func PublishEvent(ude UserDiscoveryEvent) error {
-
-	u := &pb.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
-	fmt.Println("client id is ", ude.UserID)
-	conn, err := nats.NatsClient("test-cluster", "0.0.0.0:4222", ude.UserID)
-	if err != nil {
-		return errors.Wrap(err, "cannot connect to nats")
-	}
-	bs, err := proto.Marshal(u)
-	if err != nil {
-		return errors.Wrap(err, "cannot marshal UserDiscoveryEvent")
-	}
-	err = (*conn).Publish("user-discovery", bs)
-	if err != nil {
-		return errors.Wrap(err, "cannot publish UserDiscoveryEvent")
-	}
-	logrus.Infof("Published User Discovery event %+v", u)
-	return nil
-
+//JoinPayload ...
+type JoinPayload struct {
+	UserID    string
+	SessionId string
 }
 
-//UserDiscoveryEvent is the message we send to discovery channel to tell a user
-//to subscribe to a certain channel in async way
-type UserDiscoveryEvent struct {
-	ChannelID string
-	UserID    string
+//Handle handles join event
+func Handle(ctx context.Context, sig *JoinPayload, userSockets *struct {
+	sync.RWMutex
+	Us map[string]pb.Hermes_EventBuffServer
+}) {
+	channels, err := getSessionsByUserID(sig.UserID)
+	if err != nil {
+		logrus.Error(errors.Wrap(err, "error while trying to get channels from redis").Error())
+		return
+	}
+	udSub := false
+	for _, c := range channels {
+		if c == "user-discovery" {
+			udSub = true
+		}
+	}
+	if !udSub {
+		logrus.Info("Not subscribed to user-discovery")
+
+		err = addSessionByUserID(sig.UserID, "user-discovery")
+		if err != nil {
+			logrus.Error("error while trying to add session to redis")
+			return
+		}
+		logrus.Infof("Subscribing to user-discovery as %s", sig.UserID)
+		sub := nats.MakeSubscriber(ctx, sig.UserID, "test-cluster", "0.0.0.0:4222", "user-discovery", discovery.UserDiscoveryEventHandler(ctx, sig.UserID, userSockets))
+		go sub()
+		return
+	}
+	logrus.Info("Already subscribing to user-discovery")
 }
 
 func getSessionsByUserID(userID string) ([]string, error) {
@@ -55,7 +66,6 @@ func getSessionsByUserID(userID string) ([]string, error) {
 		}
 		return nil, errors.Wrap(err, "error while scanning redis output")
 	}
-	fmt.Println(">>>>>>>>>>>" + res)
 	err = json.Unmarshal([]byte(res), &channels)
 	if err != nil {
 

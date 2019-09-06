@@ -11,7 +11,7 @@ import (
 	"hermes/pkg/db"
 	"hermes/pkg/drivers/nats"
 	"hermes/pkg/drivers/redis"
-	"hermes/pkg/eventHandler"
+	"hermes/pkg/join"
 	"hermes/pkg/message"
 	"hermes/pkg/read"
 
@@ -31,7 +31,7 @@ type hermesServer struct {
 	Ctx context.Context
 }
 
-var userSockets = struct {
+var userSockets = &struct {
 	sync.RWMutex
 	Us map[string]pb.Hermes_EventBuffServer
 }{
@@ -123,7 +123,7 @@ func (h hermesServer) GetChannel(ctx context.Context, _ *pb.ChannelID) (*pb.Chan
 	return nil, nil
 }
 
-var AppContext = context.Background()
+var appContext = context.Background()
 
 func (h hermesServer) Echo(ctx context.Context, a *pb.Empty) (*pb.Empty, error) {
 
@@ -219,12 +219,12 @@ func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 			logrus.Info(j)
 			if j != nil {
 				logrus.Info("Event is Join")
-				jp := &eventHandler.JoinPayload{
+				jp := &join.JoinPayload{
 					UserID:    ident.ID, //should get from jwt
 					SessionId: j.SessionId,
 				}
 
-				eventHandler.Handle(a.Context(), jp, userSockets)
+				join.Handle(a.Context(), jp, userSockets)
 
 			}
 		default:
@@ -232,5 +232,4 @@ func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 		}
 	}
 
-	return nil
 }
