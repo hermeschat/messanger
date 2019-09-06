@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"hermes/config"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Service struct {
@@ -47,14 +48,12 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 			return application, nil
 		}
 	}
-	fmt.Println("Get Applications")
 	url := config.C().Get("application_service_url") + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", "bearer "+config.C().Get("authtoken"))
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	fmt.Println("Get Applications")
 	fmt.Println(url)
 	fmt.Println(resp)
 	if err != nil {

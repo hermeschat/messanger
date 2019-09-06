@@ -2,7 +2,6 @@ package grpcserver
 
 import (
 	"context"
-	"fmt"
 	"hermes/paygearauth"
 	"time"
 
@@ -38,7 +37,6 @@ func jwtCheck(ctx context.Context) (*paygearauth.Identity, error) {
 		return nil, errors.New("no bearer token found")
 	}
 	_ = bearer
-	fmt.Println(bearer[0])
 	ident, err := paygearauth.GetAuthentication(bearer[0], "")
 	if err != nil {
 		return nil, errors.Wrap(err, "error in verifying jwt")

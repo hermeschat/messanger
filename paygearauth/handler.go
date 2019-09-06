@@ -3,7 +3,6 @@ package paygearauth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 )
@@ -22,14 +21,12 @@ func Init(serviceName string, appServiceURL string, httpRequestAuthToken string)
 
 // GetAuthentication check and get auth from given token
 func GetAuthentication(token string, accountID string) (*Identity, error) {
-	fmt.Println("BBBBBBBBBBBBBBBBBBBBBBBBB")
 	if token == "" || len(token) < 7 {
 		return nil, UnauthorizedError{}
 	}
 	if token[:7] == "bearer " {
 		token = token[7:]
 	}
-	fmt.Println("EEEEEEEEEEEEEE")
 	// get jwt data
 	jwtDataStr := strings.Split(token, ".")[1]
 	bytes, err := base64Decode(jwtDataStr)
@@ -37,7 +34,6 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 		log.Println(err)
 		return nil, UnauthorizedError{}
 	}
-	fmt.Println("FFFFFFFFFFFFFFFFFF")
 	properties := make(map[string]interface{})
 	err = json.Unmarshal(bytes, &properties)
 	if err != nil {
@@ -47,7 +43,6 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 	// find secret key of application
 	secretKey := ""
 	// clientID := ""
-	fmt.Println("CCCCCCCCCCCCCCCCCCCCCCC")
 	if app, ok := properties["app"]; ok {
 		applicationID := app.(string)
 		_, secretKey, err = GetApplicationAuthKeys(applicationID)
@@ -57,7 +52,6 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 	} else {
 		return nil, errors.New("Invalid JWT")
 	}
-	fmt.Println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
 	claims, err := ValidateJWT(token, secretKey)
 	if err != nil {
 		//log.Println(err)
@@ -142,26 +136,6 @@ func GetAuthentication(token string, accountID string) (*Identity, error) {
 			return nil, ForbiddenError{}
 		}
 	}
-	fmt.Println("EEEEEEEEEEEEEEEEEEEEE")
 	identity := Identity{Token: token, ID: userID, Roles: rolesMap, MerchantRoles: merchantRoles, Service: service, AppId: AppID}
 	return &identity, nil
 }
-
-//// Authenticate current request if is valid, otherwise returns nil
-//func Authenticate(c *echo.Context, accountID string, roles ...string) (*Identity, error) {
-//	token := (*c).Request().Header.Get("Authorization")
-//	identity, err := getAuthentication(token, accountID)
-//	if err == nil && len(roles) > 0 {
-//		exists := false
-//		for _, role := range roles {
-//			if _, ok := identity.Roles[role]; ok {
-//				exists = true
-//				break
-//			}
-//		}
-//		if !exists {
-//			return nil, ForbiddenError{}
-//		}
-//	}
-//	return identity, err
-//}
