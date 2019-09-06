@@ -1,5 +1,4 @@
 proto:
-	protoc --go_out=plugins=grpc:. ./api/pb/api.proto && cp ./api/pb/api.pb.go ./example-client
-
-
-	//https://raw.githubusercontent.com/hermeschat/proto/master/api.proto
+	curl https://raw.githubusercontent.com/hermeschat/proto/master/api.proto > api.proto
+	protoc --go_out=plugins=grpc:. api.proto && cp api.pb.go ./api
+	rm -rf api.pb.go api.proto

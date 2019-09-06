@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func UnaryAuthJWTInterceptor(ctx context.Context) (context.Context, error) {
+func unaryAuthJWTInterceptor(ctx context.Context) (context.Context, error) {
 	logrus.Info("In UnaryJWTInterceptor")
 	ident, err := jwtCheck(ctx)
 	if err != nil {

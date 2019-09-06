@@ -46,8 +46,8 @@ func CreateGRPCServer(ctx context.Context) {
 	if err != nil {
 		logrus.Fatal("ERROR can't create a tcp listener ")
 	}
-	streamChain := grpcmiddleware.ChainStreamServer(grpc_auth.StreamServerInterceptor(UnaryAuthJWTInterceptor))
-	unaryChain := grpcmiddleware.ChainUnaryServer(grpc_auth.UnaryServerInterceptor(UnaryAuthJWTInterceptor))
+	streamChain := grpcmiddleware.ChainStreamServer(grpc_auth.StreamServerInterceptor(unaryAuthJWTInterceptor))
+	unaryChain := grpcmiddleware.ChainUnaryServer(grpc_auth.UnaryServerInterceptor(unaryAuthJWTInterceptor))
 	logrus.Info("Interceptors Created")
 	srv := grpc.NewServer(grpc.StreamInterceptor(streamChain), grpc.UnaryInterceptor(unaryChain))
 	pb.RegisterHermesServer(srv, hermesServer{ctx})
