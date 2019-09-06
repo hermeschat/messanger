@@ -17,7 +17,7 @@ func collection(collectionName string) (*mongo.Collection, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't connect to mongodb FUCK")
 	}
-	coll := client.Database(config.Config().Get("database_name")).Collection(collectionName)
+	coll := client.Database(config.C().Get("database_name")).Collection(collectionName)
 	return coll, nil
 }
 

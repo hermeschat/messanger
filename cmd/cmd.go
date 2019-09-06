@@ -21,7 +21,7 @@ var appContext = context.Background()
 
 //Launch initalize needed things, Checks health of service by checking nats and db, and runs grpc server
 func Launch() {
-	logrus.Info("Loading Config")
+	logrus.Info("Loading C")
 	logrus.Info("Processing Env")
 	err := config.FromEnv(nil)
 	if err != nil {
@@ -44,8 +44,8 @@ func healthCheck() {
 		logrus.Fatalf("Health Check failed : %v", err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	logrus.Infof("Database URI is %v", config.Config().Get("database_uri"))
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Config().Get("database_uri")))
+	logrus.Infof("Database URI is %v", config.C().Get("database_uri"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.C().Get("database_uri")))
 	if err != nil {
 		logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 	}

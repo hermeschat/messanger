@@ -43,7 +43,7 @@ func Handle(message *db.Message) error {
 	logrus.Infof("target channel %+v", targetChannel)
 	//func(targetChannel *channel.Channel) {
 	if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
-		ch, err := db.Instance().Repo("channels").Find(targetChannel.ChannelID)
+		ch, err := db.Instance().Channels.Find(targetChannel.ChannelID)
 		if err != nil {
 			msg := errors.Wrap(err, "cannot get channel from db").Error()
 			logrus.Error(msg)
@@ -102,7 +102,7 @@ func saveMessageToMongo(message *db.Message) error {
 	if err != nil {
 		return errors.Wrap(err, "error in converting message to map")
 	}
-	_, err = db.Instance().Repo("messages").Add(m)
+	_, err = db.Instance().Messages.Add(m)
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
 	}
@@ -115,7 +115,7 @@ func saveChannelToMongo(c *db.Channel) error {
 		return errors.Wrap(err, "error in converting channel to map")
 	}
 
-	_, err = db.Instance().Repo("channels").Add(m)
+	_, err = db.Instance().Channels.Add(m)
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
 	}
@@ -124,7 +124,7 @@ func saveChannelToMongo(c *db.Channel) error {
 
 func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 	logrus.Infof("\ncreating/getting new channel to send message from %s to %s", from, to)
-	channels, err := db.Instance().Repo("channels").Get(bson.M{
+	channels, err := db.Instance().Channels.Get(bson.M{
 		"Members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
 	cts := []*db.Channel{}
@@ -189,10 +189,6 @@ func ensureChannel(channelID string, userID string) error {
 			return errors.Wrap(err, "Error in publishing user discovery event")
 		}
 	}
-	//err = user_discovery.PublishEvent(repository.UserDiscoveryEvent{ChannelID: channelID, UserID: userID})
-	//if err != nil {
-	//	return errors.Wrap(err, "Error in publishing user discovery event")
-	//}
 	return nil
 }
 
@@ -225,9 +221,7 @@ func getSession(sessionID string) ([]string, error) {
 //publishNewMessage is send function. Every message should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *db.Message) error {
-	// Connect to NATS-Streaming
 	logrus.Info("trying to connect to nats")
-	//logrus.Info(msg.From)
 	conn, err := nats.NatsClient(clusterID, natsSrvAddr, msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)

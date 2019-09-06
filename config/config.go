@@ -42,8 +42,8 @@ var envList = map[string]string{
 }
 var config *ConfigMap
 
-//Config gets the global config object
-func Config() ConfigMap {
+//C gets the global config object
+func C() ConfigMap {
 	return *config
 }
 

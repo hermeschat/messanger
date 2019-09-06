@@ -3,6 +3,7 @@ package grpcserver
 import (
 	"fmt"
 	"net"
+	"sync"
 
 	"hermes/api/pb"
 	"hermes/config"
@@ -30,10 +31,18 @@ type hermesServer struct {
 	Ctx context.Context
 }
 
+var userSockets = struct {
+	sync.RWMutex
+	Us map[string]pb.Hermes_EventBuffServer
+}{
+	sync.RWMutex{},
+	map[string]pb.Hermes_EventBuffServer{},
+}
+
 //CreateGRPCServer creates a new grpc server
 func CreateGRPCServer(ctx context.Context) {
-	logrus.Infof("hermes GRPC server server is on 0.0.0.0:%s", config.Config().Get("port"))
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Config().Get("port")))
+	logrus.Infof("hermes GRPC server server is on 0.0.0.0:%s", config.C().Get("port"))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.C().Get("port")))
 	if err != nil {
 		logrus.Fatal("ERROR can't create a tcp listener ")
 	}
@@ -58,7 +67,7 @@ func (h hermesServer) ListChannels(ctx context.Context, _ *pb.Empty) (*pb.Channe
 	if !ok {
 		return nil, errors.New("cannot get identity out of context")
 	}
-	msgs, err := db.Instance().Repo("channels").Get(map[string]interface{}{
+	msgs, err := db.Instance().Channels.Get(map[string]interface{}{
 		"Members": map[string]interface{}{
 			"$in": []string{ident.ID},
 		}, //TODO fix query
@@ -87,13 +96,7 @@ func (h hermesServer) ListChannels(ctx context.Context, _ *pb.Empty) (*pb.Channe
 }
 
 func (h hermesServer) ListMessages(ctx context.Context, ch *pb.ChannelID) (*pb.Messages, error) {
-	// i := ctx.Value("identity")
-	//ident, ok := i.(*auth.Identity)
-	//if !ok {
-	//	return nil, errors.New("cannot get identity out of context")
-	//}
-
-	msgs, err := db.Instance().Repo("messages").Get(map[string]interface{}{
+	msgs, err := db.Instance().Channels.Get(map[string]interface{}{
 		"ChannelID": ch.Id,
 	})
 	if err != nil {
@@ -170,9 +173,9 @@ func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 			return errors.Wrap(err, "error in reading EventBuff")
 		}
 
-		eventHandler.UserSockets.Lock()
-		eventHandler.UserSockets.Us[ident.ID] = a
-		eventHandler.UserSockets.Unlock()
+		userSockets.Lock()
+		userSockets.Us[ident.ID] = a
+		userSockets.Unlock()
 		logrus.Info("we have a new event")
 		switch t := e.GetEvent().(type) {
 		case *pb.Event_Read:
@@ -221,12 +224,9 @@ func (h hermesServer) EventBuff(a pb.Hermes_EventBuffServer) error {
 					SessionId: j.SessionId,
 				}
 
-				eventHandler.Handle(a.Context(), jp)
-				//if err != nil {
-				//	logrus.Errorf("Error in Join event : %v", err)
-				//}
+				eventHandler.Handle(a.Context(), jp, userSockets)
+
 			}
-			//return nil
 		default:
 			logrus.Infof("Type not matched : %+T", t)
 		}
