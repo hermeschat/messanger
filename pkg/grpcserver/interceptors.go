@@ -3,12 +3,13 @@ package grpcserver
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"hermes/paygearauth"
+	"time"
+
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
-	"hermes/paygearauth"
-	"time"
 )
 
 func UnaryAuthJWTInterceptor(ctx context.Context) (context.Context, error) {
@@ -37,7 +38,6 @@ func jwtCheck(ctx context.Context) (*paygearauth.Identity, error) {
 		return nil, errors.New("no bearer token found")
 	}
 	_ = bearer
-	// checkBearer(bearer)
 	fmt.Println(bearer[0])
 	ident, err := paygearauth.GetAuthentication(bearer[0], "")
 	if err != nil {
