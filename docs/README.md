@@ -1,6 +1,6 @@
 # Hermes
 ### What is Hermes
-Hermes is a scalable, Database agonstic, GRPC based messaging service.
+Hermes is a scalable, GRPC based messaging service.
 ### Technology Stack
 Nats-Streaming <br>
 MongoDB <br>
@@ -22,6 +22,7 @@ will deliver the event to the users using GRPC streaming.
    git clone github.com/hermes/hermes
    cd hermes
    docker-compose up .
+   go run main.go
 ```
 ### License 
 Hermes uses MIT licenese for more information read licence file.
