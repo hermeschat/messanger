@@ -20,7 +20,7 @@ func Handle(sig *DeliverdSignal) error {
 	if err != nil {
 		return errors.Wrap(err, "error in marshaling signal")
 	}
-	err = nats.PublishNewMessage("test-cluster", sig.UserID, "0.0.0.0:4222", sig.ChannelID, bs)
+	err = nats.PublishNewMessage(sig.UserID, sig.ChannelID, bs)
 	if err != nil {
 		return errors.Wrap(err, "error in publishing delivered signal")
 	}

@@ -20,7 +20,7 @@ func HandleRead(sig *ReadSignal) error {
 	if err != nil {
 		return errors.Wrap(err, "could not marshall read signal")
 	}
-	err = nats.PublishNewMessage("test-cluster", sig.UserID, "0.0.0.0:4222", sig.ChannelID, bs)
+	err = nats.PublishNewMessage(sig.UserID, sig.ChannelID, bs)
 	if err != nil {
 		return errors.Wrap(err, "error in publishing eventhandlers read")
 	}

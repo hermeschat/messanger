@@ -42,7 +42,7 @@ func HandleJoin(ctx context.Context, sig *JoinPayload, userSockets *struct {
 			return
 		}
 		logrus.Infof("Subscribing to user-discovery as %s", sig.UserID)
-		sub := nats.MakeSubscriber(ctx, sig.UserID, "test-cluster", "0.0.0.0:4222", "user-discovery", discovery.UserDiscoveryEventHandler(ctx, sig.UserID, userSockets))
+		sub := nats.MakeSubscriber(ctx, sig.UserID, discovery.UserDiscoveryChannel, discovery.UserDiscoveryEventHandler(ctx, sig.UserID, userSockets))
 		go sub()
 		return
 	}
