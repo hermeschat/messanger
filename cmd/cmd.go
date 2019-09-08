@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"hermes/config"
+	"github.com/amirrezaask/config"
 	"hermes/pkg/db"
 	"hermes/pkg/drivers/redis"
 	"hermes/pkg/grpcserver"
@@ -21,11 +21,10 @@ var appContext = context.Background()
 
 //Launch initalize needed things, Checks health of service by checking nats and db, and runs grpc server
 func Launch() {
-	logrus.Info("Loading C")
-	logrus.Info("Processing Env")
-	err := config.FromEnv(nil)
+	logrus.Info("Loading Config")
+	err := config.Init()
 	if err != nil {
-		logrus.Fatalf("error in loading config map from env: %v", err)
+		logrus.Fatalf("error in loading config :%v", err)
 	}
 	logrus.Info("Initiating DB package")
 	db.Init()

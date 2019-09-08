@@ -7,8 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"hermes/config"
-
+	"github.com/amirrezaask/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -49,7 +48,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 	}
 	url := config.C().Get("application_service_url") + "/applications/" + applicationID + "?services=true"
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "bearer "+config.C().Get("auth_token"))
+	req.Header.Set("Authorization", "bearer "+config.Get("auth_token"))
 	req.Header.Set("api-key", "5aa7e856ae7fbc00016ac5a01c65909797d94a16a279f46a4abb5faa")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -64,7 +63,7 @@ func GetApplicationInfo(applicationID string) (*Application, error) {
 		application := Application{}
 		json.Unmarshal(body, &application)
 		application.LoadedAt = time.Now()
-		application.ClientSecret = config.C().Get("client_secret")
+		application.ClientSecret = config.Get("client_secret")
 		applications[applicationID] = &application
 		return &application, nil
 	}

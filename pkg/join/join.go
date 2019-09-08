@@ -3,7 +3,7 @@ package join
 import (
 	"context"
 	"encoding/json"
-	"hermes/api/pb"
+	"hermes/api"
 	"hermes/pkg/discovery"
 	"hermes/pkg/drivers/nats"
 	"hermes/pkg/drivers/redis"
@@ -23,7 +23,7 @@ type JoinPayload struct {
 //Handle handles join event
 func Handle(ctx context.Context, sig *JoinPayload, userSockets *struct {
 	sync.RWMutex
-	Us map[string]pb.Hermes_EventBuffServer
+	Us map[string]api.Hermes_EventBuffServer
 }) {
 	channels, err := getSessionsByUserID(sig.UserID)
 	if err != nil {

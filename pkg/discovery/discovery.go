@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"hermes/api/pb"
+	"hermes/api"
 	"hermes/pkg/drivers/nats"
 	"hermes/pkg/drivers/redis"
 
@@ -20,11 +20,11 @@ import (
 //NewMessageEventHandler handles the message delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string, userSockets *struct {
 	sync.RWMutex
-	Us map[string]pb.Hermes_EventBuffServer
+	Us map[string]api.Hermes_EventBuffServer
 }) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
 		logrus.Warnf("22Message is %v", string(msg.Data))
-		m := &pb.Message{}
+		m := &api.Message{}
 		err := json.Unmarshal(msg.Data, m)
 		if err != nil {
 			logrus.Errorf("error in unmarshalling nats message in message handler")
@@ -38,7 +38,7 @@ func NewMessageEventHandler(channelID string, userID string, userSockets *struct
 			logrus.Errorf("error: user socket not found ")
 			return
 		}
-		err = userSocket.Send(&pb.Event{Event: &pb.Event_NewMessage{m}})
+		err = userSocket.Send(&api.Event{Event: &api.Event_NewMessage{m}})
 		if err != nil {
 			logrus.Errorf("error: cannot send event new message to user ")
 			return
@@ -50,10 +50,10 @@ func NewMessageEventHandler(channelID string, userID string, userSockets *struct
 //UserDiscoveryEventHandler handles user discovery
 func UserDiscoveryEventHandler(ctx context.Context, userID string, userSockets *struct {
 	sync.RWMutex
-	Us map[string]pb.Hermes_EventBuffServer
+	Us map[string]api.Hermes_EventBuffServer
 }) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
-		ude := &pb.UserDiscoveryEvent{}
+		ude := &api.UserDiscoveryEvent{}
 		err := ude.XXX_Unmarshal(msg.Data)
 		if err != nil {
 			logrus.Error(errors.Wrap(err, "cannot unmarshal UserDiscoveryEvent"))
@@ -127,7 +127,7 @@ func addSessionByUserID(userID string, channelID string) error {
 
 func PublishUserDiscoveryEvent(ude UserDiscoveryEvent) error {
 
-	u := &pb.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
+	u := &api.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
 	fmt.Println("client id is ", ude.UserID)
 	conn, err := nats.NatsClient("test-cluster", "0.0.0.0:4222", ude.UserID)
 	if err != nil {

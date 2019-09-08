@@ -3,7 +3,7 @@
 *.dll
 *.so
 *.dylib
-
+.env
 .vscode
 
 # Test binary, build with `go test -c`
@@ -19,3 +19,4 @@ hermes
 .vscode/%
 .idea
 temp
+api/api.pb.go

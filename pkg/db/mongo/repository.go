@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	"hermes/config"
+	"github.com/amirrezaask/config"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -14,11 +14,11 @@ import (
 //collection gets collection that you gave us name of
 func collection(collectionName string) (*mongo.Collection, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.C().Get("mongo_uri")))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Get("mongo_uri")))
 	if err != nil {
 		return nil, errors.Wrap(err, "can't connect to mongodb FUCK")
 	}
-	coll := client.Database(config.C().Get("database_name")).Collection(collectionName)
+	coll := client.Database(config.Get("database_name")).Collection(collectionName)
 	return coll, nil
 }
 

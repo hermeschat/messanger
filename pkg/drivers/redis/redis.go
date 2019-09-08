@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"hermes/config"
-
+	"github.com/amirrezaask/config"
 	rds "github.com/go-redis/redis"
 )
 
@@ -14,11 +13,11 @@ const Nil = rds.Nil
 
 // ConnectRedis is used to connect to redis
 func ConnectRedis() (*rds.Client, error) {
-	dbName, err := strconv.Atoi(config.C().Get("redis_db_index"))
+	dbName, err := strconv.Atoi(config.Get("redis_db_index"))
 	if err != nil {
 		return nil, err
 	}
-	Addr := fmt.Sprintf("%s:%s", config.C().Get("redis_host"), config.C().Get("redis_port"))
+	Addr := fmt.Sprintf("%s:%s", config.Get("redis_host"), config.Get("redis_port"))
 	client := rds.NewClient(&rds.Options{
 		Addr:        Addr,
 		Password:    "",     // no password set
