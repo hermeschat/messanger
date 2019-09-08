@@ -150,7 +150,7 @@ func getSession(sessionID string) ([]string, error) {
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(ChannelId string, msg *db.Message) error {
 	logrus.Info("trying to connect to nats")
-	conn, err := nats.NatsClient(config.Get("cluster_id"), config.Get("nats_host"), msg.From)
+	conn, err := nats.NatsClient(msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, config.Get("nats_host"))
 	}

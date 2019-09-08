@@ -3,7 +3,7 @@ module hermes
 go 1.12
 
 require (
-	github.com/amirrezaask/config v0.0.0-20190908193306-54517594ed4f
+	github.com/amirrezaask/config v0.0.0-20190908221849-bcac0a21db62
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/gogo/protobuf v1.3.0

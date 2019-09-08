@@ -18,6 +18,7 @@ package cmd
 import (
 	"context"
 
+	"github.com/amirrezaask/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"hermes/pkg/db"
@@ -31,7 +32,7 @@ var serveCmd = &cobra.Command{
 	Long:  `serve starts hermes`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.Info("Loading Config")
-
+		config.Init()
 		logrus.Info("Initiating DB package")
 		db.Init()
 		grpcserver.CreateGRPCServer(context.Background())
