@@ -210,11 +210,12 @@ func addSessionByUserID(userID string, channelID string) error {
 }
 
 func retryOp(name string, f func() error) {
-	var err error
-	for err == nil {
+	err := errors.New("some shitty error")
+	for err != nil {
 		err = f()
 		if err != nil {
 			logrus.Errorf("error in retrying operation: %v", name)
+			time.Sleep(time.Second * 1)
 			continue
 		} else {
 			break
