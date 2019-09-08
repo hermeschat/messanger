@@ -7,12 +7,43 @@ import (
 )
 
 func HandleNewMessage(message *db.Message) error {
-	var err error
-	logrus.Infof("######$$$$$$8==> %+v", message)
 	if message.To == "" && message.ChannelID == "" {
-		return errors.New("error in new eventhandlers")
+		return errors.New("error in new new message event handler")
 	}
+
+	tc, err := targetChannel(message)
+	if err != nil {
+		return errors.Wrap(err, "error in finding target channel")
+	}
+	logrus.Infof("target channel %+v", tc)
+	tc, err = loadMembers(tc)
+	if err != nil {
+		return errors.Wrap(err, "error in loading members")
+	}
+	message.ChannelID = tc.ChannelID
+	go retryOp("saving message to mongodb", func() error { return saveMessageToMongo(message) })
+	for _, member := range tc.Members {
+		err := ensureChannel(tc.ChannelID, member)
+		if err != nil {
+			logrus.Errorf("error in ensuring channel : %v", err)
+			//go retryEnsure(eventhandlers.Session, targetChannel.ChannelID, member, 0)()
+		}
+	}
+	// roles := targetChannel.Roles[eventhandlers.From]
+	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
+	// 	return errors.New("user doesn't have write permission in this channel")
+	// }
+	logrus.Info("Trying To publish")
+	err = publishNewMessage("test-cluster", "0.0.0.0:4222", tc.ChannelID, message)
+	if err != nil {
+		return errors.Wrap(err, "error in publishing eventhandlers")
+	}
+	return nil
+}
+
+func targetChannel(message *db.Message) (*db.Channel, error) {
 	targetChannel := &db.Channel{}
+	var err error
 	if message.ChannelID != "" {
 		targetChannel.ChannelID = message.ChannelID
 	} else {
@@ -20,58 +51,27 @@ func HandleNewMessage(message *db.Message) error {
 			targetChannel, err = getOrCreateExistingChannel(message.From, message.To)
 			if err != nil {
 				logrus.Error(errors.Wrap(err, "failed to get or create channel"))
-				return errors.Wrap(err, "error in getting channel")
+				return nil, errors.Wrap(err, "error in getting channel")
 			}
 		} else {
-			return errors.Wrap(err, "no valid receiver whether channel or userId found")
+			return nil, errors.Wrap(err, "no valid receiver whether channel or userId found")
 		}
 	}
-
-	logrus.Infof("target channel %+v", targetChannel)
-	//func(targetChannel *channel.Channel) {
-	if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
-		ch, err := db.Instance().Channels.Find(targetChannel.ChannelID)
+	return nil, nil
+}
+func loadMembers(tc *db.Channel) (*db.Channel, error) {
+	if len(tc.Members) < 1 || tc.Members == nil {
+		ch, err := db.Instance().Channels.Find(tc.ChannelID)
 		if err != nil {
-			msg := errors.Wrap(err, "cannot get channel from db").Error()
-			logrus.Error(msg)
+			return nil, errors.Wrap(err, "error in finding channel by channel id")
 		}
-		err = targetChannel.FromMap(ch)
+		err = tc.FromMap(ch)
 		if err != nil {
 			logrus.Errorf("erorr while converting from map to channel:%v", err)
+			return nil, errors.Wrap(err, "error in decoding map into target channel")
 		}
-
+	} else {
+		return tc, nil
 	}
-	message.ChannelID = targetChannel.ChannelID
-	err = saveMessageToMongo(message)
-	if err != nil {
-		return errors.Wrap(err, "error in saving eventhandlers to db")
-	}
-	for _, member := range targetChannel.Members {
-		err := ensureChannel(targetChannel.ChannelID, member)
-		if err != nil {
-			logrus.Errorf("error in ensuring channel : %v", err)
-			//go retryEnsure(eventhandlers.Session, targetChannel.ChannelID, member, 0)()
-		}
-	}
-	//}(targetChannel)
-
-	// roles := targetChannel.Roles[eventhandlers.From]
-	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
-	// 	return errors.New("user doesn't have write permission in this channel")
-	// }
-	logrus.Infof("eventhandlers is %+v", message)
-	//save to db
-	//err = saveMessageToMongo(eventhandlers)
-	//if err != nil {
-	//	logrus.Errorf("cannot save eventhandlers to mongodb :%v", err)
-	//	return errors.Wrap(err, "error in saving eventhandlers to mongo db")
-	//}
-
-	logrus.Info("Trying To publish")
-	//Publish to nats
-	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
-	if err != nil {
-		return errors.Wrap(err, "error in publishing eventhandlers")
-	}
-	return nil
+	return nil, nil
 }

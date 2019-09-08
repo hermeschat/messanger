@@ -160,7 +160,8 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		}
 		delete(nats.State.Ss, ident.ID)
 		nats.State.Mu.Unlock()
-	}() //loop to continuously read messages from buffer
+	}()
+	//loop to continuously read messages from buffer
 	for {
 
 		e, err := a.Recv()
@@ -189,7 +190,6 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			logrus.Info("Event is keep")
 			k := e.GetKeep()
 			_ = k
-			//find logic
 		case *api.Event_NewMessage:
 			logrus.Info("Event is New Message")
 			m := e.GetNewMessage()

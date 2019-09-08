@@ -208,3 +208,14 @@ func addSessionByUserID(userID string, channelID string) error {
 	}
 	return nil
 }
+
+func retryOp(name string, f func() error) {
+	var err error
+	for err == nil {
+		err = f()
+		if err != nil {
+			logrus.Errorf("error in retrying operation: %v", name)
+			continue
+		}
+	}
+}
