@@ -57,12 +57,12 @@ func PublishNewMessage(clusterID string, userID, natsSrvAddr string, ChannelId s
 		return errors.Wrap(err, "failed to connect to nats")
 	}
 	if err := (*natscon).Publish(ChannelId, bs); err != nil {
-		return errors.Wrap(err, "failed to publish message")
+		return errors.Wrap(err, "failed to publish eventhandlers")
 	}
 	return nil
 }
 
-//t is type we need to pass to find our message type
+//t is type we need to pass to find our eventhandlers type
 func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
 	return func() {
 		natscon, err := NatsClient(clusterID, natsSrvAddr, userID)

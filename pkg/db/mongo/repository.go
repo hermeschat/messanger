@@ -33,12 +33,12 @@ func (r *repository) Name() string {
 func (r *repository) Find(id string) (map[string]interface{}, error) {
 	s, err := FindOneById("messages", id)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't find message with given id")
+		return nil, errors.Wrap(err, "can't find eventhandlers with given id")
 	}
 	message := map[string]interface{}{}
 	err = mapstructure.Decode(s, &message)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't construct message from given map from mongo")
+		return nil, errors.Wrap(err, "can't construct eventhandlers from given map from mongo")
 	}
 	return message, nil
 }
@@ -46,7 +46,7 @@ func (r *repository) Find(id string) (map[string]interface{}, error) {
 func (r *repository) Get(query map[string]interface{}) ([]map[string]interface{}, error) {
 	s, err := FindAll("messages", query)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't find message with given query")
+		return nil, errors.Wrap(err, "can't find eventhandlers with given query")
 	}
 	//messages := []*Message{}
 	messages := []map[string]interface{}{}
@@ -70,7 +70,7 @@ func (r *repository) Add(object map[string]interface{}) (string, error) {
 
 	err := InsertOne("messages", object)
 	if err != nil {
-		return "", errors.Wrap(err, "can't add this message to mongodb")
+		return "", errors.Wrap(err, "can't add this eventhandlers to mongodb")
 	}
 	//TODO: return objectid of inserted document
 	return "", nil
@@ -79,7 +79,7 @@ func (r *repository) Add(object map[string]interface{}) (string, error) {
 func (r *repository) Delete(query map[string]interface{}) error {
 	err := DeleteAllMatched(r.Name(), query)
 	if err != nil {
-		return errors.Wrap(err, "can't delete this message from mongodb")
+		return errors.Wrap(err, "can't delete this eventhandlers from mongodb")
 	}
 	return nil
 }

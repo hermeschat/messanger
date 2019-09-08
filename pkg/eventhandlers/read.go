@@ -1,4 +1,4 @@
-package read
+package eventhandlers
 
 import (
 	"encoding/json"
@@ -15,14 +15,14 @@ type ReadSignal struct {
 	ChannelID string
 }
 
-func Handle(sig *ReadSignal) error {
+func HandleRead(sig *ReadSignal) error {
 	bs, err := json.Marshal(sig)
 	if err != nil {
 		return errors.Wrap(err, "could not marshall read signal")
 	}
 	err = nats.PublishNewMessage("test-cluster", sig.UserID, "0.0.0.0:4222", sig.ChannelID, bs)
 	if err != nil {
-		return errors.Wrap(err, "error in publishing message read")
+		return errors.Wrap(err, "error in publishing eventhandlers read")
 	}
 	err = mongo.UpdateAllMatched("messages", bson.M{"message_id": sig.MessageID}, bson.M{"$set": bson.M{"read": true}})
 	if err != nil {

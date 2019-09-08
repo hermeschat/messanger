@@ -17,7 +17,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-//NewMessageEventHandler handles the message delivery from nats to user
+//NewMessageEventHandler handles the eventhandlers delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string, userSockets *struct {
 	sync.RWMutex
 	Us map[string]api.Hermes_EventBuffServer
@@ -27,10 +27,10 @@ func NewMessageEventHandler(channelID string, userID string, userSockets *struct
 		m := &api.Message{}
 		err := json.Unmarshal(msg.Data, m)
 		if err != nil {
-			logrus.Errorf("error in unmarshalling nats message in message handler")
+			logrus.Errorf("error in unmarshalling nats eventhandlers in eventhandlers handler")
 		}
 		logrus.Infof("In NewMessage Event Handler as %s", userID)
-		logrus.Infof("Recieved a new message in %s", channelID)
+		logrus.Infof("Recieved a new eventhandlers in %s", channelID)
 
 		userSockets.RLock()
 		userSocket, ok := userSockets.Us[userID]
@@ -40,7 +40,7 @@ func NewMessageEventHandler(channelID string, userID string, userSockets *struct
 		}
 		err = userSocket.Send(&api.Event{Event: &api.Event_NewMessage{m}})
 		if err != nil {
-			logrus.Errorf("error: cannot send event new message to user ")
+			logrus.Errorf("error: cannot send event new eventhandlers to user ")
 			return
 		}
 		userSockets.RUnlock() //TODO: defer
@@ -146,7 +146,7 @@ func PublishUserDiscoveryEvent(ude UserDiscoveryEvent) error {
 
 }
 
-//UserDiscoveryEvent is the message we send to discovery channel to tell a user
+//UserDiscoveryEvent is the eventhandlers we send to discovery channel to tell a user
 //to subscribe to a certain channel in async way
 type UserDiscoveryEvent struct {
 	ChannelID string

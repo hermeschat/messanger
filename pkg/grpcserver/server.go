@@ -11,9 +11,7 @@ import (
 	"hermes/pkg/db"
 	"hermes/pkg/drivers/nats"
 	"hermes/pkg/drivers/redis"
-	"hermes/pkg/join"
-	"hermes/pkg/message"
-	"hermes/pkg/read"
+	"hermes/pkg/eventhandlers"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
@@ -111,7 +109,7 @@ func (h hermesServer) ListMessages(ctx context.Context, ch *api.ChannelID) (*api
 		amsg := &api.Message{}
 		err = mapstructure.Decode(m, amsg)
 		if err != nil {
-			return nil, errors.Wrap(err, "error while converting from repository message to message")
+			return nil, errors.Wrap(err, "error while converting from repository eventhandlers to eventhandlers")
 		}
 		output = append(output, amsg)
 	}
@@ -178,12 +176,12 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		case *api.Event_Read:
 			logrus.Info("Event is read")
 			r := e.GetRead()
-			rs := &read.ReadSignal{
+			rs := &eventhandlers.ReadSignal{
 				UserID:    ident.ID,
 				MessageID: r.MessageID,
 				ChannelID: r.ChannelID,
 			}
-			err = read.Handle(rs)
+			err = eventhandlers.HandleRead(rs)
 			if err != nil {
 				logrus.Errorf("Error in handling read signal")
 			}
@@ -205,7 +203,7 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 					MessageType: m.MessageType,
 				}
 
-				err = message.Handle(nm)
+				err = eventhandlers.HandleNewMessage(nm)
 				if err != nil {
 					logrus.Errorf("Error in Message Event : %v", err)
 				}
@@ -216,12 +214,12 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			logrus.Info(j)
 			if j != nil {
 				logrus.Info("Event is Join")
-				jp := &join.JoinPayload{
+				jp := &eventhandlers.JoinPayload{
 					UserID:    ident.ID, //should get from jwt
 					SessionId: j.SessionId,
 				}
 
-				join.Handle(a.Context(), jp, userSockets)
+				eventhandlers.HandleJoin(a.Context(), jp, userSockets)
 
 			}
 		default:

@@ -5,7 +5,7 @@ type (
 	HTTPError struct {
 		error      `json:"-"`
 		StatusCode int    `json:"-"`
-		Message    string `json:"message"`
+		Message    string `json:"eventhandlers"`
 	}
 	// UnauthorizedError to handle unauthorized errors
 	UnauthorizedError struct {

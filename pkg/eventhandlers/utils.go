@@ -1,93 +1,20 @@
-package message
+package eventhandlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
-	"hermes/pkg/db"
-
 	"github.com/mitchellh/mapstructure"
-	uuid "github.com/satori/go.uuid"
-
-	"hermes/pkg/drivers/nats"
-	"hermes/pkg/drivers/redis"
-	"hermes/pkg/discovery"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"hermes/pkg/db"
+	"hermes/pkg/discovery"
+	"hermes/pkg/drivers/nats"
+	"hermes/pkg/drivers/redis"
 )
-
-func Handle(message *db.Message) error {
-	var err error
-	logrus.Infof("######$$$$$$8==> %+v", message)
-	if message.To == "" && message.ChannelID == "" {
-		return errors.New("error in new message")
-	}
-	targetChannel := &db.Channel{}
-	if message.ChannelID != "" {
-		targetChannel.ChannelID = message.ChannelID
-	} else {
-		if message.To != "" {
-			targetChannel, err = getOrCreateExistingChannel(message.From, message.To)
-			if err != nil {
-				logrus.Error(errors.Wrap(err, "failed to get or create channel"))
-				return errors.Wrap(err, "error in getting channel")
-			}
-		} else {
-			return errors.Wrap(err, "no valid receiver whether channel or userId found")
-		}
-	}
-
-	logrus.Infof("target channel %+v", targetChannel)
-	//func(targetChannel *channel.Channel) {
-	if len(targetChannel.Members) < 1 || targetChannel.Members == nil {
-		ch, err := db.Instance().Channels.Find(targetChannel.ChannelID)
-		if err != nil {
-			msg := errors.Wrap(err, "cannot get channel from db").Error()
-			logrus.Error(msg)
-		}
-		err = targetChannel.FromMap(ch)
-		if err != nil {
-			logrus.Errorf("erorr while converting from map to channel:%v", err)
-		}
-
-	}
-	message.ChannelID = targetChannel.ChannelID
-	err = saveMessageToMongo(message)
-	if err != nil {
-		return errors.Wrap(err, "error in saving message to db")
-	}
-	for _, member := range targetChannel.Members {
-		err := ensureChannel(targetChannel.ChannelID, member)
-		if err != nil {
-			logrus.Errorf("error in ensuring channel : %v", err)
-			//go retryEnsure(message.Session, targetChannel.ChannelID, member, 0)()
-		}
-	}
-	//}(targetChannel)
-
-	// roles := targetChannel.Roles[message.From]
-	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
-	// 	return errors.New("user doesn't have write permission in this channel")
-	// }
-	logrus.Infof("message is %+v", message)
-	//save to db
-	//err = saveMessageToMongo(message)
-	//if err != nil {
-	//	logrus.Errorf("cannot save message to mongodb :%v", err)
-	//	return errors.Wrap(err, "error in saving message to mongo db")
-	//}
-
-	logrus.Info("Trying To publish")
-	//Publish to nats
-	err = publishNewMessage("test-cluster", "0.0.0.0:4222", targetChannel.ChannelID, message)
-	if err != nil {
-		return errors.Wrap(err, "error in publishing message")
-	}
-	return nil
-}
 
 func checkRoles(roles string) bool {
 	for _, c := range roles {
@@ -100,7 +27,7 @@ func checkRoles(roles string) bool {
 func saveMessageToMongo(message *db.Message) error {
 	m, err := message.ToMap()
 	if err != nil {
-		return errors.Wrap(err, "error in converting message to map")
+		return errors.Wrap(err, "error in converting eventhandlers to map")
 	}
 	_, err = db.Instance().Messages.Add(m)
 	if err != nil {
@@ -123,7 +50,7 @@ func saveChannelToMongo(c *db.Channel) error {
 }
 
 func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
-	logrus.Infof("\ncreating/getting new channel to send message from %s to %s", from, to)
+	logrus.Infof("\ncreating/getting new channel to send eventhandlers from %s to %s", from, to)
 	channels, err := db.Instance().Channels.Get(bson.M{
 		"Members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
@@ -218,7 +145,7 @@ func getSession(sessionID string) ([]string, error) {
 	return strings.Split(channels, ","), nil
 }
 
-//publishNewMessage is send function. Every message should be published to a channel to
+//publishNewMessage is send function. Every eventhandlers should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *db.Message) error {
 	logrus.Info("trying to connect to nats")
@@ -228,13 +155,13 @@ func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, m
 	}
 	bs, err := json.Marshal(msg)
 	if err != nil {
-		return errors.Wrap(err, "error in marshaling message")
+		return errors.Wrap(err, "error in marshaling eventhandlers")
 	}
 	if err := (*conn).Publish(ChannelId, bs); err != nil {
-		return errors.Wrap(err, "failed to publish message")
+		return errors.Wrap(err, "failed to publish eventhandlers")
 	}
 	logrus.Info("trying to publish")
-	logrus.Infof("Published into %s a new message as %s", ChannelId, msg.From)
+	logrus.Infof("Published into %s a new eventhandlers as %s", ChannelId, msg.From)
 	return nil
 }
 
@@ -252,11 +179,32 @@ func getSubscribedChannels(userID string) ([]string, error) {
 		}
 		return nil, errors.Wrap(err, "error while scanning redis output")
 	}
-	fmt.Println(">>>>>>>>>>>" + res)
 	err = json.Unmarshal([]byte(res), &channels)
 	if err != nil {
 
 		return nil, errors.Wrap(err, "error while Unmarshalling redis output")
 	}
 	return channels, nil
+}
+
+func addSessionByUserID(userID string, channelID string) error {
+	channels, err := getSubscribedChannels(userID)
+	if err != nil {
+		return errors.Wrap(err, "error while trying to get channels")
+	}
+	channels = append(channels, channelID)
+	con, err := redis.ConnectRedis()
+	if err != nil {
+		return errors.Wrap(err, "error while trying to connect to redis")
+	}
+	defer con.Close()
+	bs, err := json.Marshal(channels)
+	if err != nil {
+		return errors.Wrap(err, "error while trying to marshal channels")
+	}
+	err = con.Set(userID, string(bs), time.Hour*1).Err()
+	if err != nil {
+		return errors.Wrap(err, "error while adding new channels to redis")
+	}
+	return nil
 }
