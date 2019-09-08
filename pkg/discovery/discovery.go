@@ -17,6 +17,13 @@ import (
 	"golang.org/x/net/context"
 )
 
+//UserDiscoveryEvent is the eventhandlers we send to discovery channel to tell a user
+//to subscribe to a certain channel in async way
+type UserDiscoveryEvent struct {
+	ChannelID string
+	UserID    string
+}
+
 //NewMessageEventHandler handles the eventhandlers delivery from nats to user
 func NewMessageEventHandler(channelID string, userID string, userSockets *struct {
 	sync.RWMutex
@@ -76,7 +83,7 @@ func UserDiscoveryEventHandler(ctx context.Context, userID string, userSockets *
 			if !channelExist {
 				sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID, userSockets))
 				go sub()
-				return
+				go addSessionByUserID(ude.UserID, ude.ChannelID)
 			}
 		}
 	}
@@ -144,11 +151,4 @@ func PublishUserDiscoveryEvent(ude UserDiscoveryEvent) error {
 	logrus.Infof("Published User Discovery event %+v", u)
 	return nil
 
-}
-
-//UserDiscoveryEvent is the eventhandlers we send to discovery channel to tell a user
-//to subscribe to a certain channel in async way
-type UserDiscoveryEvent struct {
-	ChannelID string
-	UserID    string
 }

@@ -16,6 +16,7 @@ type Repository interface {
 	//Delete deletes a record
 	Delete(query map[string]interface{}) error
 }
+
 type HermesDatabase struct {
 	Messages Repository
 	Channels Repository
