@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/amirrezaask/config"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -16,9 +17,9 @@ import (
 	"hermes/pkg/drivers/redis"
 )
 
-func checkRoles(roles string) bool {
+func hasRole(roles []string, role string) bool {
 	for _, c := range roles {
-		if string(c) == "W" {
+		if string(c) == role {
 			return true
 		}
 	}
@@ -147,21 +148,20 @@ func getSession(sessionID string) ([]string, error) {
 
 //publishNewMessage is send function. Every eventhandlers should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
-func publishNewMessage(clusterID string, natsSrvAddr string, ChannelId string, msg *db.Message) error {
+func publishNewMessage(ChannelId string, msg *db.Message) error {
 	logrus.Info("trying to connect to nats")
-	conn, err := nats.NatsClient(clusterID, natsSrvAddr, msg.From)
+	conn, err := nats.NatsClient(config.Get("cluster_id"), config.Get("nats_host"), msg.From)
 	if err != nil {
-		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
+		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, config.Get("nats_host"))
 	}
 	bs, err := json.Marshal(msg)
 	if err != nil {
-		return errors.Wrap(err, "error in marshaling eventhandlers")
+		return errors.Wrap(err, "error in marshaling new message event")
 	}
 	if err := (*conn).Publish(ChannelId, bs); err != nil {
-		return errors.Wrap(err, "failed to publish eventhandlers")
+		return errors.Wrap(err, "failed to publish new message event")
 	}
-	logrus.Info("trying to publish")
-	logrus.Infof("Published into %s a new eventhandlers as %s", ChannelId, msg.From)
+	logrus.Infof("Published into %s a new message event as %s", ChannelId, msg.From)
 	return nil
 }
 
@@ -216,6 +216,8 @@ func retryOp(name string, f func() error) {
 		if err != nil {
 			logrus.Errorf("error in retrying operation: %v", name)
 			continue
+		} else {
+			break
 		}
 	}
 }

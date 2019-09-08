@@ -147,19 +147,11 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			logrus.Errorf("error while trying to clear redis cache of subscribed channels : %v", err)
 			return
 		}
-		nats.State.Mu.Lock()
-		natsCon, ok := nats.State.Ss[ident.ID]
-		if !ok {
-			logrus.Errorf("user nats connection not found")
-			return
-		}
-		err = (*natsCon).Close()
+		err = nats.Connections.CloseConnection(ident.ID)
 		if err != nil {
-			logrus.Errorf("error while trying to close user nats connection")
+			logrus.Errorf("erorr in closing nats connection: %v", err)
 			return
 		}
-		delete(nats.State.Ss, ident.ID)
-		nats.State.Mu.Unlock()
 	}()
 	//loop to continuously read messages from buffer
 	for {

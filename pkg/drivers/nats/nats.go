@@ -2,8 +2,10 @@ package nats
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
+	"github.com/amirrezaask/config"
 	"github.com/nats-io/go-nats-streaming/pb"
 	"github.com/sirupsen/logrus"
 
@@ -16,67 +18,76 @@ type Config struct {
 	ClusterId   string
 }
 
-var State = struct {
-	Mu sync.RWMutex
-	Ss map[string]*stan.Conn
-}{sync.RWMutex{}, map[string]*stan.Conn{}}
+type NatsConnections struct {
+	sync.RWMutex
+	conns map[string]*stan.Conn
+}
 
-//NatsClient manage to keep nats connection open
-func NatsClient(clusterID string, natsSrvAddr string, clientID string) (*stan.Conn, error) {
-	State.Mu.Lock()
-	conn, ok := State.Ss[clientID]
+func (n *NatsConnections) CloseConnection(userID string) error {
+	n.Lock()
+	defer n.Unlock()
+	natsCon, exists := n.conns[userID]
+	if !exists {
+		return errors.New(fmt.Sprintf("nats connection for user %s not found", userID))
+	}
+	err := (*natsCon).Close()
+	if err != nil {
+		return errors.Wrapf(err, "could not close nats connection of user %s due to %s", userID, err)
+	}
+	delete(n.conns, userID)
+	return nil
+}
+
+var Connections = &NatsConnections{
+	sync.RWMutex{}, map[string]*stan.Conn{},
+}
+
+func NatsClient(clientID string) (*stan.Conn, error) {
+	Connections.Lock()
+	defer Connections.Unlock()
+	conn, ok := Connections.conns[clientID]
 	if ok || conn != nil {
-		State.Mu.Unlock()
+		Connections.Unlock()
 		return conn, nil
 
 	}
 	logrus.Warnf("Connection was unusable: %v", conn)
-	delete(State.Ss, clientID)
+	delete(Connections.conns, clientID)
 	logrus.Warnf("Trying to get a connection on behalf of %s", clientID)
 
-	natsClient, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsSrvAddr))
-	//,stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
-	//		log.Fatalf("Connection lost, reason: %v", reason)
-	//	})
+	natsClient, err := stan.Connect(config.Get("cluster_id"), clientID, stan.NatsURL(config.Get("nats_uri")))
+	stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) { logrus.Errorf("Connection lost, reason: %v", reason) })
 	if err != nil {
-		logrus.Warnf("Ok is %v conn is %v State is %+v", ok, conn, State.Ss)
+		logrus.Warnf("Ok is %v conn is %v Connections is %+v", ok, conn, Connections.conns)
 		return nil, errors.Wrapf(err, "Can't connect %v: %v", clientID, err)
 	}
-	State.Ss[clientID] = &natsClient
-	State.Mu.Unlock()
+	Connections.conns[clientID] = &natsClient
 	return &natsClient, nil
 }
 
 type Subscriber func()
 
-func PublishNewMessage(clusterID string, userID, natsSrvAddr string, ChannelId string, bs []byte) error {
-	// Connect to NATS-Streaming
-
-	natscon, err := NatsClient(clusterID, natsSrvAddr, userID)
+func PublishNewMessage(userID, ChannelID string, bs []byte) error {
+	natscon, err := NatsClient(userID)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to nats")
 	}
-	if err := (*natscon).Publish(ChannelId, bs); err != nil {
+	if err := (*natscon).Publish(ChannelID, bs); err != nil {
 		return errors.Wrap(err, "failed to publish eventhandlers")
 	}
 	return nil
 }
 
 //t is type we need to pass to find our eventhandlers type
-func MakeSubscriber(ctx context.Context, userID string, clusterID string, natsSrvAddr string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+func MakeSubscriber(ctx context.Context, userID string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
 	return func() {
-		natscon, err := NatsClient(clusterID, natsSrvAddr, userID)
+		natscon, err := NatsClient(userID)
 
 		if err != nil {
-			logrus.Error(errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr))
+			logrus.Error(errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, config.Get("nats_cluster_id")))
 			return
 		}
-		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", natsSrvAddr, clusterID, userID)
-
-		//startOpt := stan.StartAt(pb.StartPosition_NewOnly)
-		//without := stan.StartWithLastReceived()
-		//wait := stan.AckWait(time.Second * 1)
-		// sub, err := (*natscon).Subscribe(ChannelId, handler, startOpt, stan.DurableName(userID))
+		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", config.Get("nats_uri"), config.Get("nats_cluster_id"), userID)
 		sub, err := (*natscon).Subscribe(ChannelId, handler, stan.StartAt(pb.StartPosition_NewOnly))
 		if err != nil {
 			logrus.Error(err)

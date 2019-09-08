@@ -29,15 +29,12 @@ func HandleNewMessage(message *db.Message) error {
 			//go retryEnsure(eventhandlers.Session, targetChannel.ChannelID, member, 0)()
 		}
 	}
-	// roles := targetChannel.Roles[eventhandlers.From]
-	// if checkRoles(roles[0]) { //TODO: fix roles to be array of string not single string in array
-	// 	return errors.New("user doesn't have write permission in this channel")
-	// }
-	logrus.Info("Trying To publish")
-	err = publishNewMessage("test-cluster", "0.0.0.0:4222", tc.ChannelID, message)
-	if err != nil {
-		return errors.Wrap(err, "error in publishing eventhandlers")
+	if !hasWriteRole(message.From, tc) {
+		return errors.Wrap(err, "error, access denied")
 	}
+	go retryOp("publish new message", func() error {
+		return publishNewMessage(tc.ChannelID, message)
+	})
 	return nil
 }
 
@@ -74,4 +71,8 @@ func loadMembers(tc *db.Channel) (*db.Channel, error) {
 		return tc, nil
 	}
 	return nil, nil
+}
+
+func hasWriteRole(userID string, channel *db.Channel) bool {
+	return hasRole(channel.Roles[userID], "W")
 }
