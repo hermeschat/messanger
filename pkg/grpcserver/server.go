@@ -58,6 +58,12 @@ func CreateGRPCServer(ctx context.Context) {
 	logrus.Info("GRPC is Live !!!")
 }
 
+
+func (h hermesServer) CreateSession(context.Context, *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
+	panic("implement me")
+}
+
+
 func (h hermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Channels, error) {
 	i := ctx.Value("identity")
 	ident, ok := i.(*auth.Identity)

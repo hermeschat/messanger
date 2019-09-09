@@ -85,7 +85,7 @@ func UserDiscoveryEventHandler(ctx context.Context, userID string, userSockets *
 			}
 			logrus.Warnf("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
 			if !channelExist {
-				sub := nats.MakeSubscriber(ctx, userID, "test-cluster", "0.0.0.0:4222", ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID, userSockets))
+				sub := nats.MakeSubscriber(ctx, userID, ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID, userSockets))
 				go sub()
 				go addSessionByUserID(ude.UserID, ude.ChannelID)
 			}
@@ -140,7 +140,7 @@ func PublishUserDiscoveryEvent(ude UserDiscoveryEvent) error {
 
 	u := &api.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
 	fmt.Println("client id is ", ude.UserID)
-	conn, err := nats.NatsClient("test-cluster", "0.0.0.0:4222", ude.UserID)
+	conn, err := nats.NatsClient(ude.UserID)
 	if err != nil {
 		return errors.Wrap(err, "cannot connect to nats")
 	}

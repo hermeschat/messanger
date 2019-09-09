@@ -18,12 +18,12 @@ type Config struct {
 	ClusterId   string
 }
 
-type NatsConnections struct {
+type natsConnections struct {
 	sync.RWMutex
 	conns map[string]*stan.Conn
 }
 
-func (n *NatsConnections) CloseConnection(userID string) error {
+func (n *natsConnections) CloseConnection(userID string) error {
 	n.Lock()
 	defer n.Unlock()
 	natsCon, exists := n.conns[userID]
@@ -38,7 +38,7 @@ func (n *NatsConnections) CloseConnection(userID string) error {
 	return nil
 }
 
-var Connections = &NatsConnections{
+var Connections = &natsConnections{
 	sync.RWMutex{}, map[string]*stan.Conn{},
 }
 

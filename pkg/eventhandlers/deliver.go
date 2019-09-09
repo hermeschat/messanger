@@ -14,8 +14,8 @@ type DeliverdSignal struct {
 	MessageID string
 }
 
-//Handle delivered signal will publish a new event of type delivered in given channel to notify other users that the given eventhandlers is delivered
-func Handle(sig *DeliverdSignal) error {
+//HandleDeliver delivered signal will publish a new event of type delivered in given channel to notify other users that the given eventhandlers is delivered
+func HandleDeliver(sig *DeliverdSignal) error {
 	bs, err := json.Marshal(sig)
 	if err != nil {
 		return errors.Wrap(err, "error in marshaling signal")
