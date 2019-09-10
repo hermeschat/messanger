@@ -82,7 +82,7 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 		}
 		return nil, errors.Wrap(res.Err(), "error in getting channel from database")
 	}
-	var targetChannel *db.Channel
+	targetChannel := new(db.Channel)
 	err = res.Decode(targetChannel)
 	if err != nil {
 		return nil, errors.Wrap(err, "err in decoding data into channel")
