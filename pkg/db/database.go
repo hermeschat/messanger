@@ -20,14 +20,13 @@ type Repository interface {
 type HermesDatabase struct {
 	Messages Repository
 	Channels Repository
-	Sessions Repository
 	Users    Repository
 }
 
 func initMongoRepos(h *HermesDatabase) {
-	h.Channels = &mongo.Channelrepository{}
-	h.Messages = &mongo.Messagerepository{}
-	h.Users = &mongo.Userrepository{}
+	h.Channels = mongo.NewChannelrepository()
+	h.Messages = mongo.NewMessagerepository()
+	h.Users = mongo.NewUserrepository()
 }
 
 var hermesDatabaseInstance *HermesDatabase

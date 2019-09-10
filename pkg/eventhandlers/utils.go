@@ -28,7 +28,7 @@ func hasRole(roles []string, role string) bool {
 func saveMessageToMongo(message *db.Message) error {
 	m, err := message.ToMap()
 	if err != nil {
-		return errors.Wrap(err, "error in converting eventhandlers to map")
+		return errors.Wrap(err, "error in converting new message to map")
 	}
 	_, err = db.Instance().Messages.Add(m)
 	if err != nil {
@@ -42,7 +42,6 @@ func saveChannelToMongo(c *db.Channel) error {
 	if err != nil {
 		return errors.Wrap(err, "error in converting channel to map")
 	}
-
 	_, err = db.Instance().Channels.Add(m)
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
@@ -51,7 +50,7 @@ func saveChannelToMongo(c *db.Channel) error {
 }
 
 func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
-	logrus.Infof("\ncreating/getting new channel to send eventhandlers from %s to %s", from, to)
+	logrus.Infof("creating/getting new channel to send new message from %s to %s", from, to)
 	channels, err := db.Instance().Channels.Get(bson.M{
 		"Members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
@@ -74,11 +73,12 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 	if len(channels) < 1 {
 		logrus.Info("no channel found")
 		targetChannel = &db.Channel{
+			Creator:   from,
 			Members:   []string{to, from},
-			ChannelID: uid.String(),
+			ChannelId: uid.String(),
 			Roles: map[string][]string{
-				to:   []string{"RWM"},
-				from: []string{"RWM"},
+				to:   {"R", "W", "M"},
+				from: {"R", "W", "M"},
 			},
 			Type: db.Private,
 		}
@@ -106,7 +106,7 @@ func ensureChannel(channelID string, userID string) error {
 		}
 	}
 	if !channelExist {
-		logrus.Infof("\nuser is not subscribed to channel %s", userID)
+		logrus.Infof("user is not subscribed to channel %s", userID)
 		//subscribeChannel(channelID, userID)
 		//Send user discovery event
 		//user discovery event publishes a userid and a chanellid
@@ -150,7 +150,7 @@ func getSession(sessionID string) ([]string, error) {
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(ChannelId string, msg *db.Message) error {
 	logrus.Info("trying to connect to nats")
-	conn, err := nats.NatsClient(msg.From)
+	conn, err := nats.Client(msg.From)
 	if err != nil {
 		return errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, config.Get("nats_host"))
 	}
@@ -171,7 +171,7 @@ func getSubscribedChannels(userID string) ([]string, error) {
 		return nil, errors.Wrap(err, "error while trying to connect to redis")
 	}
 	defer con.Close()
-	channels := []string{}
+	var channels []string
 	res, err := con.Get(userID).Result()
 	if err != nil {
 		if err == redis.Nil {

@@ -10,6 +10,7 @@ services:
     container_name: "nats-streaming"
     ports:
       - 4222:4222
+      - 8222:8222
   redis:
     image: redis:latest
     container_name: "redis"

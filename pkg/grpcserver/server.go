@@ -58,11 +58,9 @@ func CreateGRPCServer(ctx context.Context) {
 	logrus.Info("GRPC is Live !!!")
 }
 
-
 func (h hermesServer) CreateSession(context.Context, *api.CreateSessionRequest) (*api.CreateSessionResponse, error) {
 	panic("implement me")
 }
-
 
 func (h hermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Channels, error) {
 	i := ctx.Value("identity")
@@ -101,7 +99,7 @@ func (h hermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 
 func (h hermesServer) ListMessages(ctx context.Context, ch *api.ChannelID) (*api.Messages, error) {
 	msgs, err := db.Instance().Channels.Get(map[string]interface{}{
-		"ChannelID": ch.Id,
+		"_id": ch.Id,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from db")

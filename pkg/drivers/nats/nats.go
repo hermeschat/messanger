@@ -42,7 +42,7 @@ var Connections = &natsConnections{
 	sync.RWMutex{}, map[string]*stan.Conn{},
 }
 
-func NatsClient(clientID string) (*stan.Conn, error) {
+func Client(clientID string) (*stan.Conn, error) {
 	Connections.Lock()
 	defer Connections.Unlock()
 	conn, ok := Connections.conns[clientID]
@@ -51,14 +51,14 @@ func NatsClient(clientID string) (*stan.Conn, error) {
 		return conn, nil
 
 	}
-	logrus.Warnf("Connection was unusable: %v", conn)
+	logrus.Warnf("Connection was unusable or does not exist for %s\n", clientID)
 	delete(Connections.conns, clientID)
-	logrus.Warnf("Trying to get a connection on behalf of %s", clientID)
+	logrus.Infof("Trying to get a connection on behalf of %s\n", clientID)
 
+	fmt.Printf("%v", config.Get("nats_uri"))
 	natsClient, err := stan.Connect(config.Get("cluster_id"), clientID, stan.NatsURL(config.Get("nats_uri")))
 	stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) { logrus.Errorf("Connection lost, reason: %v", reason) })
 	if err != nil {
-		logrus.Warnf("Ok is %v conn is %v Connections is %+v", ok, conn, Connections.conns)
 		return nil, errors.Wrapf(err, "Can't connect %v: %v", clientID, err)
 	}
 	Connections.conns[clientID] = &natsClient
@@ -68,7 +68,7 @@ func NatsClient(clientID string) (*stan.Conn, error) {
 type Subscriber func()
 
 func PublishNewMessage(userID, ChannelID string, bs []byte) error {
-	natscon, err := NatsClient(userID)
+	natscon, err := Client(userID)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to nats")
 	}
@@ -81,7 +81,7 @@ func PublishNewMessage(userID, ChannelID string, bs []byte) error {
 //t is type we need to pass to find our eventhandlers type
 func MakeSubscriber(ctx context.Context, userID string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
 	return func() {
-		natscon, err := NatsClient(userID)
+		natscon, err := Client(userID)
 
 		if err != nil {
 			logrus.Error(errors.Wrapf(err, "Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, config.Get("nats_cluster_id")))

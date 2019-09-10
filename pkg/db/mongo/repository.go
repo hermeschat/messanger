@@ -31,7 +31,7 @@ func (r *repository) Name() string {
 }
 
 func (r *repository) Find(id string) (map[string]interface{}, error) {
-	s, err := FindOneById("messages", id)
+	s, err := FindOneById(r.Name(), id)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't find eventhandlers with given id")
 	}
@@ -44,7 +44,7 @@ func (r *repository) Find(id string) (map[string]interface{}, error) {
 }
 
 func (r *repository) Get(query map[string]interface{}) ([]map[string]interface{}, error) {
-	s, err := FindAll("messages", query)
+	s, err := FindAll(r.Name(), query)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't find eventhandlers with given query")
 	}
@@ -68,7 +68,7 @@ func (r *repository) Update(selector map[string]interface{}, update map[string]i
 
 func (r *repository) Add(object map[string]interface{}) (string, error) {
 
-	err := InsertOne("messages", object)
+	err := InsertOne(r.Name(), object)
 	if err != nil {
 		return "", errors.Wrap(err, "can't add this eventhandlers to mongodb")
 	}
