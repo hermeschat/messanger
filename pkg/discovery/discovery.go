@@ -38,7 +38,6 @@ func NewMessageEventHandler(channelID string, userID string, userSockets *struct
 		}
 		logrus.Warnf("in new Message event handler and message is %v", string(msg.Data))
 		logrus.Infof("In NewMessage Event Handler as %s", userID)
-		logrus.Infof("Recieved a new eventhandlers in %s", channelID)
 
 		userSockets.RLock()
 		userSocket, ok := userSockets.Us[userID]
@@ -61,6 +60,7 @@ func UserDiscoveryEventHandler(ctx context.Context, userID string, userSockets *
 	Us map[string]api.Hermes_EventBuffServer
 }) func(msg *stan.Msg) {
 	return func(msg *stan.Msg) {
+		logrus.Infoln(">>>>>>>>In UserDiscoveryEventHandler")
 		ude := &UserDiscoveryEvent{}
 		err := json.Unmarshal(msg.Data, ude)
 		if err != nil {
@@ -79,10 +79,9 @@ func UserDiscoveryEventHandler(ctx context.Context, userID string, userSockets *
 					channelExist = true
 				}
 			}
-			logrus.Warnf("%s is now subscribed to %s", ude.UserID, ude.ChannelID)
 			if !channelExist {
-				go nats.MakeSubscriber(ctx, userID, ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID, userSockets))()
-				go subscription.AddSubscriptionToUserID(ude.UserID, ude.ChannelID)
+				logrus.Warnf("%s is getting subscribed to %s", ude.UserID, ude.ChannelID)
+				go subscription.NewSubsciption(ctx, userID, ude.ChannelID, NewMessageEventHandler(ude.ChannelID, ude.UserID, userSockets))
 			}
 		}
 	}

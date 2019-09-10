@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"hermes/pkg/db"
 	"hermes/pkg/grpcserver"
+	"hermes/pkg/subscription"
 )
 
 // serveCmd represents the serve command
@@ -31,6 +32,9 @@ var serveCmd = &cobra.Command{
 	Short: "serve serves hermes",
 	Long:  `serve starts hermes`,
 	Run: func(cmd *cobra.Command, args []string) {
+		defer func() {
+			subscription.Clean()
+		}()
 		logrus.Info("Loading Config")
 		config.Init()
 		logrus.Info("Initiating DB package")

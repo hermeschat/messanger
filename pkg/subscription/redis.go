@@ -1,4 +1,4 @@
-package redis
+package subscription
 
 import (
 	"fmt"
@@ -6,19 +6,19 @@ import (
 	"time"
 
 	"github.com/amirrezaask/config"
-	rds "github.com/go-redis/redis"
+	"github.com/go-redis/redis"
 )
 
-const Nil = rds.Nil
+const Nil = redis.Nil
 
-// ConnectRedis is used to connect to redis
-func ConnectRedis() (*rds.Client, error) {
+// Redis is used to connect to redis
+func Redis() (*redis.Client, error) {
 	dbName, err := strconv.Atoi(config.Get("redis_db_index"))
 	if err != nil {
 		return nil, err
 	}
 	Addr := fmt.Sprintf("%s:%s", config.Get("redis_host"), config.Get("redis_port"))
-	client := rds.NewClient(&rds.Options{
+	client := redis.NewClient(&redis.Options{
 		Addr:        Addr,
 		Password:    "",     // no password set
 		DB:          dbName, // use default DB

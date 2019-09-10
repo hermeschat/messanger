@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"hermes/pkg/subscription/nats"
-	"hermes/pkg/subscription/redis"
 )
 
 func NewSubsciption(ctx context.Context, userID string, channelID string, handler nats.Handler) error {
@@ -18,6 +18,7 @@ func NewSubsciption(ctx context.Context, userID string, channelID string, handle
 	}
 	go AddSubscriptionToUserID(userID, channelID)
 	go nats.MakeSubscriber(ctx, userID, channelID, handler)()
+	logrus.Infof("User %s is subscribed to %s\n", userID, channelID)
 	return nil
 }
 
@@ -35,7 +36,7 @@ func UserIsSubscribedTo(userID, channelID string) bool {
 	return false
 }
 func GetSubscribedChannels(userID string) ([]string, error) {
-	con, err := redis.ConnectRedis()
+	con, err := Redis()
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to connect to redis")
 	}
@@ -62,7 +63,7 @@ func AddSubscriptionToUserID(userID string, channelID string) error {
 		return errors.Wrap(err, "error while trying to get channels")
 	}
 	channels = append(channels, channelID)
-	con, err := redis.ConnectRedis()
+	con, err := Redis()
 	if err != nil {
 		return errors.Wrap(err, "error while trying to connect to redis")
 	}
@@ -76,4 +77,16 @@ func AddSubscriptionToUserID(userID string, channelID string) error {
 		return errors.Wrap(err, "error while adding new channels to redis")
 	}
 	return nil
+}
+
+func Clean() {
+	con, err := Redis()
+	if err != nil {
+		logrus.Errorf("error in connecting to redis: %v", err)
+		return
+	}
+	con.FlushDB()
+	nats.Connections.Lock()
+	defer nats.Connections.Unlock()
+	nats.Connections = nil
 }

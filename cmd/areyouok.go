@@ -11,8 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"hermes/pkg/subscription"
 	"hermes/pkg/subscription/nats"
-	"hermes/pkg/subscription/redis"
 )
 
 // areyouokCmd represents the areyouok command
@@ -35,7 +35,7 @@ var areyouokCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatalf("could not ping db")
 		}
-		con, err := redis.ConnectRedis()
+		con, err := subscription.Redis()
 		if err != nil {
 			logrus.Fatalf("could not connect redis:%v", err)
 		}

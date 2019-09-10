@@ -19,7 +19,6 @@ func HandleNewMessage(message *db.Message) error {
 	if err != nil {
 		return errors.Wrap(err, "error in finding target channel")
 	}
-	logrus.Infof("target channel %+v", tc)
 	tc, err = loadChannelData(tc)
 	if err != nil {
 		return errors.Wrap(err, "error in loading members")

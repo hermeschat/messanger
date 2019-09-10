@@ -14,7 +14,6 @@ import (
 	"hermes/pkg/eventhandlers"
 	"hermes/pkg/subscription"
 	"hermes/pkg/subscription/nats"
-	"hermes/pkg/subscription/redis"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
@@ -102,7 +101,6 @@ func (h hermesServer) GetChannel(ctx context.Context, ch *api.ChannelID) (*api.C
 var appContext = context.Background()
 
 func (h hermesServer) Echo(ctx context.Context, a *api.Empty) (*api.Empty, error) {
-
 	return &api.Empty{}, nil
 }
 
@@ -115,7 +113,7 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 		logrus.Errorf("Cannot get identity out of context")
 	}
 	defer func() {
-		con, err := redis.ConnectRedis()
+		con, err := subscription.Redis()
 		if err != nil {
 			logrus.Errorf("error while trying to clear redis cache of subscribed channels : %v", err)
 			return
@@ -133,13 +131,11 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	}()
 	if !subscription.UserIsSubscribedTo(ident.ID, "user-discovery") {
 		logrus.Infoln("User is not subscribed to user discovery")
-		err := subscription.AddSubscriptionToUserID(ident.ID, "user-discovery")
-		if err != nil {
-			return errors.Wrap(err, "error in adding user_discovery to subscriptions")
-		}
-		go nats.MakeSubscriber(a.Context(), ident.ID, "user-discovery", discovery.UserDiscoveryEventHandler(a.Context(), ident.ID, userSockets))()
-
+		go subscription.NewSubsciption(a.Context(), ident.ID, "user-discovery", discovery.UserDiscoveryEventHandler(a.Context(), ident.ID, userSockets))
 	}
+	userSockets.Lock()
+	userSockets.Us[ident.ID] = a
+	userSockets.Unlock()
 	//loop to continuously read messages from buffer
 	for {
 		e, err := a.Recv()
@@ -147,10 +143,6 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			logrus.Errorf("cannot receive event : %v", err)
 			return errors.Wrap(err, "error in reading EventBuff")
 		}
-		userSockets.Lock()
-		userSockets.Us[ident.ID] = a
-		userSockets.Unlock()
-
 		switch t := e.GetEvent().(type) {
 		case *api.Event_Read:
 			logrus.Info("Event is read")

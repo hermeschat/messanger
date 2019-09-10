@@ -1,6 +1,8 @@
 package main
 
-import "hermes/cmd"
+import (
+	"hermes/cmd"
+)
 
 func main() {
 	cmd.Execute()
