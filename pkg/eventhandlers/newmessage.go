@@ -1,6 +1,8 @@
 package eventhandlers
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"hermes/pkg/db"
@@ -22,7 +24,7 @@ func HandleNewMessage(message *db.Message) error {
 		return errors.Wrap(err, "error in loading members")
 	}
 	message.ChannelID = tc.ChannelId
-	go retryOp("saving message to mongodb", func() error { return saveMessageToMongo(message) })
+	go retryOp("saving message to mongodb", func() error { return saveMessageToDB(message) })
 	for _, member := range tc.Members {
 		go retryOp("esuring every one of the members are subscribed to channel", func() error { return ensureChannel(tc.ChannelId, member) })
 	}
@@ -44,7 +46,6 @@ func targetChannel(message *db.Message) (*db.Channel, error) {
 		if message.To != "" {
 			targetChannel, err = getOrCreateExistingChannel(message.From, message.To)
 			if err != nil {
-				logrus.Error(errors.Wrap(err, "failed to get or create channel"))
 				return nil, errors.Wrap(err, "error in getting channel")
 			}
 		} else {
@@ -55,11 +56,14 @@ func targetChannel(message *db.Message) (*db.Channel, error) {
 }
 func loadChannelData(tc *db.Channel) (*db.Channel, error) {
 	if len(tc.Members) < 1 || tc.Members == nil {
-		ch, err := db.Instance().Channels.Find(tc.ChannelId)
-		if err != nil {
-			return nil, errors.Wrap(err, "error in finding channel by channel id")
+		result := db.Channels().FindOne(context.Background(), map[string]string{
+			"channel_id": tc.ChannelId,
+		})
+		if result.Err() != nil {
+			return nil, errors.Wrap(result.Err(), "error in finding channel by channel id")
 		}
-		err = tc.FromMap(ch)
+		tc := new(db.Channel)
+		err := result.Decode(tc)
 		if err != nil {
 			logrus.Errorf("erorr while converting from map to channel:%v", err)
 			return nil, errors.Wrap(err, "error in decoding map into target channel")

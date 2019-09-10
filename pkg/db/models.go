@@ -25,14 +25,10 @@ func (m *Message) ToMap() (map[string]interface{}, error) {
 }
 
 const (
-	//Secret chat with expire time
-	Secret = iota
-	//Private chat between two persons
-	Private
-	//TGChannel just Telegram channel
-	TGChannel
-	//Group is like telegram groups
-	Group
+	ChatTypeSecret = iota
+	ChatTypePrivate
+	ChatTypeTGChannel
+	ChatTypeGroup
 )
 
 type Channel struct {
@@ -41,6 +37,7 @@ type Channel struct {
 	Creator   string              `bson:"creator" json:"creator"`
 	Type      int                 `bson:"type" json:"type"`
 	Roles     map[string][]string `bson:"roles" json:"roles"`
+	Messages  []Message           `bson:"messages" json:"messages"`
 }
 
 func (c *Channel) ToMap() (map[string]interface{}, error) {

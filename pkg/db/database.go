@@ -1,42 +1,43 @@
 package db
 
-import "hermes/pkg/db/mongo"
+import (
+	"context"
+	"fmt"
+	"time"
 
-type Repository interface {
-	//Name returns name of the repository
-	Name() string
-	//Find runs a query using primary key
-	Find(id string) (map[string]interface{}, error)
-	//Get runs query on db
-	Get(query map[string]interface{}) ([]map[string]interface{}, error)
-	//Update runs an update query with given selector and update map
-	Update(selector map[string]interface{}, update map[string]interface{}) (int, error)
-	//Add adds a new object to db
-	Add(object map[string]interface{}) (string, error)
-	//Delete deletes a record
-	Delete(query map[string]interface{}) error
+	"github.com/amirrezaask/config"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+type hermesDatabase struct {
+	messages *mongo.Collection
+	channels *mongo.Collection
 }
 
-type HermesDatabase struct {
-	Messages Repository
-	Channels Repository
-	Users    Repository
+//collection gets collection that you gave us name of
+func collection(collectionName string) *mongo.Collection {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Get("mongo_uri")))
+	if err != nil {
+		panic(fmt.Errorf("cannot get %s collection from mongo due to :%v", err))
+	}
+	coll := client.Database(config.Get("database_name")).Collection(collectionName)
+	return coll
 }
 
-func initMongoRepos(h *HermesDatabase) {
-	h.Channels = mongo.NewChannelrepository()
-	h.Messages = mongo.NewMessagerepository()
-	h.Users = mongo.NewUserrepository()
+func initMongoCollections(h *hermesDatabase) {
+	h.channels = collection("channels")
 }
 
-var hermesDatabaseInstance *HermesDatabase
+var hermesDatabaseInstance *hermesDatabase
 
 //Gets a Instance instance
-func Instance() HermesDatabase {
-	return *hermesDatabaseInstance
+func Channels() *mongo.Collection {
+	return hermesDatabaseInstance.channels
 }
 
 func Init() {
-	hermesDatabaseInstance = new(HermesDatabase)
-	initMongoRepos(hermesDatabaseInstance)
+	hermesDatabaseInstance = new(hermesDatabase)
+	initMongoCollections(hermesDatabaseInstance)
 }

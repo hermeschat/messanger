@@ -1,11 +1,13 @@
 package eventhandlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"hermes/pkg/db/mongo"
+	"hermes/pkg/db"
 	"hermes/pkg/drivers/nats"
 )
 
@@ -24,9 +26,10 @@ func HandleRead(sig *ReadSignal) error {
 	if err != nil {
 		return errors.Wrap(err, "error in publishing eventhandlers read")
 	}
-	err = mongo.UpdateAllMatched("messages", bson.M{"message_id": sig.MessageID}, bson.M{"$set": bson.M{"read": true}})
+	_, err = db.Channels().UpdateOne(context.Background(), bson.M{fmt.Sprintf("%s.messages._id", sig.ChannelID): sig.MessageID}, bson.M{"$set": bson.M{fmt.Sprintf("%s.messages.%s.read", sig.ChannelID, sig.MessageID): true}})
 	if err != nil {
 		return errors.Wrap(err, "error in updating mongo db to put read")
 	}
+
 	return nil
 }

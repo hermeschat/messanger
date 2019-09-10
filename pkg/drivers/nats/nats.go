@@ -47,7 +47,6 @@ func Client(clientID string) (*stan.Conn, error) {
 	defer Connections.Unlock()
 	conn, ok := Connections.conns[clientID]
 	if ok || conn != nil {
-		Connections.Unlock()
 		return conn, nil
 
 	}
@@ -55,8 +54,8 @@ func Client(clientID string) (*stan.Conn, error) {
 	delete(Connections.conns, clientID)
 	logrus.Infof("Trying to get a connection on behalf of %s\n", clientID)
 
-	fmt.Printf("%v", config.Get("nats_uri"))
-	natsClient, err := stan.Connect(config.Get("cluster_id"), clientID, stan.NatsURL(config.Get("nats_uri")))
+	//natsClient, err := stan.Connect(config.Get("cluster_id"), clientID, stan.NatsURL(string(config.Get("nats_uri"))))
+	natsClient, err := stan.Connect("test-cluster", clientID, stan.NatsURL("0.0.0.0:4222"))
 	stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) { logrus.Errorf("Connection lost, reason: %v", reason) })
 	if err != nil {
 		return nil, errors.Wrapf(err, "Can't connect %v: %v", clientID, err)

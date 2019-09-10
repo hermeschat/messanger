@@ -1,16 +1,18 @@
 package eventhandlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/amirrezaask/config"
-	"github.com/mitchellh/mapstructure"
+	"github.com/hashicorp/go-uuid"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"hermes/pkg/db"
 	"hermes/pkg/discovery"
 	"hermes/pkg/drivers/nats"
@@ -25,24 +27,23 @@ func hasRole(roles []string, role string) bool {
 	}
 	return false
 }
-func saveMessageToMongo(message *db.Message) error {
-	m, err := message.ToMap()
+func saveMessageToDB(message *db.Message) error {
+
+	_, err := db.Channels().UpdateOne(context.Background(), bson.M{
+		"_id": message.ChannelID,
+	}, bson.M{
+		"$push": bson.M{
+			"messages": message,
+		},
+	})
 	if err != nil {
-		return errors.Wrap(err, "error in converting new message to map")
-	}
-	_, err = db.Instance().Messages.Add(m)
-	if err != nil {
-		return errors.Wrap(err, "cannot save to mongo")
+		return errors.Wrap(err, "cannot save message to mongo")
 	}
 	return nil
 }
 
-func saveChannelToMongo(c *db.Channel) error {
-	m, err := c.ToMap()
-	if err != nil {
-		return errors.Wrap(err, "error in converting channel to map")
-	}
-	_, err = db.Instance().Channels.Add(m)
+func saveChannelToDB(c *db.Channel) error {
+	_, err := db.Channels().InsertOne(context.Background(), c)
 	if err != nil {
 		return errors.Wrap(err, "cannot save to mongo")
 	}
@@ -51,47 +52,42 @@ func saveChannelToMongo(c *db.Channel) error {
 
 func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 	logrus.Infof("creating/getting new channel to send new message from %s to %s", from, to)
-	channels, err := db.Instance().Channels.Get(bson.M{
-		"Members": bson.M{"$all": []string{from, to}, "$size": 2},
+	res := db.Channels().FindOne(context.Background(), bson.M{
+		"members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
-	cts := []*db.Channel{}
-	for _, c := range channels {
-		ct := &db.Channel{}
-		err := mapstructure.Decode(c, ct)
-		if err != nil {
-			return nil, errors.Wrap(err, "error in converting channle map to channel type")
-		}
-		cts = append(cts, ct)
-
-	}
+	err := res.Err()
+	fmt.Printf("%T\n", err)
 	if err != nil {
-		return nil, errors.Wrap(err, "Cannot get channels")
+		if err == mongo.ErrNoDocuments {
+			id, err := uuid.GenerateUUID()
+			if err != nil {
+				return nil, errors.Wrap(err, "cannot create uuid")
+			}
+			targetChannel := &db.Channel{
+				ChannelId: id,
+				Creator:   from,
+				Members:   []string{to, from},
+				Messages:  []db.Message{},
+				Roles: map[string][]string{
+					to:   {"R", "W", "M"},
+					from: {"R", "W", "M"},
+				},
+				Type: db.ChatTypePrivate,
+			}
+			err = saveChannelToDB(targetChannel)
+			if err != nil {
+				return nil, errors.Wrap(err, "Error in mongo save")
+			}
+			return targetChannel, nil
+		}
+		return nil, errors.Wrap(res.Err(), "error in getting channel from database")
 	}
-	uid := uuid.NewV4()
-
 	var targetChannel *db.Channel
-	if len(channels) < 1 {
-		logrus.Info("no channel found")
-		targetChannel = &db.Channel{
-			Creator:   from,
-			Members:   []string{to, from},
-			ChannelId: uid.String(),
-			Roles: map[string][]string{
-				to:   {"R", "W", "M"},
-				from: {"R", "W", "M"},
-			},
-			Type: db.Private,
-		}
-		err := saveChannelToMongo(targetChannel)
-		if err != nil {
-			return nil, errors.Wrap(err, "Error in mongo save")
-		}
-		return targetChannel, nil
-	} else {
-		targetChannel = (cts)[0]
-		return targetChannel, nil
-
+	err = res.Decode(targetChannel)
+	if err != nil {
+		return nil, errors.Wrap(err, "err in decoding data into channel")
 	}
+	return targetChannel, nil
 }
 
 func ensureChannel(channelID string, userID string) error {
@@ -214,7 +210,7 @@ func retryOp(name string, f func() error) {
 	for err != nil {
 		err = f()
 		if err != nil {
-			logrus.Errorf("error in retrying operation: %v", name)
+			logrus.Errorf("error in retrying operation: %v due to %v", name, err)
 			time.Sleep(time.Second * 1)
 			continue
 		} else {

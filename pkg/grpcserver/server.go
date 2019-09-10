@@ -16,11 +16,9 @@ import (
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"github.com/mitchellh/mapstructure"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -69,56 +67,43 @@ func (h hermesServer) ListChannels(ctx context.Context, _ *api.Empty) (*api.Chan
 	if !ok {
 		return nil, errors.New("cannot get identity out of context")
 	}
-	msgs, err := db.Instance().Channels.Get(map[string]interface{}{
-		"Members": map[string]interface{}{
+	chanCur, err := db.Channels().Find(ctx, map[string]interface{}{
+		"members": map[string]interface{}{
 			"$in": []string{ident.ID},
-		}, //TODO fix query
+		},
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error while trying to get messages from db")
 	}
-	output := []*api.Channel{}
-	for _, m := range msgs {
-		amsg := &api.Channel{}
-		amsg.ChannelId = fmt.Sprint(m["ChannelID"])
-		members := []string{}
-		for _, mem := range m["Members"].(primitive.A) {
-			members = append(members, fmt.Sprint(mem))
+	var chans []*api.Channel
+	for chanCur.Next(ctx) {
+		channel := new(api.Channel)
+		err = chanCur.Decode(channel)
+		if err != nil {
+			return nil, errors.Wrap(err, "error while decoding channels into api.channel")
 		}
-		amsg.Members = members
-		roles := map[string]string{}
-		for member, role := range m["Roles"].(map[string]interface{}) {
-			roles[member] = fmt.Sprint(role)
-		}
-		amsg.Roles = roles
-		amsg.Type = fmt.Sprint(m["Type"].(int32))
-		output = append(output, amsg)
+		chans = append(chans, channel)
 	}
-	return &api.Channels{Msg: output}, nil
+	return &api.Channels{Msg: chans}, nil
 }
 
 func (h hermesServer) ListMessages(ctx context.Context, ch *api.ChannelID) (*api.Messages, error) {
-	msgs, err := db.Instance().Channels.Get(map[string]interface{}{
-		"_id": ch.Id,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "error while trying to get messages from db")
-	}
-	output := []*api.Message{}
-	for _, msg := range msgs {
-		msg["MessageID"] = fmt.Sprint(msg["MessageID"].(primitive.ObjectID).Hex())
-	}
-	for _, m := range msgs {
-		fmt.Println(m)
-		amsg := &api.Message{}
-		err = mapstructure.Decode(m, amsg)
-		if err != nil {
-			return nil, errors.Wrap(err, "error while converting from repository eventhandlers to eventhandlers")
-		}
-		output = append(output, amsg)
-	}
-	fmt.Printf("\n%+v", output)
-	return &api.Messages{Msg: output}, nil
+	//msgCur, err := db.Messages().Find(ctx, map[string]interface{}{
+	//	"channel_id": ch.Id,
+	//})
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "error while trying to get messages from db")
+	//}
+	//var messages []*api.Message
+	//for msgCur.Next(ctx) {
+	//	thisMessage := new(api.Message)
+	//	err = msgCur.Decode(thisMessage)
+	//	if err != nil {
+	//		return nil, errors.Wrap(err, "error while decoding message")
+	//	}
+	//}
+	//return &api.Messages{Msg: messages}, nil
+	return nil, nil
 }
 
 func (h hermesServer) GetChannel(ctx context.Context, _ *api.ChannelID) (*api.Channel, error) {
