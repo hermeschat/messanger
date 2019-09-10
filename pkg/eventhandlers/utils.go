@@ -66,7 +66,6 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 			targetChannel := &db.Channel{
 				ChannelId: id,
 				Creator:   from,
-				Members:   []string{to, from},
 				Messages:  []db.Message{},
 				Roles: map[string][]string{
 					to:   {"R", "W", "M"},

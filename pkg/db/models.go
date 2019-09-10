@@ -33,7 +33,6 @@ const (
 
 type Channel struct {
 	ChannelId string              `bson:"_id" json:"channel_id"`
-	Members   []string            `bson:"members" json:"members"`
 	Creator   string              `bson:"creator" json:"creator"`
 	Type      int                 `bson:"type" json:"type"`
 	Roles     map[string][]string `bson:"roles" json:"roles"`

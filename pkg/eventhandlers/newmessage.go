@@ -25,8 +25,8 @@ func HandleNewMessage(message *db.Message) error {
 	}
 	message.ChannelID = tc.ChannelId
 	go retryOp("saving message to mongodb", func() error { return saveMessageToDB(message) })
-	for _, member := range tc.Members {
-		go retryOp("esuring every one of the members are subscribed to channel", func() error { return ensureChannel(tc.ChannelId, member) })
+	for member := range tc.Roles {
+		go retryOp("ensuring every one of the members are subscribed to channel", func() error { return ensureChannel(tc.ChannelId, member) })
 	}
 	if !hasWriteRole(message.From, tc) {
 		return errors.Wrap(err, "error, access denied")
@@ -55,7 +55,7 @@ func targetChannel(message *db.Message) (*db.Channel, error) {
 	return targetChannel, nil
 }
 func loadChannelData(tc *db.Channel) (*db.Channel, error) {
-	if len(tc.Members) < 1 || tc.Members == nil {
+	if len(tc.Roles) < 1 || tc.Roles == nil {
 		result := db.Channels().FindOne(context.Background(), map[string]string{
 			"channel_id": tc.ChannelId,
 		})
