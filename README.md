@@ -11,12 +11,14 @@ a way of communication between two users. Each new event
 will be published to a channel and the eventHandler specific to the event (there are only two event handlers)
 will deliver the event to the users using GRPC streaming.
 #### Flow of new message
-1.User creates a new session as a kind of registration of his/her device.<br>
-2.User sends a join event<br>
-3.User is now subscribed to a channel called user-discovery and will receive channelIds that he/she needs to subscribe to.<br>
-4.User now subscribes to one of channels which has a new message for him/her self.<br>
-5.NewMessage event handler recieves new event and push it to user.<br>
-6.Done 
+1. User creates a connection to hermes event buff with a valid JWT token.
+2. Hermes subscribe user to user-discovery<br>
+3. User sends a new message to Hermes<br>
+4. Hermes finds target channel of the message (based on recipient, or if message itself has a channel)
+5. Hermes makes sure that all members of target channel are subscribed to channel.
+6. Hermes based on strategy and channel type decides whether to save the message or not.
+7. Hermes sends message into channel (publishes message into nats).
+8. other users that are subscribed to channel receive the message.
 ### Installation
 ```
    git clone github.com/hermeschat/engine
