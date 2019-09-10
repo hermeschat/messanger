@@ -23,6 +23,8 @@ type natsConnections struct {
 	conns map[string]*stan.Conn
 }
 
+type Handler = stan.MsgHandler
+
 func (n *natsConnections) CloseConnection(userID string) error {
 	n.Lock()
 	defer n.Unlock()
@@ -78,7 +80,7 @@ func PublishNewMessage(userID, ChannelID string, bs []byte) error {
 }
 
 //t is type we need to pass to find our eventhandlers type
-func MakeSubscriber(ctx context.Context, userID string, ChannelId string, handler func(msg *stan.Msg)) Subscriber {
+func MakeSubscriber(ctx context.Context, userID string, ChannelId string, handler Handler) Subscriber {
 	return func() {
 		natscon, err := Client(userID)
 

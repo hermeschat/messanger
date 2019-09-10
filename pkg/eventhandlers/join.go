@@ -8,7 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"hermes/api"
 	"hermes/pkg/discovery"
-	"hermes/pkg/drivers/nats"
+	"hermes/pkg/subscription"
+	"hermes/pkg/subscription/nats"
 )
 
 //JoinPayload ...
@@ -22,7 +23,7 @@ func HandleJoin(ctx context.Context, sig *JoinPayload, userSockets *struct {
 	sync.RWMutex
 	Us map[string]api.Hermes_EventBuffServer
 }) {
-	channels, err := getSubscribedChannels(sig.UserID)
+	channels, err := subscription.GetSubscribedChannels(sig.UserID)
 	if err != nil {
 		logrus.Error(errors.Wrap(err, "error while trying to get channels from redis").Error())
 		return
@@ -36,7 +37,7 @@ func HandleJoin(ctx context.Context, sig *JoinPayload, userSockets *struct {
 	if !udSub {
 		logrus.Info("Not subscribed to user-discovery")
 
-		err = addSessionByUserID(sig.UserID, "user-discovery")
+		err = subscription.AddSubscriptionToUserID(sig.UserID, "user-discovery")
 		if err != nil {
 			logrus.Error("error while trying to add session to redis")
 			return

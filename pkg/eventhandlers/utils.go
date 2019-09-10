@@ -14,8 +14,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"hermes/pkg/db"
 	"hermes/pkg/discovery"
-	"hermes/pkg/drivers/nats"
-	"hermes/pkg/drivers/redis"
+	"hermes/pkg/subscription"
+	"hermes/pkg/subscription/nats"
 )
 
 func hasRole(roles string, role string) bool {
@@ -89,7 +89,7 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 }
 
 func ensureChannel(channelID string, userID string) error {
-	channels, err := getSubscribedChannels(userID)
+	channels, err := subscription.GetSubscribedChannels(userID)
 	if err != nil {
 		return errors.Wrap(err, "Error in get session from redis")
 	}
@@ -128,18 +128,6 @@ func retryEnsure(sessionID string, ChannelID string, userID string, retryCount i
 	}
 }
 
-func getSession(sessionID string) ([]string, error) {
-	redisCon, err := redis.ConnectRedis()
-	if err != nil {
-		return nil, errors.Wrap(err, "Fail to connect to redis")
-	}
-	channels, err := redisCon.Get("session-" + sessionID).Result()
-	if err != nil {
-		return nil, errors.Wrap(err, "Fail get from redis")
-	}
-	return strings.Split(channels, ","), nil
-}
-
 //publishNewMessage is send function. Every eventhandlers should be published to a channel to
 //be delivered to subscribers. In streaming, published Message is persistant.
 func publishNewMessage(ChannelId string, msg *db.Message) error {
@@ -159,50 +147,6 @@ func publishNewMessage(ChannelId string, msg *db.Message) error {
 	return nil
 }
 
-func getSubscribedChannels(userID string) ([]string, error) {
-	con, err := redis.ConnectRedis()
-	if err != nil {
-		return nil, errors.Wrap(err, "error while trying to connect to redis")
-	}
-	defer con.Close()
-	var channels []string
-	res, err := con.Get(userID).Result()
-	if err != nil {
-		if err == redis.Nil {
-			return []string{}, nil
-		}
-		return nil, errors.Wrap(err, "error while scanning redis output")
-	}
-	err = json.Unmarshal([]byte(res), &channels)
-	if err != nil {
-
-		return nil, errors.Wrap(err, "error while Unmarshalling redis output")
-	}
-	return channels, nil
-}
-
-func addSessionByUserID(userID string, channelID string) error {
-	channels, err := getSubscribedChannels(userID)
-	if err != nil {
-		return errors.Wrap(err, "error while trying to get channels")
-	}
-	channels = append(channels, channelID)
-	con, err := redis.ConnectRedis()
-	if err != nil {
-		return errors.Wrap(err, "error while trying to connect to redis")
-	}
-	defer con.Close()
-	bs, err := json.Marshal(channels)
-	if err != nil {
-		return errors.Wrap(err, "error while trying to marshal channels")
-	}
-	err = con.Set(userID, string(bs), time.Hour*1).Err()
-	if err != nil {
-		return errors.Wrap(err, "error while adding new channels to redis")
-	}
-	return nil
-}
-
 func retryFunc(name string, f func() error) {
 	err := errors.New("some shitty error")
 	c := 0
@@ -217,18 +161,4 @@ func retryFunc(name string, f func() error) {
 		break
 
 	}
-}
-
-func UserIsSubscribedTo(userID, channelID string) bool {
-	chans, err := getSubscribedChannels(userID)
-	if err != nil {
-		logrus.Errorf("error in getting subscribed channels: %v")
-		return false
-	}
-	for _, ch := range chans {
-		if ch == channelID {
-			return true
-		}
-	}
-	return false
 }

@@ -11,8 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"hermes/pkg/drivers/nats"
-	"hermes/pkg/drivers/redis"
+	"hermes/pkg/subscription/nats"
+	"hermes/pkg/subscription/redis"
 )
 
 // areyouokCmd represents the areyouok command
