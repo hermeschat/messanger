@@ -136,7 +136,6 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 	userSockets.Lock()
 	userSockets.Us[ident.ID] = a
 	userSockets.Unlock()
-	//loop to continuously read messages from buffer
 	for {
 		e, err := a.Recv()
 		if err != nil {

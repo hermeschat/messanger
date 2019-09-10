@@ -50,7 +50,7 @@ func NewMessageEventHandler(channelID string, userID string, userSockets *struct
 			logrus.Errorf("error: cannot send event new eventhandlers to user ")
 			return
 		}
-		userSockets.RUnlock() //TODO: defer
+		userSockets.RUnlock()
 	}
 }
 

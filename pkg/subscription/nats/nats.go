@@ -89,7 +89,7 @@ func MakeSubscriber(ctx context.Context, userID string, ChannelId string, handle
 			return
 		}
 		logrus.Info("Connected to %s clusterID: [%s] clientID: [%s]\n", config.Get("nats_uri"), config.Get("nats_cluster_id"), userID)
-		sub, err := (*natscon).Subscribe(ChannelId, handler, stan.StartAt(pb.StartPosition_NewOnly))
+		sub, err := (*natscon).Subscribe(ChannelId, handler, stan.StartAt(pb.StartPosition_LastReceived))
 		if err != nil {
 			logrus.Error(err)
 			return

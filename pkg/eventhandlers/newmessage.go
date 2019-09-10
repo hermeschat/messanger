@@ -28,6 +28,7 @@ func HandleNewMessage(message *db.Message) error {
 	message.MessageType = db.MessageTypeText
 	go retryFunc("saving message to mongodb", func() error { return saveMessageToDB(message) })
 	for _, member := range tc.Members {
+		logrus.Infof("ensuring that %s is subscribed to %s", member, tc.ChannelId)
 		//go retryFunc("ensuring every one of the members are subscribed to channel", func() error { return ensureChannel(tc.ChannelId, member) })
 		err := ensureChannel(tc.ChannelId, member)
 		if err != nil {
@@ -37,6 +38,7 @@ func HandleNewMessage(message *db.Message) error {
 	if !hasWriteRole(message.From, tc) {
 		return errors.Wrap(err, "error, access denied")
 	}
+	//time.Sleep(time.Second * 3)
 	go retryFunc("publish new message", func() error {
 		return publishNewMessage(tc.ChannelId, message)
 	})
