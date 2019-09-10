@@ -3,7 +3,6 @@ package eventhandlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -19,8 +18,9 @@ import (
 	"hermes/pkg/drivers/redis"
 )
 
-func hasRole(roles []string, role string) bool {
-	for _, c := range roles {
+func hasRole(roles string, role string) bool {
+	roless := strings.Split(roles, "")
+	for _, c := range roless {
 		if string(c) == role {
 			return true
 		}
@@ -55,9 +55,7 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 	res := db.Channels().FindOne(context.Background(), bson.M{
 		"members": bson.M{"$all": []string{from, to}, "$size": 2},
 	})
-	err := res.Err()
-	fmt.Printf("%T\n", err)
-	if err != nil {
+	if err := res.Err(); err != nil {
 		if err == mongo.ErrNoDocuments {
 			id, err := uuid.GenerateUUID()
 			if err != nil {
@@ -66,10 +64,11 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 			targetChannel := &db.Channel{
 				ChannelId: id,
 				Creator:   from,
+				Members:   []string{from, to},
 				Messages:  []db.Message{},
-				Roles: map[string][]string{
-					to:   {"R", "W", "M"},
-					from: {"R", "W", "M"},
+				Roles: map[string]string{
+					to:   "RWM",
+					from: "RWM",
 				},
 				Type: db.ChatTypePrivate,
 			}
@@ -82,7 +81,7 @@ func getOrCreateExistingChannel(from string, to string) (*db.Channel, error) {
 		return nil, errors.Wrap(res.Err(), "error in getting channel from database")
 	}
 	targetChannel := new(db.Channel)
-	err = res.Decode(targetChannel)
+	err := res.Decode(targetChannel)
 	if err != nil {
 		return nil, errors.Wrap(err, "err in decoding data into channel")
 	}
@@ -101,7 +100,7 @@ func ensureChannel(channelID string, userID string) error {
 		}
 	}
 	if !channelExist {
-		logrus.Infof("user is not subscribed to channel %s", userID)
+		logrus.Infof("user %s is not subscribed to channel %s", userID, channelID)
 		//subscribeChannel(channelID, userID)
 		//Send user discovery event
 		//user discovery event publishes a userid and a chanellid
@@ -204,16 +203,32 @@ func addSessionByUserID(userID string, channelID string) error {
 	return nil
 }
 
-func retryOp(name string, f func() error) {
+func retryFunc(name string, f func() error) {
 	err := errors.New("some shitty error")
-	for err != nil {
+	c := 0
+	for err != nil && c < 100 {
 		err = f()
 		if err != nil {
 			logrus.Errorf("error in retrying operation: %v due to %v", name, err)
 			time.Sleep(time.Second * 1)
+			c++
 			continue
-		} else {
-			break
+		}
+		break
+
+	}
+}
+
+func UserIsSubscribedTo(userID, channelID string) bool {
+	chans, err := getSubscribedChannels(userID)
+	if err != nil {
+		logrus.Errorf("error in getting subscribed channels: %v")
+		return false
+	}
+	for _, ch := range chans {
+		if ch == channelID {
+			return true
 		}
 	}
+	return false
 }

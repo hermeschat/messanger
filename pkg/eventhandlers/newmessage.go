@@ -2,6 +2,7 @@ package eventhandlers
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -24,14 +25,20 @@ func HandleNewMessage(message *db.Message) error {
 		return errors.Wrap(err, "error in loading members")
 	}
 	message.ChannelID = tc.ChannelId
-	go retryOp("saving message to mongodb", func() error { return saveMessageToDB(message) })
-	for member := range tc.Roles {
-		go retryOp("ensuring every one of the members are subscribed to channel", func() error { return ensureChannel(tc.ChannelId, member) })
+	message.Time = time.Now()
+	message.MessageType = db.MessageTypeText
+	go retryFunc("saving message to mongodb", func() error { return saveMessageToDB(message) })
+	for _, member := range tc.Members {
+		//go retryFunc("ensuring every one of the members are subscribed to channel", func() error { return ensureChannel(tc.ChannelId, member) })
+		err := ensureChannel(tc.ChannelId, member)
+		if err != nil {
+			logrus.Errorf("%s error in ensureChannel: %v", member, err)
+		}
 	}
 	if !hasWriteRole(message.From, tc) {
 		return errors.Wrap(err, "error, access denied")
 	}
-	go retryOp("publish new message", func() error {
+	go retryFunc("publish new message", func() error {
 		return publishNewMessage(tc.ChannelId, message)
 	})
 	return nil
@@ -75,5 +82,6 @@ func loadChannelData(tc *db.Channel) (*db.Channel, error) {
 }
 
 func hasWriteRole(userID string, channel *db.Channel) bool {
+
 	return hasRole(channel.Roles[userID], "W")
 }

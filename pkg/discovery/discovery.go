@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"encoding/json"
-	"fmt"
 	"sync"
 	"time"
 
@@ -139,7 +138,6 @@ func addSessionByUserID(userID string, channelID string) error {
 func PublishUserDiscoveryEvent(ude UserDiscoveryEvent) error {
 
 	u := &api.UserDiscoveryEvent{ChannelID: ude.ChannelID, UserID: ude.UserID}
-	fmt.Println("client id is ", ude.UserID)
 	conn, err := nats.Client(ude.UserID)
 	if err != nil {
 		return errors.Wrap(err, "cannot connect to nats")

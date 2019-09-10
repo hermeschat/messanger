@@ -9,6 +9,7 @@ import (
 	"hermes/api"
 	auth "hermes/paygearauth"
 	"hermes/pkg/db"
+	"hermes/pkg/discovery"
 	"hermes/pkg/drivers/nats"
 	"hermes/pkg/drivers/redis"
 	"hermes/pkg/eventhandlers"
@@ -142,18 +143,21 @@ func (h hermesServer) EventBuff(a api.Hermes_EventBuffServer) error {
 			return
 		}
 	}()
+	if !eventhandlers.UserIsSubscribedTo(ident.ID, "user-discovery") {
+		logrus.Infoln("User is not subscribed to user discovery")
+		go nats.MakeSubscriber(a.Context(), ident.ID, "user-discovery", discovery.UserDiscoveryEventHandler(a.Context(), ident.ID, userSockets))()
+	}
 	//loop to continuously read messages from buffer
 	for {
-
 		e, err := a.Recv()
 		if err != nil {
 			logrus.Errorf("cannot receive event : %v", err)
 			return errors.Wrap(err, "error in reading EventBuff")
 		}
-
 		userSockets.Lock()
 		userSockets.Us[ident.ID] = a
 		userSockets.Unlock()
+
 		switch t := e.GetEvent().(type) {
 		case *api.Event_Read:
 			logrus.Info("Event is read")
