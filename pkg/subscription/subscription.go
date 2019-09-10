@@ -86,7 +86,4 @@ func Clean() {
 		return
 	}
 	con.FlushDB()
-	nats.Connections.Lock()
-	defer nats.Connections.Unlock()
-	nats.Connections = nil
 }
