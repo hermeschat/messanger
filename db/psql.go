@@ -54,7 +54,8 @@ func postgresConnectionString(host, port, user, password, name, sslmode string) 
 func setPostgresDefaultConfiguration() {
 	config.C.Set("database.host", "localhost")
 	config.C.Set("database.port", "5432")
-	config.C.Set("database.user", "postgres")
-	config.C.Set("database.password", "")
+	config.C.Set("database.user", "hermes")
+	config.C.Set("database.password", "hermes")
+	config.C.Set("database.name", "hermes")
 	config.C.Set("database.sslmode", "disable")
 }

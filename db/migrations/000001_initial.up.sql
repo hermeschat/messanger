@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users
 (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
+    id           SERIAL PRIMARY KEY,
     phone_number VARCHAR(200) NOT NULL,
     created_at   timestamp DEFAULT NOW(),
     updated_at   timestamp DEFAULT NOW(),
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS roles
 (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
+    id         SERIAL PRIMARY KEY,
     name       VARCHAR(200) NOT NULL,
     created_at timestamp DEFAULT NOW(),
     updated_at timestamp DEFAULT NOW(),
@@ -26,4 +26,6 @@ CREATE TABLE IF NOT EXISTS user_role
     created_at timestamp DEFAULT NOW(),
     updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NULL
-)
+);
+--- messages table
+--- channels table

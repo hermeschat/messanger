@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hermeschat/engine/cmd"
+	"github.com/hermeschat/engine/config"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,5 +16,9 @@ func main() {
 			os.Exit(0)
 		}
 	}()
+	err := config.Init()
+	if err != nil {
+	 	panic(err)
+	}
 	cmd.Execute()
 }

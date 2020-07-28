@@ -1,10 +1,12 @@
 package migration
 
 import (
-	"github.com/golang-migrate/migrate/v4/database/mysql"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/hermeschat/engine/config"
 	"github.com/hermeschat/engine/db"
+	"time"
 )
 
 func New() (*migrate.Migrate, error) {
@@ -12,16 +14,21 @@ func New() (*migrate.Migrate, error) {
 	if err != nil {
 		return nil, err
 	}
-	db, err := prv.DB()
+	_db, err := prv.DB()
 	if err != nil {
 		return nil, err
 	}
-	drv, err := mysql.WithInstance(db, &mysql.Config{})
+	drv, err := postgres.WithInstance(_db, &postgres.Config{
+		MigrationsTable:  "migrations",
+		DatabaseName:     "hermes",
+		SchemaName:       "public",
+		StatementTimeout: time.Millisecond*100,
+	})
 	if err != nil {
 		return nil, err
 	}
 	dbName := config.C.GetString("database.name")
-	m, err := migrate.NewWithDatabaseInstance("./db/migrations",dbName , drv)
+	m, err := migrate.NewWithDatabaseInstance("file://./db/migrations",dbName , drv)
 	if err != nil {
 		return nil, err
 	}

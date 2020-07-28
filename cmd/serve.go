@@ -17,11 +17,8 @@ package cmd
 
 import (
 	"context"
-	"github.com/hermeschat/engine/transport/grpc"
-	"log"
-
-	"github.com/hermeschat/engine/config"
 	"github.com/hermeschat/engine/monitoring"
+	"github.com/hermeschat/engine/transport/grpc"
 
 	"github.com/spf13/cobra"
 )
@@ -34,10 +31,6 @@ var serveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		monitoring.Logger().Info("Loading Config")
-		err := config.Init()
-		if err != nil {
-			log.Fatalln(err)
-		}
 		monitoring.Logger().Info("Initiating DB package")
 		grpc.CreateGRPCServer(context.Background())
 		monitoring.Logger().Info("Initializing Hermes")

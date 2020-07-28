@@ -19,7 +19,6 @@ var areyouokCmd = &cobra.Command{
 	Short: "areyouok runs set of checks to make sure hermes is ok",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		config.Init()
 		err := nats.HealthCheck()
 		if err != nil {
 			monitoring.Logger().Fatalf("error in connecting to nats")

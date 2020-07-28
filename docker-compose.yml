@@ -1,5 +1,9 @@
 version: '3'
 services:
+#  hermes:
+#    build: .
+#    ports:
+#      - 9090:9090
   psql:
     image: postgres:12.3
     container_name: "psql"
