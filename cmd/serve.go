@@ -17,9 +17,10 @@ package cmd
 
 import (
 	"context"
+	"log"
+
 	"github.com/hermeschat/engine/config"
 	"github.com/hermeschat/engine/monitoring"
-	"log"
 
 	"github.com/spf13/cobra"
 )
