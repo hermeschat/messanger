@@ -1,14 +1,12 @@
 package repository
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type User struct {
-	ID primitive.ObjectID
+	ID string
 	Avatar string
 	Handle string
 }
 
 type UserRepository interface {
 	NewUser(user *User) error
-	GetUser(id primitive.ObjectID) (*User, error)
+	GetUser(id string) (*User, error)
 }

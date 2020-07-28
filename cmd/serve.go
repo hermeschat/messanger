@@ -18,6 +18,7 @@ package cmd
 import (
 	"context"
 	"hermes/config"
+	"log"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,7 +36,10 @@ var serveCmd = &cobra.Command{
 			subscription.Clean()
 		}()
 		logrus.Info("Loading Config")
-		config.Init()
+		err := config.Init()
+		if err != nil {
+			log.Fatalln(err)
+		}
 		logrus.Info("Initiating DB package")
 		grpcserver.CreateGRPCServer(context.Background())
 		logrus.Info("Initializing Hermes")
