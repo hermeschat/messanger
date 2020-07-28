@@ -15,39 +15,39 @@ limitations under the License.
 */
 package cmd
 
-import (
-	"context"
-	"github.com/hermeschat/engine/config"
-	"log"
-
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/hermeschat/engine/grpcserver"
-	"github.com/hermeschat/engine/subscription"
-)
-
-// serveCmd represents the serve command
-var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "serve serves hermes",
-	Long:  `serve starts hermes`,
-	Run: func(cmd *cobra.Command, args []string) {
-		defer func() {
-			subscription.Clean()
-		}()
-		monitoring.Logger().Info("Loading Config")
-		err := config.Init()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		monitoring.Logger().Info("Initiating DB package")
-		grpcserver.CreateGRPCServer(context.Background())
-		monitoring.Logger().Info("Initializing Hermes")
-
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(serveCmd)
-	serveCmd.Aliases = []string{"serv"}
-}
+//import (
+//	"context"
+//	"github.com/hermeschat/engine/config"
+//	"github.com/hermeschat/engine/monitoring"
+//	"log"
+//
+//	"github.com/hermeschat/engine/grpcserver"
+//	"github.com/hermeschat/engine/subscription"
+//	"github.com/spf13/cobra"
+//)
+//
+//// serveCmd represents the serve command
+//var serveCmd = &cobra.Command{
+//	Use:   "serve",
+//	Short: "serve serves hermes",
+//	Long:  `serve starts hermes`,
+//	Run: func(cmd *cobra.Command, args []string) {
+//		defer func() {
+//			subscription.Clean()
+//		}()
+//		monitoring.Logger().Info("Loading Config")
+//		err := config.Init()
+//		if err != nil {
+//			log.Fatalln(err)
+//		}
+//		monitoring.Logger().Info("Initiating DB package")
+//		grpcserver.CreateGRPCServer(context.Background())
+//		monitoring.Logger().Info("Initializing Hermes")
+//
+//	},
+//}
+//
+//func init() {
+//	rootCmd.AddCommand(serveCmd)
+//	serveCmd.Aliases = []string{"serv"}
+//}

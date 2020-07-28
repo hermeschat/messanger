@@ -27,6 +27,17 @@ func NatsURI() string {
 	}
 	return fmt.Sprintf("%s:%s", host, port)
 }
+func StanURI() (string, string) {
+	clusterId, err := C.GetString("CLUSTER_ID")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
+	}
+	clientId, err := C.GetString("CLIENT_ID")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
+	}
+	return clusterId, clientId
+}
 func PostgresURI() string {
 	host, err := C.GetString("POSTGRES_HOST")
 	if err != nil {
@@ -54,6 +65,7 @@ func PostgresURI() string {
 	}
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, pass, database, sslmode)
 }
+
 type Env uint8
 
 const (

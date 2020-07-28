@@ -1,27 +1,41 @@
 package nats
 
 import (
+	"fmt"
 	"github.com/hermeschat/engine/config"
-	"github.com/hermeschat/engine/monitoring"
-	nats_driver "github.com/nats-io/nats.go"
-	"time"
+	stan "github.com/nats-io/stan.go"
+	"log"
 )
 
-func NatsClient() (*nats_driver.Conn, error) {
-	return nats_driver.Connect(config.NatsURI())
+func StreamClient(natsUrl string) (stan.Conn, error) {
+	clusterID, clientID := config.StanURI()
+	return stan.Connect(clusterID, clientID, stan.NatsURL(natsUrl))
 
 }
+func StreamSubscriber(sc stan.Conn, msg stan.Msg) stan.Subscription {
+	sub, _ := sc.Subscribe("foo", func(m *stan.Msg) {
+		fmt.Printf("Received a message: %s\n", string(m.Data))
+	})
+	return sub
+}
 
+func StreamPublisher(sc stan.Conn, subject string, msg []byte) error {
+	return sc.Publish(subject, msg)
+}
+
+func StreamUnsubscriber(sub stan.Subscription) error {
+	return sub.Unsubscribe()
+}
 func HealthCheck() bool {
-	nc, err := nats_driver.Connect(nats_driver.DefaultURL, nats_driver.Name("API Ping Example"),
-		nats_driver.PingInterval(20*time.Second), nats_driver.MaxPingsOutstanding(5))
-	if err != nil {
-		monitoring.Logger().Fatalf("can not connect to nats stream")
+	clusterID, clientID := config.StanURI()
 
+	sc, err := stan.Connect(clusterID, clientID, stan.NatsConn(nc),
+		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
+			log.Fatalf("Connection lost, reason: %v", reason)
+		}))
+	if err != nil {
+		log.Fatalf("Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, URL)
 	}
-	if nc.IsConnected() {
-		monitoring.Logger().Infof("connected to nats!")
-		return true
-	}
-	return false
+	log.Printf("Connected to %s clusterID: [%s] clientID: [%s]\n", URL, clusterID, clientID)
+
 }
