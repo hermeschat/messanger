@@ -1,7 +1,7 @@
 package monitoring
 
 import (
-	"hermes/config"
+	"github.com/hermeschat/engine/config"
 	"go.uber.org/zap"
 )
 

@@ -5,8 +5,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"hermes/cmd"
-	"hermes/subscription"
+	"github.com/hermeschat/engine/cmd"
+	"github.com/hermeschat/engine/subscription"
 )
 
 func main() {

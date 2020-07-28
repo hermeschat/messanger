@@ -21,7 +21,7 @@ will deliver the event to the users using GRPC streaming.
 8. other users that are subscribed to channel receive the message.
 ### Installation
 ```
-   git clone github.com/hermeschat/engine
+   git clone github.com/hermeschat/engine/
    cd hermes
    docker-compose up .
 ```

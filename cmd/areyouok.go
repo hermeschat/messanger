@@ -2,17 +2,16 @@ package cmd
 
 import (
 	"context"
-	"hermes/config"
+	"github.com/hermeschat/engine/config"
 	"time"
 
+	"github.com/hermeschat/engine/subscription"
+	"github.com/hermeschat/engine/subscription/nats"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"hermes/subscription"
-	"hermes/subscription/nats"
 )
 
 // areyouokCmd represents the areyouok command

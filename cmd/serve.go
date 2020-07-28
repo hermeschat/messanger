@@ -17,13 +17,13 @@ package cmd
 
 import (
 	"context"
-	"hermes/config"
+	"github.com/hermeschat/engine/config"
 	"log"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"hermes/grpcserver"
-	"hermes/subscription"
+	"github.com/hermeschat/engine/grpcserver"
+	"github.com/hermeschat/engine/subscription"
 )
 
 // serveCmd represents the serve command

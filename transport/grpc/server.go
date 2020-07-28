@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/hermeschat/proto"
 	"google.golang.org/grpc"
-	"hermes/config"
-	"hermes/monitoring"
+	"github.com/hermeschat/engine/config"
+	"github.com/hermeschat/engine/monitoring"
 	"net"
 )
 

@@ -1,6 +1,6 @@
 package core
 
-import "hermes/repository"
+import "github.com/hermeschat/engine/repository"
 
 func SendNewMessage(msg *repository.Message) {}
 
