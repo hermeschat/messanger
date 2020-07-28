@@ -13,6 +13,7 @@ type appConfig struct {
 func MongoURI() string {
 	return ""
 }
+
 type Env uint8
 const (
 	AppEnvDev = iota+1
@@ -28,6 +29,7 @@ func AppEnv() Env {
 	}
 	return AppEnvProd
 }
+
 var C *appConfig
 
 func Init() error {

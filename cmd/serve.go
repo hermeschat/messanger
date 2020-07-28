@@ -35,14 +35,14 @@ var serveCmd = &cobra.Command{
 		defer func() {
 			subscription.Clean()
 		}()
-		logrus.Info("Loading Config")
+		monitoring.Logger().Info("Loading Config")
 		err := config.Init()
 		if err != nil {
 			log.Fatalln(err)
 		}
-		logrus.Info("Initiating DB package")
+		monitoring.Logger().Info("Initiating DB package")
 		grpcserver.CreateGRPCServer(context.Background())
-		logrus.Info("Initializing Hermes")
+		monitoring.Logger().Info("Initializing Hermes")
 
 	},
 }

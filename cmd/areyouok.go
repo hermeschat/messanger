@@ -24,24 +24,24 @@ var areyouokCmd = &cobra.Command{
 		config.Init()
 		_, err := nats.Client("testing")
 		if err != nil {
-			logrus.Fatalf("error in connecting to nats: %v", err)
+			monitoring.Logger().Fatalf("error in connecting to nats: %v", err)
 		}
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 		client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI()))
 		if err != nil {
-			logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
+			monitoring.Logger().Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 		}
 		err = client.Ping(ctx, readpref.Primary())
 		if err != nil {
-			logrus.Fatalf("could not ping db")
+			monitoring.Logger().Fatalf("could not ping db")
 		}
 		con, err := subscription.Redis()
 		if err != nil {
-			logrus.Fatalf("could not connect redis:%v", err)
+			monitoring.Logger().Fatalf("could not connect redis:%v", err)
 		}
 		_, err = con.Ping().Result()
 		if err != nil {
-			logrus.Fatalf("could not ping redis:%v", err)
+			monitoring.Logger().Fatalf("could not ping redis:%v", err)
 		}
 		return
 	},
