@@ -1,7 +1,9 @@
 package config
 
 import (
+	"github.com/nats-io/nats.go"
 	"log"
+	"os"
 
 	"github.com/golobby/config"
 	"github.com/golobby/config/feeder"
@@ -13,6 +15,10 @@ type appConfig struct {
 
 func MongoURI() string {
 	return ""
+}
+
+func NatsURI() string {
+	return os.Getenv("NATS_URI", nats.DefaultURL)
 }
 
 type Env uint8

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hermeschat/engine/config"
 	"github.com/hermeschat/engine/monitoring"
+	nats "github.com/hermeschat/engine/transport/nats"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,10 +20,11 @@ var areyouokCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		config.Init()
-		_, err := nats.Client("testing")
-		if err != nil {
-			monitoring.Logger().Fatalf("error in connecting to nats: %v", err)
+		isConnectd := nats.HealthCheck()
+		if isConnectd != false {
+			monitoring.Logger().Fatalf("error in connecting to nats")
 		}
+
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 		client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI()))
 		if err != nil {
@@ -32,14 +34,14 @@ var areyouokCmd = &cobra.Command{
 		if err != nil {
 			monitoring.Logger().Fatalf("could not ping db")
 		}
-		con, err := subscription.Redis()
-		if err != nil {
-			monitoring.Logger().Fatalf("could not connect redis:%v", err)
-		}
-		_, err = con.Ping().Result()
-		if err != nil {
-			monitoring.Logger().Fatalf("could not ping redis:%v", err)
-		}
+		//con, err := subscription.Redis()
+		//if err != nil {
+		//	monitoring.Logger().Fatalf("could not connect redis:%v", err)
+		//}
+		//_, err = con.Ping().Result()
+		//if err != nil {
+		//	monitoring.Logger().Fatalf("could not ping redis:%v", err)
+		//}
 		return
 	},
 }
