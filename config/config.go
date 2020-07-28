@@ -2,67 +2,34 @@ package config
 
 import (
 	"fmt"
-	"github.com/golobby/config"
-	"github.com/golobby/config/feeder"
-	"github.com/hermeschat/engine/monitoring"
-	"log"
+	"github.com/spf13/viper"
 )
 
 type appConfig struct {
-	*config.Config
+	*viper.Viper
 }
 
 func MongoURI() string {
 	return ""
 }
-
-func NatsURI() string {
-	host, err := C.GetString("NATS_HOST")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
+func NatsUrl() string {
+	host := C.GetString("host")
+	port := C.GetString("port")
+	user := C.GetString("user")
+	pass := C.GetString("pass")
+	uri := fmt.Sprintf("%s:%s", host, port)
+	if user != "" && pass != "" {
+		uri = fmt.Sprintf("%s:%s@%s", user, pass, uri)
 	}
-	port, err := C.GetString("NATS_PORT")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
-	}
-	return fmt.Sprintf("%s:%s", host, port)
-}
-func StanURI() (string, string) {
-	clusterId, err := C.GetString("CLUSTER_ID")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
-	}
-	clientId, err := C.GetString("CLIENT_ID")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
-	}
-	return clusterId, clientId
+	return uri
 }
 func PostgresURI() string {
-	host, err := C.GetString("POSTGRES_HOST")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
-	}
-	port, err := C.GetString("POSTGRES_PORT")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
-	}
-	user, err := C.GetString("POSTGRES_USER")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
-	}
-	pass, err := C.GetString("POSTGRES_PASS")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
-	}
-	database, err := C.GetString("POSTGRES_DB")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
-	}
-	sslmode, err := C.GetString("POSTGRES_SSL")
-	if err != nil {
-		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
-	}
+	host := C.GetString("POSTGRES_HOST")
+	port := C.GetString("POSTGRES_PORT")
+	user := C.GetString("POSTGRES_USER")
+	pass := C.GetString("POSTGRES_PASS")
+	database := C.GetString("POSTGRES_DB")
+	sslmode := C.GetString("POSTGRES_SSL")
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, pass, database, sslmode)
 }
 
@@ -74,10 +41,7 @@ const (
 )
 
 func AppEnv() Env {
-	e, err := C.GetString("app.env")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	e := C.GetString("app.env")
 	if e == "prod" || e == "production" {
 		return AppEnvProd
 	}
@@ -87,15 +51,13 @@ func AppEnv() Env {
 var C *appConfig
 
 func Init() error {
-	c, err := config.New(config.Options{
-		Feeder: &feeder.Yaml{
-			Path: "hermes.yml",
-		},
-	})
-
+	v := viper.New()
+	v.SetConfigName("hermes")
+	v.AddConfigPath(".")
+	err := v.ReadInConfig()
 	if err != nil {
 		return err
 	}
-	C = &appConfig{c}
+	C = &appConfig{v}
 	return nil
 }

@@ -16,8 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	migration "app/db/migrations"
-	"app/monitoring"
+	migration "github.com/hermeschat/engine/db/migrations"
+	"github.com/hermeschat/engine/monitoring"
 	"github.com/spf13/cobra"
 )
 
@@ -29,11 +29,11 @@ var downCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		m, err := migration.New()
 		if err != nil {
-			monitoring.Logger().Fatalln(err)
+			monitoring.Logger().Fatalf("%s\n", err)
 		}
 		err = m.Down()
 		if err != nil {
-			monitoring.Logger().Fatalln(err)
+			monitoring.Logger().Fatalf("%s\n", err)
 		}
 	},
 }

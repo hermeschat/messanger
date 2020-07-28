@@ -18,7 +18,7 @@ func New(ctx context.Context) (*mongo.Database, error) {
 		return nil, err
 	}
 
-	databaseName, err := config.C.GetString("database.name")
+	databaseName := config.C.GetString("database.name")
 	if err != nil {
 		return nil, err
 	}

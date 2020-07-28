@@ -22,7 +22,7 @@ import (
 
 //CreateGRPCServer creates a new grpc server
 func CreateGRPCServer(ctx context.Context) {
-	serverURL, err := config.C.GetString("app.url")
+	serverURL := config.C.GetString("app.url")
 	monitoring.Logger().Infof("hermes GRPC server server is on %s", serverURL)
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s", serverURL))
 	if err != nil {

@@ -20,8 +20,8 @@ var areyouokCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		config.Init()
-		isConnectd := nats.HealthCheck()
-		if isConnectd != false {
+		err := nats.HealthCheck()
+		if err != nil {
 			monitoring.Logger().Fatalf("error in connecting to nats")
 		}
 

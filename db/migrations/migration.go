@@ -20,10 +20,7 @@ func New() (*migrate.Migrate, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbName, err := config.C.GetString("database.name")
-	if err != nil {
-	    return nil, err
-	}
+	dbName := config.C.GetString("database.name")
 	m, err := migrate.NewWithDatabaseInstance("./db/migrations",dbName , drv)
 	if err != nil {
 		return nil, err

@@ -28,51 +28,33 @@ import (
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate models using SqlBoiler",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		// generate sqlboiler.toml
 		fd, err := os.OpenFile("sqlboiler.toml", os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			monitoring.Logger().Fatalf("%s\n", err)
 		}
-
 		enc := toml.NewEncoder(fd)
-		db, err := config.C.GetString("database.type")
-		if err != nil {
-		 	monitoring.Logger().Fatalf("%s\n", err)
-		}
-		host, err := config.C.GetString("database.host")
-		if err != nil {
-			monitoring.Logger().Fatalf("%s\n", err)
-		}
-		port, err := config.C.GetString("database.port")
-		if err != nil {
-			monitoring.Logger().Fatalf("%s\n", err)
-		}
-		user, err := config.C.GetString("database.user")
-		if err != nil {
-			monitoring.Logger().Fatalf("%s\n", err)
-		}
-		password, err := config.C.GetString("database.password")
-		if err != nil {
-			monitoring.Logger().Fatalf("%s\n", err)
-		}
-		name, err := config.C.GetString("database.name")
-		if err != nil {
-			monitoring.Logger().Fatalf("%s\n", err)
-		}
+		db := config.C.GetString("database.type")
+		host := config.C.GetString("database.host")
+		port := config.C.GetString("database.port")
+		user := config.C.GetString("database.user")
+		password := config.C.GetString("database.password")
+		name := config.C.GetString("database.name")
+
 		c := map[string]interface{}{
 			db: map[string]interface{}{
-				"host": host,
-				"dbname": name,
-				"port": port,
-				"user": user,
+				"host":     host,
+				"dbname":   name,
+				"port":     port,
+				"user":     user,
 				"password": password,
 			},
 		}
 		err = enc.Encode(c)
 		if err != nil {
-			monitoring.Logger().Fatalf("%s\n", err)
+			monitoring.Logger().Fatalf("%s\n")
 		}
 		// build sqlboiler command
 		cmdArgs := []string{"--wipe"}
