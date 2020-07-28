@@ -3,19 +3,18 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_log "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_prom "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/hermeschat/engine/config"
 	"github.com/hermeschat/engine/monitoring"
-	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/hermeschat/proto"
 	"net"
 )
 
@@ -43,6 +42,4 @@ func CreateGRPCServer(ctx context.Context) {
 	if err != nil {
 		monitoring.Logger().Fatal("ERROR in serving listener")
 	}
-
-	monitoring.Logger().Info("GRPC is Live !!!")
 }

@@ -1,9 +1,10 @@
 package config
 
 import (
+	"log"
+
 	"github.com/golobby/config"
 	"github.com/golobby/config/feeder"
-	"log"
 )
 
 type appConfig struct {
@@ -15,10 +16,12 @@ func MongoURI() string {
 }
 
 type Env uint8
+
 const (
-	AppEnvDev = iota+1
+	AppEnvDev = iota + 1
 	AppEnvProd
 )
+
 func AppEnv() Env {
 	e, err := C.GetString("app.env")
 	if err != nil {
