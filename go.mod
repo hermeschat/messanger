@@ -8,6 +8,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hermeschat/proto v1.0.1
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/nats-io/nats.go v1.10.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.0.0
