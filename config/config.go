@@ -1,11 +1,10 @@
 package config
 
 import (
-	"github.com/nats-io/nats.go"
-	"log"
-	"os"
-
+	"fmt"
 	"github.com/golobby/config"
+	"github.com/hermeschat/engine/monitoring"
+	"log"
 	"github.com/golobby/config/feeder"
 )
 
@@ -18,7 +17,15 @@ func MongoURI() string {
 }
 
 func NatsURI() string {
-	return os.Getenv("NATS_URI", nats.DefaultURL)
+	host, err := C.GetString("NATS_HOST")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
+	}
+	port, err := C.GetString("NATS_PORT")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating NatsURI: %s", err)
+	}
+	return fmt.Sprintf("%s:%s", host, port)
 }
 
 type Env uint8
@@ -42,7 +49,10 @@ func AppEnv() Env {
 var C *appConfig
 
 func Init() error {
-	c, err := config.New(config.Options{Feeder: &feeder.Yaml{Path: "hermes.yml"}})
+	c, err := config.New(config.Options{
+		Feeder: &feeder.Yaml{},
+	})
+
 	if err != nil {
 		return err
 	}
