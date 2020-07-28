@@ -12,7 +12,7 @@ type Postgres struct {
 }
 
 func (p *Postgres) DB() (*sql.DB, error) {
-	setPostgresDefaultConfiguration()
+	SetPostgresDefaultConfiguration()
 	host := config.C.GetString("database.host")
 	port := config.C.GetString("database.port")
 	user := config.C.GetString("database.user")
@@ -51,11 +51,11 @@ func postgresConnectionString(host, port, user, password, name, sslmode string) 
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, name, sslmode)
 }
 
-func setPostgresDefaultConfiguration() {
-	config.C.Set("database.host", "localhost")
-	config.C.Set("database.port", "5432")
-	config.C.Set("database.user", "hermes")
-	config.C.Set("database.password", "hermes")
-	config.C.Set("database.name", "hermes")
-	config.C.Set("database.sslmode", "disable")
+func SetPostgresDefaultConfiguration() {
+	config.C.SetDefault("database.host", "localhost")
+	config.C.SetDefault("database.port", "5432")
+	config.C.SetDefault("database.user", "hermes")
+	config.C.SetDefault("database.password", "hermes")
+	config.C.SetDefault("database.name", "hermes")
+	config.C.SetDefault("database.sslmode", "disable")
 }

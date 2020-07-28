@@ -1,0 +1,7 @@
+[psql]
+  dbname = "hermes"
+  host = "0.0.0.0"
+  password = "hermes"
+  port = "5432"
+  user = "postgres"
+  sslmode="disable"
