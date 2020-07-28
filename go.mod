@@ -4,7 +4,9 @@ go 1.14
 
 require (
 	github.com/golobby/config v1.0.4
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+	github.com/hermeschat/proto v1.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
@@ -12,5 +14,8 @@ require (
 	github.com/spf13/viper v1.7.0
 	go.mongodb.org/mongo-driver v1.3.5
 	go.uber.org/zap v1.15.0
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
+	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
+	google.golang.org/genproto v0.0.0-20200728010541-3dc8dca74b7b // indirect
 	google.golang.org/grpc v1.30.0
 )

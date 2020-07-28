@@ -5,25 +5,31 @@ import (
 	"go.uber.org/zap"
 )
 
-var loggerInstance *zap.SugaredLogger
+var sugaredLoggerInstance *zap.SugaredLogger
+var LoggerInstance *zap.Logger
 
 func Logger() *zap.SugaredLogger {
-	if loggerInstance != nil {
-		return loggerInstance
+	var err error
+	if sugaredLoggerInstance != nil {
+		return sugaredLoggerInstance
 	}
 	if config.AppEnv() == config.AppEnvDev {
-		l, err := zap.NewDevelopment()
-		if err != nil {
-			panic(err)
+		if LoggerInstance == nil {
+			LoggerInstance, err = zap.NewDevelopment()
+			if err != nil {
+				panic(err)
+			}
 		}
-		loggerInstance = l.Sugar()
-		return loggerInstance
+		sugaredLoggerInstance = LoggerInstance.Sugar()
+		return sugaredLoggerInstance
 	} else {
-		l, err := zap.NewProduction()
-		if err != nil {
-			panic(err)
+		if LoggerInstance == nil {
+			LoggerInstance, err = zap.NewProduction()
+			if err != nil {
+				panic(err)
+			}
 		}
-		loggerInstance = l.Sugar()
-		return loggerInstance
+		sugaredLoggerInstance = LoggerInstance.Sugar()
+		return sugaredLoggerInstance
 	}
 }
