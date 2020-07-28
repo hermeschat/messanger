@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users
     created_at   timestamp DEFAULT NOW(),
     updated_at   timestamp DEFAULT NOW(),
     deleted_at   timestamp DEFAULT NULL
+-- unique index on username
 );
 
 CREATE TABLE IF NOT EXISTS roles
@@ -34,8 +35,8 @@ CREATE TABLE IF NOT EXISTS user_role
 CREATE TABLE IF NOT EXISTS channels
 (
     id         SERIAL PRIMARY KEY,
-    creator    INT,
-    FOREIGN KEY (creator) references users (id),
+    creator_id INT,
+    FOREIGN KEY (creator_id) references users (id),
     created_at timestamp DEFAULT NOW(),
     updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NULL
@@ -68,14 +69,14 @@ CREATE TABLE IF NOT EXISTS channel_permissions
 CREATE TABLE IF NOT EXISTS messages
 (
     id         SERIAL PRIMARY KEY,
-    origin     INT,
-    dst        INT,
-    parent     INT,
+    origin_id  INT,
+    dst_id     INT,
+    parent_id  INT,
     body       TEXT,
     state      INT,
-    FOREIGN KEY (origin) REFERENCES users (id),
-    FOREIGN KEY (dst) REFERENCES channels (id),
-    FOREIGN KEY (parent) REFERENCES messages (id),
+    FOREIGN KEY (origin_id) REFERENCES users (id),
+    FOREIGN KEY (dst_id) REFERENCES channels (id),
+    FOREIGN KEY (parent_id) REFERENCES messages (id),
     created_at timestamp DEFAULT NOW(),
     updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NULL
