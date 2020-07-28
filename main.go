@@ -1,12 +1,10 @@
 package main
 
 import (
+	"github.com/hermeschat/engine/cmd"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/hermeschat/engine/cmd"
-	"github.com/hermeschat/engine/subscription"
 )
 
 func main() {
@@ -14,7 +12,6 @@ func main() {
 		sigs := make(chan os.Signal)
 		signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 		for range sigs {
-			subscription.Clean()
 			os.Exit(0)
 		}
 	}()
