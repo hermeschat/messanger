@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"hermes/api"
-	"hermes/pkg/subscription"
-	"hermes/pkg/subscription/nats"
+	"hermes/subscription"
+	"hermes/subscription/nats"
 )
 
 const (

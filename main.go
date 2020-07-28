@@ -6,7 +6,7 @@ import (
 	"syscall"
 
 	"hermes/cmd"
-	"hermes/pkg/subscription"
+	"hermes/subscription"
 )
 
 func main() {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"hermes/pkg/db"
-	"hermes/pkg/subscription/nats"
+	"hermes/db"
+	"hermes/subscription/nats"
 )
 
 type ReadSignal struct {

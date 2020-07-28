@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"hermes/pkg/subscription/nats"
+	"hermes/subscription/nats"
 )
 
 func NewSubsciption(ctx context.Context, userID string, channelID string, handler nats.Handler) error {

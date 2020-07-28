@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
-	"hermes/pkg/subscription/nats"
+	"hermes/subscription/nats"
 )
 
 //DeliveredSignal ...

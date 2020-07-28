@@ -12,10 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"hermes/pkg/db"
-	"hermes/pkg/discovery"
-	"hermes/pkg/subscription"
-	"hermes/pkg/subscription/nats"
+	"hermes/db"
+	"hermes/discovery"
+	"hermes/subscription"
+	"hermes/subscription/nats"
 )
 
 func hasRole(roles string, role string) bool {

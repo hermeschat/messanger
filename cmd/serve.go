@@ -21,9 +21,9 @@ import (
 	"github.com/amirrezaask/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"hermes/pkg/db"
-	"hermes/pkg/grpcserver"
-	"hermes/pkg/subscription"
+	"hermes/db"
+	"hermes/grpcserver"
+	"hermes/subscription"
 )
 
 // serveCmd represents the serve command

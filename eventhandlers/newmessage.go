@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"hermes/pkg/db"
+	"hermes/db"
 )
 
 func HandleNewMessage(message *db.Message) error {

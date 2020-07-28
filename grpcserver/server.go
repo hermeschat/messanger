@@ -8,12 +8,12 @@ import (
 	"github.com/amirrezaask/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"hermes/api"
+	"hermes/db"
+	"hermes/discovery"
+	"hermes/eventhandlers"
 	auth "hermes/paygearauth"
-	"hermes/pkg/db"
-	"hermes/pkg/discovery"
-	"hermes/pkg/eventhandlers"
-	"hermes/pkg/subscription"
-	"hermes/pkg/subscription/nats"
+	"hermes/subscription"
+	"hermes/subscription/nats"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
