@@ -1,6 +1,9 @@
 package repository
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 
 type Repository interface {
@@ -8,8 +11,6 @@ type Repository interface {
 	Messages
 	Users
 }
-
-
 
 type MessageType uint8
 
@@ -29,11 +30,10 @@ type Message struct {
 }
 
 type Messages interface {
-	NewMessage(*Message) error
-	GetMessages(query map[string]interface{}) ([]*Message, error)
-	GetMessage(query map[string]interface{}) (*Message, error)
+	NewMessage(context.Context, *Message) error
+	GetMessages(ctx context.Context, query map[string]interface{}) ([]*Message, error)
+	GetMessage(ctx context.Context, id string) (*Message, error)
 }
-
 
 type Channel struct {
 	ID        string            `bson:"_id" json:"channel_id"`
@@ -46,11 +46,13 @@ type Channel struct {
 }
 
 type Channels interface {
-	GetChannelMessages(id string) ([]*Message, error)
-	GetChannelsByCreator(id string) ([]*Channel, error)
-	GetChannelsByMember(id string) ([]*Channel, error)
-	GetChannelByMembers(ids []string) ([]*Channel, error)
-	GetDirectChannelByMembers(ids []string) (*Channel, error)
+	NewChannel(ctx context.Context, channel *Channel) error
+	GetChannel(ctx context.Context, id string) (*Channel, error)
+	GetChannelMessages(ctx context.Context, id string) ([]*Message, error)
+	GetChannelsByCreator(ctx context.Context, id string) ([]*Channel, error)
+	GetChannelsByMember(ctx context.Context, id string) ([]*Channel, error)
+	GetChannelByMembers(ctx context.Context, ids []string) ([]*Channel, error)
+	GetDirectChannelByMembers(ctx context.Context, ids []string) (*Channel, error)
 }
 
 type User struct {
@@ -60,6 +62,6 @@ type User struct {
 }
 
 type Users interface {
-	NewUser(user *User) error
-	GetUser(id string) (*User, error)
+	NewUser(ctx context.Context, user *User) error
+	GetUser(ctx context.Context, id string) (*User, error)
 }

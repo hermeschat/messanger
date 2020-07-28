@@ -76,7 +76,9 @@ var C *appConfig
 
 func Init() error {
 	c, err := config.New(config.Options{
-		Feeder: &feeder.Yaml{},
+		Feeder: &feeder.Yaml{
+			Path: "hermes.yml",
+		},
 	})
 
 	if err != nil {
