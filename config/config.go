@@ -5,14 +5,21 @@ import (
 	"github.com/golobby/config/feeder"
 )
 
-type appConfig *config.Config
-var instance appConfig
+type appConfig struct {
+	*config.Config
+}
+
+func MongoURI() string {
+	return ""
+}
+
+var C *appConfig
 
 func Init() error {
-	gc, err := config.New(config.Options{Feeder: &feeder.Yaml{Path: "hermes.yml"}})
+	c, err := config.New(config.Options{Feeder: &feeder.Yaml{Path: "hermes.yml"}})
 	if err != nil {
 		return err
 	}
-	instance = gc
+	C = &appConfig{c}
 	return nil
 }

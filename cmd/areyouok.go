@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
+	"hermes/config"
 	"time"
 
-	"github.com/amirrezaask/config"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -27,7 +27,7 @@ var areyouokCmd = &cobra.Command{
 			logrus.Fatalf("error in connecting to nats: %v", err)
 		}
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Get("mongo_uri")))
+		client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI()))
 		if err != nil {
 			logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 		}
