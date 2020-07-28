@@ -3,6 +3,7 @@ module github.com/hermeschat/engine
 go 1.14
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/golang-migrate/migrate/v4 v4.12.1
 	github.com/golobby/config v1.1.0
