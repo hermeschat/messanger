@@ -3,6 +3,8 @@ module github.com/hermeschat/engine
 go 1.14
 
 require (
+	github.com/go-redis/redis/v7 v7.4.0
+	github.com/golang-migrate/migrate/v4 v4.12.1
 	github.com/golobby/config v1.1.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
@@ -12,7 +14,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.1.7 // indirect
 	github.com/nats-io/nats.go v1.10.0
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
 	go.mongodb.org/mongo-driver v1.3.5
