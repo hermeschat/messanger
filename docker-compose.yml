@@ -11,6 +11,7 @@ services:
       - 5432:5432
     environment:
       - "POSTGRES_PASSWORD=hermes"
+      - "POSTGRES_USER=hermes"
       - "POSTGRES_DB=hermes"
   nats-streaming:
     image: nats-streaming:0.18.0

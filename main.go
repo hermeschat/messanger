@@ -1,5 +1,5 @@
 package main
-//go:generate sqlboiler --wipe psql -p repository
+//go:generate sqlboiler --wipe psql
 import (
 	"github.com/hermeschat/engine/cmd"
 	"github.com/hermeschat/engine/config"
