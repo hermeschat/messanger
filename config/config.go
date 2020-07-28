@@ -3,9 +3,9 @@ package config
 import (
 	"fmt"
 	"github.com/golobby/config"
+	"github.com/golobby/config/feeder"
 	"github.com/hermeschat/engine/monitoring"
 	"log"
-	"github.com/golobby/config/feeder"
 )
 
 type appConfig struct {
@@ -27,7 +27,33 @@ func NatsURI() string {
 	}
 	return fmt.Sprintf("%s:%s", host, port)
 }
-
+func PostgresURI() string {
+	host, err := C.GetString("POSTGRES_HOST")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
+	}
+	port, err := C.GetString("POSTGRES_PORT")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
+	}
+	user, err := C.GetString("POSTGRES_USER")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
+	}
+	pass, err := C.GetString("POSTGRES_PASS")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
+	}
+	database, err := C.GetString("POSTGRES_DB")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
+	}
+	sslmode, err := C.GetString("POSTGRES_SSL")
+	if err != nil {
+		monitoring.Logger().Fatalf("Error in creating postgres uri: %s", err)
+	}
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, pass, database, sslmode)
+}
 type Env uint8
 
 const (
