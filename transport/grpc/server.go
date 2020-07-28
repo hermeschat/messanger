@@ -28,8 +28,7 @@ func CreateGRPCServer(ctx context.Context) {
 	if err != nil {
 		monitoring.Logger().Fatal("ERROR can't create a tcp listener ")
 	}
-
-	srv := grpc.NewServer(grpc_middleware.ChainUnaryServer(
+	srv := grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 		grpc_prom.UnaryServerInterceptor,
 		grpc_log.UnaryServerInterceptor(monitoring.LoggerInstance, grpc_log.WithLevels(func(c codes.Code) zapcore.Level {
 			if c > 0 {
@@ -38,8 +37,9 @@ func CreateGRPCServer(ctx context.Context) {
 			return zap.DebugLevel
 		})),
 		grpc_recovery.UnaryServerInterceptor(),
-	))
-	proto.RegisterHermesServer(srv, NewHermesServer())
+	)))
+	hermesSrv, err := NewHermesServer()
+	proto.RegisterHermesServer(srv, hermesSrv)
 	monitoring.Logger().Info("Registering Hermes GRPC")
 	err = srv.Serve(lis)
 	if err != nil {
@@ -47,10 +47,14 @@ func CreateGRPCServer(ctx context.Context) {
 	}
 }
 
-type HermesServer struct{
+type HermesServer struct {
 	ChatService core.ChatService
 }
 
-func NewHermesServer() *HermesServer {
-	return &HermesServer{core.NewChatService()}
+func NewHermesServer() (*HermesServer, error) {
+	chatService, err := core.NewChatService()
+	if err != nil {
+		return nil, err
+	}
+	return &HermesServer{ChatService: chatService}, nil
 }

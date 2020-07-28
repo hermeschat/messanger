@@ -17,6 +17,7 @@ func NatsUrl() string {
 	port := C.GetString("port")
 	user := C.GetString("user")
 	pass := C.GetString("pass")
+
 	uri := fmt.Sprintf("%s:%s", host, port)
 	if user != "" && pass != "" {
 		uri = fmt.Sprintf("%s:%s@%s", user, pass, uri)
