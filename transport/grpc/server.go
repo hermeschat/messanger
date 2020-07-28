@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hermeschat/engine/core"
-	"github.com/hermeschat/proto"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_log "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -38,8 +37,8 @@ func CreateGRPCServer(ctx context.Context) {
 		})),
 		grpc_recovery.UnaryServerInterceptor(),
 	)))
-	hermesSrv, err := NewHermesServer()
-	proto.RegisterHermesServer(srv, hermesSrv)
+	//hermesSrv, err := NewHermesServer()
+	//proto.RegisterHermesServer(srv, hermesSrv)
 	monitoring.Logger().Info("Registering Hermes GRPC")
 	err = srv.Serve(lis)
 	if err != nil {

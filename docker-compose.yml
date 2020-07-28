@@ -1,18 +1,22 @@
 version: '3'
 services:
-  mongo:
-    image: mongo:latest
-    container_name: "mongodb"
+  psql:
+    image: postgres:12.3
+    container_name: "psql"
     ports:
-      - 27017:27017
+      - 5432:5432
+    environment:
+      - "POSTGRES_PASSWORD=hermes"
+      - "POSTGRES_USER=hermes"
+      - "POSTGRES_DB=hermes"
   nats-streaming:
-    image: nats-streaming:latest
+    image: nats-streaming:0.18.0
     container_name: "nats-streaming"
     ports:
       - 4222:4222
       - 8222:8222
   redis:
-    image: redis:latest
+    image: redis:6.0.6
     container_name: "redis"
     ports:
       - 6379:6379
