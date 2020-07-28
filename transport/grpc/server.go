@@ -3,6 +3,8 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/hermeschat/engine/core"
+	"github.com/hermeschat/proto"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_log "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -37,9 +39,18 @@ func CreateGRPCServer(ctx context.Context) {
 		})),
 		grpc_recovery.UnaryServerInterceptor(),
 	))
+	proto.RegisterHermesServer(srv, NewHermesServer())
 	monitoring.Logger().Info("Registering Hermes GRPC")
 	err = srv.Serve(lis)
 	if err != nil {
 		monitoring.Logger().Fatal("ERROR in serving listener")
 	}
+}
+
+type HermesServer struct{
+	ChatService core.ChatService
+}
+
+func NewHermesServer() *HermesServer {
+	return &HermesServer{core.NewChatService()}
 }
