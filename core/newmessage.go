@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/hermeschat/engine/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -17,21 +18,33 @@ func (c *chatService) NewMessage(ctx context.Context, message *models.Message) e
 		return err
 	}
 	for _, cm := range ch.R.ChannelMembers { // should be done concurrently
-		err = pushToChannel(cm.R.User.Username)
+		err = c.pushToChannel(cm.R.User.Username, message)
 		if err != nil {
 		 	return err
 		}
 	}
 	return nil
 }
-func NewMessageEventHandler() {}
-func pushToChannel(channelId string) error {}
+func (c *chatService) pushToChannel(channelId string, data interface{}) error {
+	bs, err := json.Marshal(data)
+	if err != nil {
+	 	return err
+	}
+	guid, err := c.nc.PublishAsync(channelId, bs, nil)
+	_ = guid // TODO:
+	if err != nil {
+		return err
+	}
+	return nil
+}
 /*
 Telegram:
 	Each person has a channel, each group is a channel, each kanal is a channel
 	Channel ( kanal )
 	Private => MNIM, COMRADE => MNIM -> *COMRADE
-	Group
-
+	{
+		UserID
+		ChannelID
+	}
 
 */
