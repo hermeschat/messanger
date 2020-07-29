@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hermeschat/engine/core"
+	"github.com/hermeschat/proto"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_log "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -48,6 +49,26 @@ func CreateGRPCServer(ctx context.Context) {
 
 type HermesServer struct {
 	ChatService core.ChatService
+}
+
+func (h HermesServer) EventBuff(server proto.Hermes_EventBuffServer) error {
+	panic("implement me")
+}
+
+func (h HermesServer) Echo(ctx context.Context, empty *proto.Empty) (*proto.Empty, error) {
+	panic("implement me")
+}
+
+func (h HermesServer) ListChannels(ctx context.Context, empty *proto.Empty) (*proto.Channels, error) {
+	panic("implement me")
+}
+
+func (h HermesServer) GetChannel(ctx context.Context, request *proto.GetChannelRequest) (*proto.Channel, error) {
+	panic("implement me")
+}
+
+func (h HermesServer) mustEmbedUnimplementedHermesServer() {
+	panic("implement me")
 }
 
 func NewHermesServer() (*HermesServer, error) {

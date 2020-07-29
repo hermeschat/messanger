@@ -9,6 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.12.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+	github.com/hermeschat/proto v1.0.1 // indirect
 	github.com/klauspost/compress v1.10.10 // indirect
 	github.com/lib/pq v1.8.0
 	github.com/mitchellh/go-homedir v1.1.0
