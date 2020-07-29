@@ -271,6 +271,10 @@ github.com/hermeschat/proto v1.0.0 h1:9GmaPvr2kWiRTMg4umH0GgB6Jg/liLhGEH0IApcsQW
 github.com/hermeschat/proto v1.0.0/go.mod h1:qqUYi/cU/0t662vpgEICWMBWuDwPIXKLVXX0wGMUkhI=
 github.com/hermeschat/proto v1.0.1 h1:gAQBESD3dW4LJ2xxF5b+K9SdUSUCDDNprOI/zejoAbw=
 github.com/hermeschat/proto v1.0.1/go.mod h1:49dtHd5lW9JU7cuZamlcsxcl9rTlwOzk2TxHVcPxdGQ=
+github.com/hermeschat/proto v1.0.2 h1:EK9Mo85mKsNBBLI29+lzKTPDNTMfWy4mKhk0LJKkr0w=
+github.com/hermeschat/proto v1.0.2/go.mod h1:49dtHd5lW9JU7cuZamlcsxcl9rTlwOzk2TxHVcPxdGQ=
+github.com/hermeschat/proto v1.0.3 h1:Ld/WZdKpGL1Js1JYt0LPPkw9LS4ZIaAtKOl/Z0v/0hg=
+github.com/hermeschat/proto v1.0.3/go.mod h1:49dtHd5lW9JU7cuZamlcsxcl9rTlwOzk2TxHVcPxdGQ=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
@@ -811,6 +815,8 @@ google.golang.org/genproto v0.0.0-20200720141249-1244ee217b7e/go.mod h1:FWY/as6D
 google.golang.org/genproto v0.0.0-20200726014623-da3ae01ef02d/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
 google.golang.org/genproto v0.0.0-20200728010541-3dc8dca74b7b h1:FWkel6k8GbR7SbBY200Cz8tA58/KtMrfpVZwOOSjOvQ=
 google.golang.org/genproto v0.0.0-20200728010541-3dc8dca74b7b/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
+google.golang.org/genproto v0.0.0-20200729003335-053ba62fc06f h1:ohwtWcCwB/fZUxh/vjazHorYmBnua3NmY3CAjwC7mEA=
+google.golang.org/genproto v0.0.0-20200729003335-053ba62fc06f/go.mod h1:FWY/as6DDZQgahTzZj3fqbO1CbirC29ZNUFHwi0/+no=
 google.golang.org/grpc v1.17.0/go.mod h1:6QZJwpn2B+Zp71q/5VxRsJ6NXXVCE5NRUHRo+f3cWCs=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=

@@ -2,31 +2,48 @@ package core
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/hermeschat/engine/models"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-)
+	"fmt"
+	gproto "github.com/golang/protobuf/proto"
 
-func (c *chatService) NewMessage(ctx context.Context, message *models.Message) error {
+	"github.com/hermeschat/engine/models"
+	"github.com/hermeschat/engine/monitoring"
+	"github.com/hermeschat/proto"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+)
+const (
+	MessageStateInServer = iota + 1
+	MessageStateSent
+	MessageStateDelivered
+	MessageStateRead
+)
+func (c *chatService) NewMessage(ctx context.Context, msg *proto.Message) error {
+	message := &models.Message{
+		OriginID:  null.Int{int(msg.From), true},
+		DSTID:     null.Int{int(msg.To), true},
+		ParentID:  null.Int{int(msg.Parent), true},
+		Body:      null.String{msg.Body, true},
+		State:     null.Int{int(MessageStateInServer), true},
+	}
 	err := message.Insert(ctx, c.db, boil.Infer())
 	if err != nil {
 	 	return err
 	}
-	ch, err := models.Channels(qm.Where("id=$1", message.DSTID)).One(ctx, c.db)
+	msg.MessageID = fmt.Sprint(message.ID)
+	go func() {
+		err = c.pushMessageToChannel(fmt.Sprint(message.DSTID), msg)
+		if err != nil {
+		 	monitoring.Logger().Errorf("error in sending into nats channel: %s", err)
+		}
+	}()
 	if err != nil {
 		return err
 	}
-	for _, cm := range ch.R.ChannelMembers { // should be done concurrently
-		err = c.pushToChannel(cm.R.User.Username, message)
-		if err != nil {
-		 	return err
-		}
-	}
 	return nil
 }
-func (c *chatService) pushToChannel(channelId string, data interface{}) error {
-	bs, err := json.Marshal(data)
+func (c *chatService) pushMessageToChannel(channelId string, data *proto.Message) error {
+	//TODO: check for authorization
+	bs, err := gproto.Marshal(data)
 	if err != nil {
 	 	return err
 	}

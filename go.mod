@@ -7,9 +7,10 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/golang-migrate/migrate/v4 v4.12.1
+	github.com/golang/protobuf v1.4.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/hermeschat/proto v1.0.1 // indirect
+	github.com/hermeschat/proto v1.0.3
 	github.com/klauspost/compress v1.10.10 // indirect
 	github.com/lib/pq v1.8.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -35,7 +36,7 @@ require (
 	go.uber.org/zap v1.15.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
 	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
-	google.golang.org/genproto v0.0.0-20200728010541-3dc8dca74b7b // indirect
+	google.golang.org/genproto v0.0.0-20200729003335-053ba62fc06f // indirect
 	google.golang.org/grpc v1.30.0
 	gopkg.in/ini.v1 v1.57.0 // indirect
 )

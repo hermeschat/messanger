@@ -45,15 +45,25 @@ func (c *chatService) Join(userID int) error {
 	if err != nil {
 		return err
 	}
+	cms, err := models.ChannelMembers(qm.Where("user_id=$1", userID)).All(context.TODO(), c.db)
+	if err != nil {
+		return err
+	}
+	for _, cm := range cms {
+		err = c.subscribeToChannel(fmt.Sprint(cm.R.Channel.ID), c.newMessageNatsHandler)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (c *chatService) subscribeToChannel(channelID string, handler stan.MsgHandler) error {
 	sub, err := c.nc.Subscribe(channelID, handler)
 	if err != nil {
-	 	return err
+		return err
 	}
-	sub.
+
 	_ = sub // do something pls
 	return nil
 }

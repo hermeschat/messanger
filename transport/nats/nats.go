@@ -10,7 +10,10 @@ type natsClient struct {
 	stan.Conn
 }
 
-func Client(clusterID, clientID, natsUri string) (stan.Conn, error) {
+func Client() (stan.Conn, error) {
+	clusterID := config.C.GetString("nats.cluster")
+	clientID := config.C.GetString("nats.client")
+	natsUri := config.C.GetString("nats.uri")
 	return stan.Connect(clusterID, clientID, stan.NatsURL(natsUri))
 
 }
@@ -29,7 +32,7 @@ func StreamUnsubscriber(sub stan.Subscription) error {
 	return sub.Unsubscribe()
 }
 func HealthCheck() error {
-	_, err := Client(config.C.GetString("nats.cluser"), config.C.GetString("nats.client"), config.NatsUrl())
+	_, err := Client()
 	if err != nil {
 		return err
 	}

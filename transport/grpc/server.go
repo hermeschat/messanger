@@ -38,8 +38,9 @@ func CreateGRPCServer(ctx context.Context) {
 		})),
 		grpc_recovery.UnaryServerInterceptor(),
 	)))
-	//hermesSrv, err := NewHermesServer()
-	//proto.RegisterHermesServer(srv, hermesSrv)
+
+	hermesSrv, err := NewHermesServer()
+	proto.RegisterHermesServer(srv, hermesSrv)
 	monitoring.Logger().Info("Registering Hermes GRPC")
 	err = srv.Serve(lis)
 	if err != nil {
@@ -48,33 +49,58 @@ func CreateGRPCServer(ctx context.Context) {
 }
 
 type HermesServer struct {
+	proto.HermesServer
+	grpcPusher *grpcPusher //TODO: use sync mutex PLS
 	ChatService core.ChatService
 }
 
-func (h HermesServer) EventBuff(server proto.Hermes_EventBuffServer) error {
-	panic("implement me")
+
+func (h *HermesServer) EventBuff(server proto.Hermes_EventBuffServer) error {
+	h.grpcPusher.ctxs["USERID"] = server //TODO:
+	for {
+		event, err := server.Recv()
+		if err != nil {
+
+			monitoring.Logger().Errorf("%s\n", err)
+			continue
+		}
+		if _, isMessage := event.Event.(*proto.Event_NewMessage); isMessage {
+			// handle new message
+			msg := event.GetNewMessage()
+			err = h.ChatService.NewMessage(server.Context(), msg)
+			if err != nil {
+				// TODO: send error event to client
+				monitoring.Logger().Errorf("%s\n", err)
+			}
+			continue
+		}
+		if _, isSignal := event.Event.(*proto.Event_Signal); isSignal {
+			// handle signal
+			continue
+		}
+		// send error to client saying no event matched
+	}
+
+
 }
 
-func (h HermesServer) Echo(ctx context.Context, empty *proto.Empty) (*proto.Empty, error) {
-	panic("implement me")
-}
 
-func (h HermesServer) ListChannels(ctx context.Context, empty *proto.Empty) (*proto.Channels, error) {
-	panic("implement me")
-}
-
-func (h HermesServer) GetChannel(ctx context.Context, request *proto.GetChannelRequest) (*proto.Channel, error) {
-	panic("implement me")
-}
-
-func (h HermesServer) mustEmbedUnimplementedHermesServer() {
+func (h *HermesServer) mustEmbedUnimplementedHermesServer() {
 	panic("implement me")
 }
 
 func NewHermesServer() (*HermesServer, error) {
-	chatService, err := core.NewChatService()
+	pusher := &grpcPusher{ctxs: make(map[string]proto.Hermes_EventBuffServer)}
+	chatService, err := core.NewChatService(pusher)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	return &HermesServer{ChatService: chatService}, nil
+	return &HermesServer{ChatService: chatService, grpcPusher: pusher}, nil
+}
+
+type grpcPusher struct {
+	ctxs map[string]proto.Hermes_EventBuffServer
+}
+func (g *grpcPusher) Push(to string, data *proto.Message) error {
+	return g.ctxs[to].Send(&proto.Event{Event: &proto.Event_NewMessage{NewMessage: data}})
 }
