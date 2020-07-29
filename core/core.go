@@ -6,7 +6,7 @@ import (
 )
 
 type ChatService interface{
-
+	NewMessage()
 }
 type chatService struct {
 	nc stan.Conn

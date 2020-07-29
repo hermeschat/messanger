@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/hermeschat/engine/config"
+	"github.com/hermeschat/engine/transport/psql"
 )
 
 type SQLProvider interface {
@@ -15,7 +16,7 @@ func NewSQLProvider() (SQLProvider, error) {
 	dbType := config.C.GetString("database.type")
 	switch dbType {
 	case "psql":
-		return &Postgres{}, nil
+		return &psql.Postgres{}, nil
 	default:
 		return SQLProvider(nil), fmt.Errorf("%s is not supported as a database provider", dbType)
 	}

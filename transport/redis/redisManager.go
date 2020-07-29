@@ -7,31 +7,34 @@ import (
 	"time"
 )
 
-type IRedisManager interface {
+type Redis interface {
 	GetFromRedis(key string) (value string)
 	SetToRedis(key string, value string, expTime time.Duration) bool
 	DeleteFromRedis(key string) bool
 }
 
-type MySweetRedis struct {
+type _redis struct {
 	*redis.Client
 }
 
-func StartRedis() *redis.Client {
+func NewRedis() (Redis, error) {
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", config.C.GetString("redis.host"), config.C.GetString("redis.port")),
+		Addr:     fmt.Sprintf("%s:%s", config.C.GetString("_redis.host"), config.C.GetString("_redis.port")),
 		Password: "",                          // no password set
 		DB:       config.C.GetInt("redis.db"), // use default DB
 	})
 
 	_, err := redisClient.Ping().Result()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return redisClient
+	r := &_redis{
+		redisClient,
+	}
+	return r, nil
 }
 
-func (r *MySweetRedis) GetFromRedis(key string) (value string) {
+func (r *_redis) GetFromRedis(key string) (value string) {
 	redisResult, err := r.Get(key).Result()
 	if err != nil {
 		fmt.Println("Error on GetUserConfirmation on RedisDB.Get")
@@ -41,24 +44,24 @@ func (r *MySweetRedis) GetFromRedis(key string) (value string) {
 		return redisResult
 	}
 }
-func (r *MySweetRedis) SetToRedis(key string, value string, expTime time.Duration) bool {
+func (r *_redis) SetToRedis(key string, value string, expTime time.Duration) bool {
 	err := r.Set(key, value, time.Second*expTime).Err()
 	if err != nil {
-		fmt.Println("error on setting key on redis DB.")
+		fmt.Println("error on setting key on _redis DB.")
 		return false
 	} else {
-		fmt.Println("successful setting key on redis DB.")
+		fmt.Println("successful setting key on _redis DB.")
 		return true
 	}
 }
 
-func (r *MySweetRedis) DeleteFromRedis(key string) bool {
+func (r *_redis) DeleteFromRedis(key string) bool {
 	err := r.Del(key).Err()
 	if err != nil {
-		fmt.Println("error on deleting key from redis DB.")
+		fmt.Println("error on deleting key from _redis DB.")
 		return false
 	} else {
-		fmt.Println("successful deletion key from redis DB.")
+		fmt.Println("successful deletion key from _redis DB.")
 		return true
 	}
 }
