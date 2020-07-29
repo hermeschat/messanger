@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hermeschat/engine/models"
-	"github.com/hermeschat/engine/monitoring"
 	"github.com/nats-io/stan.go"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -54,6 +53,7 @@ func (c *chatService) subscribeToChannel(channelID string, handler stan.MsgHandl
 	if err != nil {
 	 	return err
 	}
+	sub.
 	_ = sub // do something pls
 	return nil
 }

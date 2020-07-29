@@ -3,8 +3,15 @@
 Hermes is a scalable, GRPC based messaging service.
 ### Technology Stack
 Nats-Streaming <br>
-MongoDB <br>
+PostgreSQL <br>
 Redis <br>
+
+### Terminology
+* Channel: Channel is the basis of all communications in hermes, each user has it's own channel, each group is a channel, and 
+each broadcast is a channel. Channels are basically NATS channels but they are persistant using a PostgreSQL database.
+* Message: Messages are the data people send to each other, it could be a simple text message or a complex reply to another message maybe with a GIF.
+* User: Users are the people :).
+
 ### How Hermes Works
 Hermes uses Nats-Streaming as pub/sub service and uses nats concept of channels as 
 a way of communication between two users. Each new event 
@@ -26,4 +33,4 @@ will deliver the event to the users using GRPC streaming.
    docker-compose up .
 ```
 ### License 
-Hermes uses MIT licenese for more information read licence file.
+Hermes uses MIT license for more information read licence file.
