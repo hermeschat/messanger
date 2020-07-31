@@ -63,3 +63,8 @@ var sendCmd = &cobra.Command{
 		fmt.Println("message sent")
 	},
 }
+
+func init() {
+	rootCmd.AddCommand(sendCmd)
+
+}
