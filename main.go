@@ -1,12 +1,11 @@
 package main
-
+//go:generate sqlboiler --wipe psql
 import (
+	"github.com/hermeschat/engine/cmd"
+	"github.com/hermeschat/engine/config"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"hermes/cmd"
-	"hermes/pkg/subscription"
 )
 
 func main() {
@@ -14,9 +13,12 @@ func main() {
 		sigs := make(chan os.Signal)
 		signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 		for range sigs {
-			subscription.Clean()
 			os.Exit(0)
 		}
 	}()
+	err := config.Init()
+	if err != nil {
+	 	panic(err)
+	}
 	cmd.Execute()
 }

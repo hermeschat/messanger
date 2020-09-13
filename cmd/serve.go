@@ -17,13 +17,10 @@ package cmd
 
 import (
 	"context"
+	"github.com/hermeschat/engine/monitoring"
+	"github.com/hermeschat/engine/transport/grpc"
 
-	"github.com/amirrezaask/config"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"hermes/pkg/db"
-	"hermes/pkg/grpcserver"
-	"hermes/pkg/subscription"
 )
 
 // serveCmd represents the serve command
@@ -32,15 +29,11 @@ var serveCmd = &cobra.Command{
 	Short: "serve serves hermes",
 	Long:  `serve starts hermes`,
 	Run: func(cmd *cobra.Command, args []string) {
-		defer func() {
-			subscription.Clean()
-		}()
-		logrus.Info("Loading Config")
-		config.Init()
-		logrus.Info("Initiating DB package")
-		db.Init()
-		grpcserver.CreateGRPCServer(context.Background())
-		logrus.Info("Initializing Hermes")
+
+		monitoring.Logger().Info("Loading Config")
+		monitoring.Logger().Info("Initiating DB package")
+		grpc.CreateGRPCServer(context.Background())
+		monitoring.Logger().Info("Initializing Hermes")
 
 	},
 }

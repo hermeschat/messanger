@@ -2,47 +2,45 @@ package cmd
 
 import (
 	"context"
-	"time"
-
-	"github.com/amirrezaask/config"
+	"github.com/hermeschat/engine/config"
+	"github.com/hermeschat/engine/monitoring"
+	nats "github.com/hermeschat/engine/transport/nats"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"hermes/pkg/subscription"
-	"hermes/pkg/subscription/nats"
+	"time"
 )
 
-// areyouokCmd represents the areyouok command
+// Health Check
 var areyouokCmd = &cobra.Command{
 	Use:   "areyouok",
 	Short: "areyouok runs set of checks to make sure hermes is ok",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		config.Init()
-		_, err := nats.Client("testing")
+		err := nats.HealthCheck()
 		if err != nil {
-			logrus.Fatalf("error in connecting to nats: %v", err)
+			monitoring.Logger().Fatalf("error in connecting to nats")
 		}
+
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Get("mongo_uri")))
+		client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI()))
 		if err != nil {
-			logrus.Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
+			monitoring.Logger().Fatalf(errors.Wrap(err, "can't connect to mongodb FUCK").Error())
 		}
 		err = client.Ping(ctx, readpref.Primary())
 		if err != nil {
-			logrus.Fatalf("could not ping db")
+			monitoring.Logger().Fatalf("could not ping db")
 		}
-		con, err := subscription.Redis()
-		if err != nil {
-			logrus.Fatalf("could not connect redis:%v", err)
-		}
-		_, err = con.Ping().Result()
-		if err != nil {
-			logrus.Fatalf("could not ping redis:%v", err)
-		}
+		//con, err := subscription.Redis()
+		//if err != nil {
+		//	monitoring.Logger().Fatalf("could not connect redis:%v", err)
+		//}
+		//_, err = con.Ping().Result()
+		//if err != nil {
+		//	monitoring.Logger().Fatalf("could not ping redis:%v", err)
+		//}
 		return
 	},
 }

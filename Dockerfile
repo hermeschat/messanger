@@ -1,4 +1,4 @@
-FROM golang:1.12.2 AS builder
+FROM golang:1.14.4 AS builder
 
 ARG PROJECT
 
@@ -8,10 +8,9 @@ WORKDIR /go/src/${PROJECT}
 
 RUN go get -v
 
-#RUN CGO_ENABLED=0 go build -v -o /go/bin/app
 RUN go build -v -o /go/bin/app
 
-FROM ubuntu:18.04 AS app
+FROM ubuntu:20.04 AS app
 
 ARG PROJECT
 

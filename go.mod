@@ -1,37 +1,42 @@
-module hermes
+module github.com/hermeschat/engine
 
-go 1.12
+go 1.14
 
 require (
-	github.com/amirrezaask/config v0.0.0-20190908221849-bcac0a21db62
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/go-redis/redis v6.15.5+incompatible
-	github.com/gogo/protobuf v1.3.0
-	github.com/golang/protobuf v1.3.1
-	github.com/golang/snappy v0.0.1 // indirect
-	github.com/gorilla/websocket v1.4.1 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
-	github.com/hashicorp/go-uuid v1.0.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/friendsofgo/errors v0.9.2
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/go-redis/redis/v7 v7.4.0
+	github.com/golang-migrate/migrate/v4 v4.12.1
+	github.com/golang/protobuf v1.4.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+	github.com/hermeschat/proto v1.0.3
+	github.com/klauspost/compress v1.10.10 // indirect
+	github.com/lib/pq v1.8.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.1.2
-	github.com/nats-io/gnatsd v1.4.1 // indirect
-	github.com/nats-io/go-nats v1.7.2 // indirect
-	github.com/nats-io/go-nats-streaming v0.4.4
-	github.com/nats-io/nats-server v1.4.1 // indirect
-	github.com/nats-io/nats-streaming-server v0.16.0 // indirect
-	github.com/onsi/ginkgo v1.10.1 // indirect
-	github.com/onsi/gomega v1.7.0 // indirect
-	github.com/pkg/errors v0.8.1
-	github.com/satori/go.uuid v1.2.0
-	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/cobra v0.0.5
-	github.com/spf13/viper v1.4.0
-	github.com/tidwall/pretty v1.0.0 // indirect
-	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
-	github.com/xdg/stringprep v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.1.0
-	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472
-	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297
-	google.golang.org/grpc v1.23.0
+	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/nats-io/jwt v1.0.1 // indirect
+	github.com/nats-io/nats-streaming-server v0.18.0 // indirect
+	github.com/nats-io/nkeys v0.2.0 // indirect
+	github.com/nats-io/stan.go v0.7.0
+	github.com/pelletier/go-toml v1.8.0 // indirect
+	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.7.1 // indirect
+	github.com/sirupsen/logrus v1.6.0 // indirect
+	github.com/spf13/afero v1.3.2 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
+	github.com/spf13/cobra v1.0.0
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/viper v1.7.0
+	github.com/volatiletech/null/v8 v8.1.0
+	github.com/volatiletech/sqlboiler/v4 v4.2.0
+	github.com/volatiletech/strmangle v0.0.1
+	go.mongodb.org/mongo-driver v1.3.5
+	go.uber.org/zap v1.15.0
+	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
+	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
+	google.golang.org/genproto v0.0.0-20200729003335-053ba62fc06f // indirect
+	google.golang.org/grpc v1.30.0
+	gopkg.in/ini.v1 v1.57.0 // indirect
 )
